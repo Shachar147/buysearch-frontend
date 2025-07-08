@@ -1,4 +1,4 @@
-import { makeObservable, observable, action, runInAction, reaction } from 'mobx';
+import { makeObservable, observable, action, runInAction, reaction, toJS } from 'mobx';
 import { fetchAllBrands } from '../services/brand-api-service';
 import { fetchAllCategories } from '../services/category-api-service';
 import { fetchAllColors } from '../services/color-api-service';
@@ -33,10 +33,27 @@ export class FiltersStore {
     this.loadAll();
     reaction(
       () => ({ ...this.selected }),
-      () => {
-        productStore.reset();
-        // You may want to pass filters to fetchProducts here
-        productStore.loadMore();
+      (selected) => {
+        // Build filters object for API
+        const filters: any = {
+          search: selected.search,
+          sort: selected.sort,
+          brand: selected.brand !== 'All' ? selected.brand : undefined,
+          category: selected.category !== 'All' ? selected.category : undefined,
+          color: selected.color !== 'All' ? selected.color : undefined,
+        };
+        if (selected.priceRange && selected.priceRange.label !== 'All') {
+            const pr = toJS(selected.priceRange) as { from?: number; to?: number; label: string };
+          if (typeof pr.from === 'number') {
+            filters.priceFrom = pr.from;
+          }
+          if (typeof pr.to === 'number') {
+            filters.priceTo = pr.to;
+          }
+        }
+        console.log({ selected });
+        productStore.reset(filters);
+        productStore.loadMore(filters);
       }
     );
   }

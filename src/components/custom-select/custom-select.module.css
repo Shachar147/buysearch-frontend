@@ -3,7 +3,7 @@
   min-width: 180px;
   /* min-width: 140px; */
   user-select: none;
-  font-size: 16px;
+  font-size: 12px;
 }
 
 .selected {
@@ -17,7 +17,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 16px;
+  font-size: 12px;
 }
 .selected:focus, .selected:active {
   border: 1px solid #888;
@@ -56,7 +56,7 @@
 .options li {
   padding: 0 14px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   color: #222;
   transition: background 0.13s;
   height: 38px;

@@ -36,6 +36,8 @@ export interface ProductFilters {
   search?: string;
   offset?: number;
   limit?: number;
+  priceFrom?: number;
+  priceTo?: number;
 }
 
 export async function fetchProducts(offset = 0, limit = 20, filters: ProductFilters = {}): Promise<ProductApiResponse> {
@@ -45,10 +47,8 @@ export async function fetchProducts(offset = 0, limit = 20, filters: ProductFilt
   if (filters.color && filters.color !== 'All') params.append('color', filters.color);
   if (filters.brand && filters.brand !== 'All') params.append('brand', filters.brand);
   if (filters.category && filters.category !== 'All') params.append('category', filters.category);
-  if (filters.priceRange && filters.priceRange.label !== 'All') {
-    if (filters.priceRange.from !== undefined) params.append('priceFrom', String(filters.priceRange.from));
-    if (filters.priceRange.to !== undefined) params.append('priceTo', String(filters.priceRange.to));
-  }
+  if (filters.priceFrom !== undefined) params.append('priceFrom', String(filters.priceFrom));
+  if (filters.priceTo !== undefined) params.append('priceTo', String(filters.priceTo));
   if (filters.sort && filters.sort !== 'Relevance') params.append('sort', filters.sort);
   if (filters.search) params.append('search', filters.search);
   const res = await axios.get<ProductApiResponse>(`${API_BASE}/products?offset=${offset}&limit=${limit}&${params.toString()}`);

@@ -1,69 +1,24 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React from 'react';
+import { observer } from 'mobx-react-lite';
 import styles from './filter-bar.module.css';
 import getClasses from '../../utils/get-classes';
+import CustomSelect from '../custom-select/custom-select';
+import filtersStore from '../../stores/filters-store';
 
 // todo: load brands, categories, colors from server.
 // todo: set default price range for example up to 100 ILS, 100-150, 150-200, etc
-const filterOptions = [
-  { label: 'Sort', options: ['Relevance', 'Price: Low to High', 'Price: High to Low'] },
-  { label: 'Brand', options: ['All'] },
-  { label: 'Category', options: ['All'] },
-  { label: 'Colour', options: ['All'] },
-  { label: 'Price Range', options: ['All'] },
+const sortOptions = ['Relevance', 'Price: Low to High', 'Price: High to Low'];
+const priceRangeOptions = [
+  'All',
+  'Up to 100 ILS',
+  '100-150 ILS',
+  '150-200 ILS',
+  '200-300 ILS',
+  '300+ ILS',
 ];
 
-function CustomSelect({ options, value, onChange }: { options: string[]; value: string; onChange: (v: string) => void }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
-
-  return (
-    <div className={styles.customSelect} ref={ref} tabIndex={0} onBlur={() => setOpen(false)}>
-      <div className={styles.selected} onClick={() => setOpen((o) => !o)}>
-        {value}
-        <span className={styles.arrow} />
-      </div>
-      {open && (
-        <ul className={styles.options}>
-          {options.map((opt) => (
-            <li
-              key={opt}
-              className={opt === value ? styles.active : ''}
-              onClick={() => {
-                onChange(opt);
-                setOpen(false);
-              }}
-            >
-              {opt}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-
-function FilterBar() {
-  const [values, setValues] = useState({
-    Sort: 'Relevance',
-    Brand: 'All',
-    Category: 'All',
-    Colour: 'All',
-    'Price Range': 'All',
-  });
-
-  function handleChange(label: string, value: string) {
-    setValues((v) => ({ ...v, [label]: value }));
-  }
+const FilterBar = observer(() => {
+  const { brands, categories, colors, selected, setFilter, loading } = filtersStore;
 
   return (
     <div className={getClasses([styles.filterBar])}>
@@ -74,20 +29,53 @@ function FilterBar() {
           className={styles.searchInput}
           placeholder="Search for items and brands"
           aria-label="Search"
+          value={selected.search}
+          onChange={e => setFilter('search', e.target.value)}
+          disabled={!!loading}
         />
       </div>
-      {filterOptions.map((filter) => (
-        <div key={filter.label} className={styles.filterItem}>
-          <label className={styles.label}>{filter.label}</label>
-          <CustomSelect
-            options={filter.options}
-            value={values[filter.label]}
-            onChange={(val) => handleChange(filter.label, val)}
-          />
-        </div>
-      ))}
+      <div className={styles.filterItem}>
+        <label className={styles.label}>Sort</label>
+        <CustomSelect
+          options={sortOptions}
+          value={selected.sort}
+          onChange={val => setFilter('sort', val)}
+        />
+      </div>
+      <div className={styles.filterItem}>
+        <label className={styles.label}>Brand</label>
+        <CustomSelect
+          options={['All', ...brands.map(b => b.name || b)]}
+          value={selected.brand}
+          onChange={val => setFilter('brand', val)}
+        />
+      </div>
+      <div className={styles.filterItem}>
+        <label className={styles.label}>Category</label>
+        <CustomSelect
+          options={['All', ...categories.map(c => c.name || c)]}
+          value={selected.category}
+          onChange={val => setFilter('category', val)}
+        />
+      </div>
+      <div className={styles.filterItem}>
+        <label className={styles.label}>Colour</label>
+        <CustomSelect
+          options={['All', ...colors.map(c => c.name || c)]}
+          value={selected.color}
+          onChange={val => setFilter('color', val)}
+        />
+      </div>
+      <div className={styles.filterItem}>
+        <label className={styles.label}>Price Range</label>
+        <CustomSelect
+          options={priceRangeOptions}
+          value={selected.priceRange}
+          onChange={val => setFilter('priceRange', val)}
+        />
+      </div>
     </div>
   );
-}
+});
 
 export default FilterBar; 

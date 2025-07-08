@@ -1,5 +1,5 @@
 import { makeAutoObservable, runInAction } from 'mobx';
-import { fetchProducts, ProductApi } from '../services/product-service';
+import { fetchProducts, ProductApi } from '../services/product-api-service';
 
 export class ProductStore {
   products: ProductApi[] = [];

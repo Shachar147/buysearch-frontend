@@ -67,8 +67,10 @@ export class FiltersStore {
         fetchAllColors(),
       ]);
       runInAction(() => {
+        const brandNamesAliases = ['abercrombie and fitch', 'ellesse'];
+        const brandNames = new Set(brands.map((b: any) => b.name?.toLowerCase() || b?.toLowerCase()));
         this.brands = brands;
-        this.categories = categories;
+        this.categories = categories.filter((c: any) => !brandNames.has(c.name?.toLowerCase() || c?.toLowerCase()) && !brandNamesAliases.includes(c.name?.toLowerCase()));
         this.colors = colors;
       });
     } finally {

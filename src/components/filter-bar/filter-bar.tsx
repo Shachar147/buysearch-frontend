@@ -7,12 +7,14 @@ import filtersStore from '../../stores/filters-store';
 
 const sortOptions = ['Relevance', 'Price: Low to High', 'Price: High to Low'];
 const priceRangeOptions = [
-  'All',
-  'Up to 100 ILS',
-  '100-150 ILS',
-  '150-200 ILS',
-  '200-300 ILS',
-  '300+ ILS',
+  { label: 'All' },
+  { label: 'Up to 100 ILS', to: 100 },
+  { label: '100-150 ILS', from: 100, to: 150 },
+  { label: '151-200 ILS', from: 151, to: 200 },
+  { label: '201-300 ILS', from: 201, to: 300 },
+  { label: '301-600 ILS', from: 301, to: 600 },
+  { label: '601-1000 ILS', from: 601, to: 1000 },
+  { label: '1000+ ILS', from: 1001 },
 ];
 
 const FilterBar = observer(() => {
@@ -67,9 +69,9 @@ const FilterBar = observer(() => {
       <div className={styles.filterItem}>
         <label className={styles.label}>Price Range</label>
         <CustomSelect
-          options={priceRangeOptions}
-          value={selected.priceRange}
-          onChange={val => setFilter('priceRange', val)}
+          options={priceRangeOptions.map(opt => opt.label)}
+          value={selected.priceRange?.label || 'All'}
+          onChange={val => setFilter('priceRange', priceRangeOptions.find(opt => opt.label === val))}
         />
       </div>
     </div>

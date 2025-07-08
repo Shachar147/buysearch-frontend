@@ -16,7 +16,7 @@ export class FiltersStore {
     brand: 'All',
     category: 'All',
     color: 'All',
-    priceRange: 'All',
+    priceRange: { label: 'All' },
   };
 
   constructor() {
@@ -61,7 +61,7 @@ export class FiltersStore {
     }
   }
 
-  setFilter = (key: keyof typeof this.selected, value: string) => {
+  setFilter = (key: keyof typeof this.selected, value: any) => {
     this.selected[key] = value;
   }
 }

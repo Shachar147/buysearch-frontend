@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { observer } from 'mobx-react-lite';
 import styles from './custom-select.module.css';
 
 interface CustomSelectProps {
@@ -7,7 +8,7 @@ interface CustomSelectProps {
   onChange: (v: string) => void;
 }
 
-function CustomSelect({ options, value, onChange }: CustomSelectProps) {
+const CustomSelect = observer(function CustomSelect({ options, value, onChange }: CustomSelectProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -45,6 +46,6 @@ function CustomSelect({ options, value, onChange }: CustomSelectProps) {
       )}
     </div>
   );
-}
+});
 
 export default CustomSelect; 

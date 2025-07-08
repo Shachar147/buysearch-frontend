@@ -5,8 +5,6 @@ import getClasses from '../../utils/get-classes';
 import CustomSelect from '../custom-select/custom-select';
 import filtersStore from '../../stores/filters-store';
 
-// todo: load brands, categories, colors from server.
-// todo: set default price range for example up to 100 ILS, 100-150, 150-200, etc
 const sortOptions = ['Relevance', 'Price: Low to High', 'Price: High to Low'];
 const priceRangeOptions = [
   'All',

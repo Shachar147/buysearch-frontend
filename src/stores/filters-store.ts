@@ -61,7 +61,7 @@ export class FiltersStore {
     }
   }
 
-  setFilter(key: keyof typeof this.selected, value: string) {
+  setFilter = (key: keyof typeof this.selected, value: string) => {
     this.selected[key] = value;
   }
 }

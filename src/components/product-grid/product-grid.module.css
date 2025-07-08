@@ -34,4 +34,15 @@
     flex-basis: 100%;
     max-width: 100%;
   }
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  font-size: 1.3rem;
+  color: #888;
+  width: 100%;
+  text-align: center;
 } 

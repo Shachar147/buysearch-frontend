@@ -5,17 +5,23 @@ import getClasses from '../../utils/get-classes';
 import CustomSelect from '../custom-select/custom-select';
 import filtersStore from '../../stores/filters-store';
 
-const sortOptions = ['Relevance', 'Price: Low to High', 'Price: High to Low'];
-const priceRangeOptions = [
-  { label: 'All' },
-  { label: 'Up to 100 ILS', to: 100 },
-  { label: '100-150 ILS', from: 100, to: 150 },
-  { label: '151-200 ILS', from: 151, to: 200 },
-  { label: '201-300 ILS', from: 201, to: 300 },
-  { label: '301-600 ILS', from: 301, to: 600 },
-  { label: '601-1000 ILS', from: 601, to: 1000 },
-  { label: '1000+ ILS', from: 1001 },
+const sortOptions = [
+  { label: 'Relevance', value: 'Relevance' },
+  { label: 'Price: Low to High', value: 'Price: Low to High' },
+  { label: 'Price: High to Low', value: 'Price: High to Low' },
 ];
+const priceRangeOptions = [
+  { label: 'All', value: 'All' },
+  { label: 'Up to 100 ILS', value: 'Up to 100 ILS', to: 100 },
+  { label: '100-150 ILS', value: '100-150 ILS', from: 100, to: 150 },
+  { label: '151-200 ILS', value: '151-200 ILS', from: 151, to: 200 },
+  { label: '201-300 ILS', value: '201-300 ILS', from: 201, to: 300 },
+  { label: '301-600 ILS', value: '301-600 ILS', from: 301, to: 600 },
+  { label: '601-1000 ILS', value: '601-1000 ILS', from: 601, to: 1000 },
+  { label: '1000+ ILS', value: '1000+ ILS', from: 1001 },
+];
+
+const toOption = (v: any) => typeof v === 'string' ? { label: v, value: v } : { label: v.name, value: v.name };
 
 const FilterBar = observer(() => {
   const { brands, categories, colors, selected, setFilter, loading } = filtersStore;
@@ -31,47 +37,58 @@ const FilterBar = observer(() => {
           aria-label="Search"
           value={selected.search}
           onChange={e => setFilter('search', e.target.value)}
-          disabled={!!loading}
         />
       </div>
       <div className={styles.filterItem}>
         <label className={styles.label}>Sort</label>
         <CustomSelect
           options={sortOptions}
-          value={selected.sort}
-          onChange={val => setFilter('sort', val)}
+          selected={[selected.sort || 'Relevance']}
+          onChange={vals => setFilter('sort', vals[0])}
+          defaultLabel="Relevance"
         />
       </div>
       <div className={styles.filterItem}>
         <label className={styles.label}>Brand</label>
         <CustomSelect
-          options={['All', ...brands.map(b => b.name || b)]}
-          value={selected.brand}
-          onChange={val => setFilter('brand', val)}
+          options={[{ label: 'All', value: 'All' }, ...brands.map(toOption)]}
+          selected={Array.isArray(selected.brand) ? selected.brand : [selected.brand]}
+          onChange={vals => setFilter('brand', vals)}
+          defaultLabel="All"
+          multiselect
         />
       </div>
       <div className={styles.filterItem}>
         <label className={styles.label}>Category</label>
         <CustomSelect
-          options={['All', ...categories.map(c => c.name || c)]}
-          value={selected.category}
-          onChange={val => setFilter('category', val)}
+          options={[{ label: 'All', value: 'All' }, ...categories.map(toOption)]}
+          selected={Array.isArray(selected.category) ? selected.category : [selected.category]}
+          onChange={vals => setFilter('category', vals)}
+          defaultLabel="All"
+          multiselect
         />
       </div>
       <div className={styles.filterItem}>
         <label className={styles.label}>Colour</label>
         <CustomSelect
-          options={['All', ...colors.map(c => c.name || c)]}
-          value={selected.color}
-          onChange={val => setFilter('color', val)}
+          options={[{ label: 'All', value: 'All' }, ...colors.map(toOption)]}
+          selected={Array.isArray(selected.color) ? selected.color : [selected.color]}
+          onChange={vals => setFilter('color', vals)}
+          defaultLabel="All"
+          multiselect
         />
       </div>
       <div className={styles.filterItem}>
         <label className={styles.label}>Price Range</label>
         <CustomSelect
-          options={priceRangeOptions.map(opt => opt.label)}
-          value={selected.priceRange?.label || 'All'}
-          onChange={val => setFilter('priceRange', priceRangeOptions.find(opt => opt.label === val))}
+          options={priceRangeOptions}
+          selected={selected.priceRange && selected.priceRange.value ? [selected.priceRange.value] : ['All']}
+          onChange={vals => {
+            const found = priceRangeOptions.find(opt => opt.value === vals[0]) || priceRangeOptions[0];
+            setFilter('priceRange', found);
+          }}
+          defaultLabel="All"
+        //   multiselect
         />
       </div>
     </div>

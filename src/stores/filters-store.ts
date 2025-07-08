@@ -4,6 +4,14 @@ import { fetchAllCategories } from '../services/category-api-service';
 import { fetchAllColors } from '../services/color-api-service';
 import productStore from './product-store';
 
+function debounce<T extends (...args: any[]) => void>(fn: T, ms: number) {
+  let timeout: ReturnType<typeof setTimeout>;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => fn(...args), ms);
+  };
+}
+
 export class FiltersStore {
   brands: any[] = [];
   categories: any[] = [];
@@ -29,33 +37,67 @@ export class FiltersStore {
       loadAll: action,
       setFilter: action,
     });
-    
     this.loadAll();
+
+    // Debounced reaction for search
     reaction(
-      () => ({ ...this.selected }),
-      (selected) => {
-        // Build filters object for API
-        const filters: any = {
-          search: selected.search,
-          sort: selected.sort,
-          brand: selected.brand !== 'All' ? selected.brand : undefined,
-          category: selected.category !== 'All' ? selected.category : undefined,
-          color: selected.color !== 'All' ? selected.color : undefined,
-        };
-        if (selected.priceRange && selected.priceRange.label !== 'All') {
-            const pr = toJS(selected.priceRange) as { from?: number; to?: number; label: string };
-          if (typeof pr.from === 'number') {
-            filters.priceFrom = pr.from;
-          }
-          if (typeof pr.to === 'number') {
-            filters.priceTo = pr.to;
-          }
-        }
-        console.log({ selected });
+      () => this.selected.search,
+      debounce((search) => {
+        const filters = this.buildFilters();
+        productStore.reset(filters);
+        productStore.loadMore(filters);
+      }, 400)
+    );
+
+    // Immediate reaction for other filters
+    reaction(
+      () => [this.selected.sort, this.selected.brand, this.selected.category, this.selected.color, toJS(this.selected.priceRange)],
+      () => {
+        const filters = this.buildFilters();
         productStore.reset(filters);
         productStore.loadMore(filters);
       }
     );
+  }
+
+  buildFilters() {
+    const selected = this.selected;
+    const filters: any = {
+      search: selected.search,
+      sort: selected.sort,
+    };
+    // Handle brand
+    if (Array.isArray(selected.brand)) {
+      const brands = selected.brand.filter((b: string) => b !== 'All');
+      if (brands.length > 0) filters.brand = brands.join(',');
+    } else if (selected.brand !== 'All') {
+      filters.brand = selected.brand;
+    }
+    // Handle category
+    if (Array.isArray(selected.category)) {
+      const categories = selected.category.filter((c: string) => c !== 'All');
+      if (categories.length > 0) filters.category = categories.join(',');
+    } else if (selected.category !== 'All') {
+      filters.category = selected.category;
+    }
+    // Handle color
+    if (Array.isArray(selected.color)) {
+      const colors = selected.color.filter((c: string) => c !== 'All');
+      if (colors.length > 0) filters.color = colors.join(',');
+    } else if (selected.color !== 'All') {
+      filters.color = selected.color;
+    }
+    // Handle priceRange
+    if (Array.isArray(selected.priceRange)) {
+      const ranges = selected.priceRange.filter((p: any) => p !== 'All');
+      if (ranges.length > 0) filters.priceRange = ranges.join(',');
+    } else if (selected.priceRange && (typeof selected.priceRange === 'object')) {
+      const value = 'value' in selected.priceRange ? selected.priceRange.value : selected.priceRange.label;
+      if (value !== 'All') {
+        filters.priceRange = value;
+      }
+    }
+    return filters;
   }
 
   async loadAll() {

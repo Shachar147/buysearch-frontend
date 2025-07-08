@@ -14,9 +14,10 @@ interface CustomSelectProps {
   placeholder?: string;
   defaultLabel?: string;
   multiselect?: boolean;
+  itemType?: string;
 }
 
-const CustomSelect = observer(function CustomSelect({ options, selected, onChange, placeholder = 'Select...', defaultLabel = 'All', multiselect = false }: CustomSelectProps) {
+const CustomSelect = observer(function CustomSelect({ options, itemType, selected, onChange, placeholder = 'Select...', defaultLabel = 'All', multiselect = false }: CustomSelectProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const ref = useRef<HTMLDivElement>(null);
@@ -34,9 +35,17 @@ const CustomSelect = observer(function CustomSelect({ options, selected, onChang
   const safeSelected = Array.isArray(selected) ? selected : [];
   const filteredOptions = options.filter(opt => (typeof opt.label === 'string' ? opt.label.toLowerCase() : '').includes(search.toLowerCase()));
   const isActive = safeSelected.length > 0 && !(safeSelected.length === 1 && safeSelected[0] === defaultLabel);
-  const displayLabel = safeSelected.length === 0 || (safeSelected.length === 1 && safeSelected[0] === defaultLabel)
-    ? defaultLabel
-    : safeSelected.join(', ');
+  let displayLabel: string;
+  if (multiselect && safeSelected.length > 2) {
+    // Exclude 'All' from the count
+    const count = safeSelected.filter(v => v !== 'All').length;
+    let word = itemType ?? 'items';
+    displayLabel = `${count} ${word}`;
+  } else {
+    displayLabel = safeSelected.length === 0 || (safeSelected.length === 1 && safeSelected[0] === defaultLabel)
+      ? defaultLabel
+      : safeSelected.join(', ');
+  }
 
   function toggleOption(value: string) {
     if (value === defaultLabel) {
@@ -60,9 +69,28 @@ const CustomSelect = observer(function CustomSelect({ options, selected, onChang
 
   return (
     <div className={styles.customSelect + (isActive ? ' ' + styles.activeSelect : '')} ref={ref}>
-      <div className={styles.selected} onClick={() => setOpen((o) => !o)}>
+      <div className={styles.selected + (isActive ? ' ' + styles.activeSelect : '')} onClick={() => setOpen((o) => !o)}>
         {displayLabel}
-        <span className={styles.arrow} />
+        {isActive ? (
+          <span
+            className={styles.clearIcon}
+            onClick={e => {
+              e.stopPropagation();
+              if (multiselect) {
+                onChange([defaultLabel]);
+              } else {
+                onChange([defaultLabel]);
+              }
+              setOpen(false);
+            }}
+            title="Clear filter"
+            style={{ cursor: 'pointer', marginLeft: 8, fontWeight: 700, color: '#d72660', fontSize: 18 }}
+          >
+            ×
+          </span>
+        ) : (
+          <span className={styles.arrow} />
+        )}
       </div>
       {open && (
         <div className={styles.dropdown}>

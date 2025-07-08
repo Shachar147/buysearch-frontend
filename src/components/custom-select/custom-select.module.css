@@ -71,15 +71,15 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 15px;
+  font-size: 14px;
   width: 100%;
   cursor: pointer;
   font-weight: 500;
 }
 .checkboxLabel input[type="checkbox"] {
   accent-color: #d72660;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   margin-right: 4px;
 }
 
@@ -111,4 +111,8 @@
   background: #f7e6f0 !important;
   color: #d72660;
   font-weight: 700;
+}
+.activeSelect {
+  background: #f7e6f0 !important;
+  border-color: #d72660 !important;
 } 

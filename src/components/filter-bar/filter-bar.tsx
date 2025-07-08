@@ -56,6 +56,7 @@ const FilterBar = observer(() => {
           onChange={vals => setFilter('brand', vals)}
           defaultLabel="All"
           multiselect
+          itemType="brands"
         />
       </div>
       <div className={styles.filterItem}>
@@ -66,16 +67,18 @@ const FilterBar = observer(() => {
           onChange={vals => setFilter('category', vals)}
           defaultLabel="All"
           multiselect
+          itemType="categories"
         />
       </div>
       <div className={styles.filterItem}>
-        <label className={styles.label}>Colour</label>
+        <label className={styles.label}>Color</label>
         <CustomSelect
           options={[{ label: 'All', value: 'All' }, ...colors.map(toOption)]}
           selected={Array.isArray(selected.color) ? selected.color : [selected.color]}
           onChange={vals => setFilter('color', vals)}
           defaultLabel="All"
           multiselect
+          itemType="colors"
         />
       </div>
       <div className={styles.filterItem}>
@@ -88,7 +91,6 @@ const FilterBar = observer(() => {
             setFilter('priceRange', found);
           }}
           defaultLabel="All"
-        //   multiselect
         />
       </div>
     </div>

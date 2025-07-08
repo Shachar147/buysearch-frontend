@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import styles from './custom-select.module.css';
+import getClasses from '../../utils/get-classes';
 
 interface Option {
   label: string;
@@ -68,8 +69,8 @@ const CustomSelect = observer(function CustomSelect({ options, itemType, selecte
   }
 
   return (
-    <div className={styles.customSelect + (isActive ? ' ' + styles.activeSelect : '')} ref={ref}>
-      <div className={styles.selected + (isActive ? ' ' + styles.activeSelect : '')} onClick={() => setOpen((o) => !o)}>
+    <div className={getClasses([styles.customSelect, isActive && styles.activeSelect])} ref={ref}>
+      <div className={getClasses([styles.selected, isActive && styles.activeSelect])} onClick={() => setOpen((o) => !o)}>
         {displayLabel}
         {isActive ? (
           <span

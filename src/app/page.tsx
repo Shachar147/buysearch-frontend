@@ -28,7 +28,7 @@ function HomePage() {
   return (
     <div className={styles.root}>
       <header className={styles.header}>
-        <span>Buy</span> <span className={styles.headerMen}>Search</span>
+        <span>BUY</span> <span className={styles.headerMen}>SEARCH</span>
       </header>
       <main className={styles.main}>
         <h2 className={styles.title}>Men's Products</h2>

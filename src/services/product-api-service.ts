@@ -60,3 +60,10 @@ export async function fetchProducts(offset = 0, limit = 20, filters: ProductFilt
   const res = await api.get<ProductApiResponse>(`${API_BASE_URL}/products?offset=${offset}&limit=${limit}&${params.toString()}`);
   return res.data;
 }
+
+export async function fetchProductsByIds(ids: number[]): Promise<ProductApi[]> {
+  if (!ids || ids.length === 0) return [];
+  const params = ids.join(',');
+  const res = await api.get<{ data: ProductApi[] }>(`${API_BASE_URL}/products/by-ids?ids=${params}`);
+  return res.data.data;
+}

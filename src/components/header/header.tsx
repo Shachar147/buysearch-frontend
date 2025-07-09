@@ -10,9 +10,10 @@ interface HeaderProps {
     hideSearch?: boolean;
     hideGenderSwitch?: boolean
 }
-const Header = (props: HeaderProps) => {
+const Header = (props: HeaderProps & { onToggleFavourites?: (show: boolean) => void, showFavouritesOnly?: boolean }) => {
 
   const [loggedIn, setLoggedIn] = useState(false);
+  const [showFavourites, setShowFavourites] = useState(false);
 
   useEffect(() => {
     setLoggedIn(isLoggedIn());
@@ -21,6 +22,12 @@ const Header = (props: HeaderProps) => {
   function handleLogout() {
     Cookies.remove('accessToken');
     window.location.reload();
+  }
+
+  function handleToggleFavourites() {
+    const newVal = !showFavourites;
+    setShowFavourites(newVal);
+    if (props.onToggleFavourites) props.onToggleFavourites(newVal);
   }
 
   function renderGenderSwitch(){
@@ -98,9 +105,42 @@ const Header = (props: HeaderProps) => {
       {renderGenderSwitch()}
       {renderSearch()}
       {loggedIn && (
-        <a className={styles.logoutButton} onClick={handleLogout}>
-          Logout
-        </a>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          {/* Heart (favorites) icon */}
+          <span
+            className={getClasses([
+              styles.iconBtn,
+              showFavourites ? styles.heartFilled : undefined
+            ])}
+            title={showFavourites ? 'Show all products' : 'Show only favourites'}
+            onClick={handleToggleFavourites}
+            aria-pressed={showFavourites}
+            role="button"
+            tabIndex={0}
+            style={{ 
+              paddingTop: "6px",
+              paddingInlineEnd: "6px"
+            }}
+          >
+            <svg width="32" height="32" viewBox="0 0 24 24" fill={showFavourites ? 'var(--bs-red-5)' : 'none'} stroke={showFavourites ? 'var(--bs-red-5)' : '#fff'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20.8 4.6c-1.5-1.4-3.9-1.4-5.4 0l-.7.7-.7-.7c-1.5-1.4-3.9-1.4-5.4 0-1.6 1.5-1.6 3.9 0 5.4l6.1 6.1c.2.2.5.2.7 0l6.1-6.1c1.6-1.5 1.6-3.9 0-5.4z"/>
+            </svg>
+          </span>
+          {/* Logout icon */}
+          <span
+            className={getClasses([styles.iconBtn])}
+            title="Logout"
+            onClick={handleLogout}
+            role="button"
+            tabIndex={0}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M16 17l5-5-5-5" />
+              <path d="M21 12H9" />
+              <path d="M12 19v2a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v2" />
+            </svg>
+          </span>
+        </div>
       )}
     </header>
   );

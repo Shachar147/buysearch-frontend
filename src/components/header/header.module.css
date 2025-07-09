@@ -118,6 +118,38 @@
     opacity: 1;
 }
 
+.iconBtn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s;
+  border: none;
+  outline: none;
+  position: relative;
+  padding: 0;
+}
+.iconBtn svg {
+  display: block;
+  margin: auto;
+}
+.iconBtn:hover {
+  background: var(--bs-black-5);
+}
+.heart {
+  /* No border for header heart icon */
+  border: none;
+  background: transparent;
+}
+.heartFilled {
+  background: transparent;
+  border: none;
+}
+
 @media (max-width: 600px) {
   .logo {
     font-size: 18px !important;

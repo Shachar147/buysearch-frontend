@@ -54,18 +54,33 @@ const Header = (props: HeaderProps) => {
     if (props.hideSearch) {
         return;
     }
-
+    const hasSearch = !!filtersStore.selected.search;
     return (
         <div className={styles.headerSearch}>
-        <input
-          className={styles.headerSearchInput}
-          type="text"
-          placeholder="Search for items and brands"
-          aria-label="Search"
-          value={filtersStore.selected.search}
-          onChange={e => filtersStore.setFilter('search', e.target.value)}
-        />
-      </div>
+          <input
+            className={getClasses([
+              styles.headerSearchInput,
+              hasSearch && styles.activeSearchBar
+            ])}
+            type="text"
+            placeholder="Search for items and brands"
+            aria-label="Search"
+            value={filtersStore.selected.search}
+            onChange={e => filtersStore.setFilter('search', e.target.value)}
+            style={{ paddingRight: hasSearch ? 44 : 18 }}
+          />
+          {hasSearch && (
+            <button
+              type="button"
+              className={styles.clearSearchIcon}
+              onClick={() => filtersStore.setFilter('search', '')}
+              title="Clear search"
+              aria-label="Clear search"
+            >
+              ×
+            </button>
+          )}
+        </div>
     )
   }
 

@@ -48,7 +48,7 @@ function HomePage() {
         />
         {!productStore.loading && (!productStore.products || productStore.products.length === 0) && 
             (
-                <div className={getClasses([styles.empty, 'text-headline-6', 'color-gray-7'])}>No items found.</div>
+              <div className={getClasses([styles.empty, 'text-headline-6', 'color-gray-7'])}>No items found.</div>
             )
         }
         {total > 0 && <div className={styles.loadMoreWrapper}>

@@ -2,6 +2,7 @@ import React from 'react';
 import styles from './product-card.module.css';
 import getClasses from '../../utils/get-classes';
 import getSourceLogo from '../../utils/source-logo';
+import { getTimeAgo, formatDateTime } from '../../utils/utils';
 
 export interface ProductCardProps {
   image: string;
@@ -16,11 +17,13 @@ export interface ProductCardProps {
   source?: string;
   isSellingFast?: boolean;
   hasMoreColours?: boolean;
+  updatedAt?: string | Date;
+  createdAt?: string | Date;
 }
 
 const DEFAULT_IMAGE_URL = "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg";
 
-function ProductCard({ image, title, brand, price, oldPrice, currency, colors, url, images = [], source, isSellingFast = false, hasMoreColours = false }: ProductCardProps) {
+function ProductCard({ image, title, brand, price, oldPrice, currency, colors, url, images = [], source, isSellingFast = false, hasMoreColours = false, updatedAt, createdAt }: ProductCardProps) {
   const firstImage = images[0] || image;
   const secondImage = images[1] || images[0] || image;
   const handleClick = () => {
@@ -33,6 +36,7 @@ function ProductCard({ image, title, brand, price, oldPrice, currency, colors, u
   if (oldPrice && price && oldPrice > price) {
     discountPercent = Math.round(((oldPrice - price) / oldPrice) * 100);
   }
+  const timeValue = updatedAt || createdAt;
   return (
     <div
       className={styles.card}
@@ -92,6 +96,15 @@ function ProductCard({ image, title, brand, price, oldPrice, currency, colors, u
         {hasMoreColours && <span className={getClasses([styles.badge, styles.badgeAlt, 'text-body', 'color-black-6'])}>More Colours</span>}
         {isSellingFast && <span className={getClasses([styles.badge, 'text-body', 'color-white'])}>Selling Fast</span>}
       </div>
+      {timeValue && (
+        <div
+          className={getClasses(['text-caption', 'color-gray-5'])}
+          style={{ position: 'absolute', bottom: 8, right: 12, cursor: 'help' }}
+          title={formatDateTime(timeValue)}
+        >
+          {`Updated ${getTimeAgo(timeValue)}`}
+        </div>
+      )}
     </div>
   );
 }

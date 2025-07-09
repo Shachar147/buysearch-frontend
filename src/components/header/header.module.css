@@ -1,17 +1,17 @@
 .header {
   display: flex;
   align-items: center;
-  background: #222;
+  background: var(--bs-black-6);
   height: 56px;
   padding: 0 32px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  box-shadow: var(--bs-shadow-1);
   gap: 16px;
   justify-content: center;
 }
 .logo {
-  font-size: 2rem;
+  font-size: 20px;
   font-weight: 800;
-  color: #fff;
+  color: var(--bs-white);
   letter-spacing: 2px;
   margin-inline-end: 32px;
 }
@@ -22,30 +22,30 @@
   gap: 0;
 }
 .genderOption {
-  color: #fff;
+  color: var(--bs-white);
   opacity: 0.8;
   cursor: pointer;
   padding-inline-start: 36px;
   padding-inline-end: 36px;
-  font-size: 1.1rem;
+  font-size: 14px;
   font-weight: 700;
   text-transform: uppercase;
   height: 56px;
   display: flex;
   align-items: center;
-  background: #222;
+  background: var(--bs-black-6);
   border: none;
   transition: background 0.13s, color 0.13s, opacity 0.13s;
 }
 .genderOptionActive {
-  background: #555;
-  color: #fff;
+  background: var(--bs-black-3);
+  color: var(--bs-white);
   opacity: 1;
 }
 .genderDivider {
   width: 1px;
   height: 32px;
-  background: #333;
+  background: var(--bs-black-5);
   margin: 0;
 }
 .headerSearch {
@@ -61,13 +61,10 @@
   padding: 10px 18px;
   border: none;
   border-radius: 24px;
-  font-size: 1.1rem;
+  font-size: 14px;
   outline: none;
-  background: #fff;
-  color: #222;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  background: var(--bs-white);
+  color: var(--bs-black-6);
+  box-shadow: var(--bs-shadow-3);
   transition: box-shadow 0.18s;
 }
-.headerSearchInput:focus {
-  box-shadow: 0 2px 8px #d7266033, 0 1px 4px rgba(0,0,0,0.08);
-} 

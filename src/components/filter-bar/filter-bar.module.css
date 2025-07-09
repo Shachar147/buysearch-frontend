@@ -2,13 +2,13 @@
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
-  background: #fff;
+  background: var(--bs-white);
   padding-block: 18px;
   padding-inline: 28px;
   border-radius: 12px;
   margin-block-end: 32px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-  border: 1px solid #e0e0e0;
+  box-shadow: var(--bs-shadow-1);
+  border: 1px solid var(--bs-gray-3);
   align-items: center;
   justify-content: flex-start;
   min-height: 64px;
@@ -22,8 +22,8 @@
   width: 100%;
   padding: 8px 16px;
   border-radius: 6px;
-  border: 1px solid #d1d1d1;
-  background: #fafafa;
+  border: 1px solid var(--bs-gray-1);
+  background: var(--bs-gray-0);
   font-size: 16px;
   outline: none;
   transition: border 0.18s;
@@ -32,8 +32,8 @@
 }
 
 .searchInput:focus, .select:focus {
-  border: 1px solid #888;
-  background: #fff;
+  border: 1px solid var(--bs-gray-2);
+  background: var(--bs-white);
 }
 
 .select {
@@ -42,7 +42,7 @@
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  color: #222;
+  color: var(--bs-black-6);
 }
 
 .searchInput {
@@ -51,8 +51,8 @@
   height: 38px;
   padding: 0 16px;
   border-radius: 6px;
-  border: 1px solid #d1d1d1;
-  background: #fafafa;
+  border: 1px solid var(--bs-gray-1);
+  background: var(--bs-gray-0);
   font-size: 16px;
   outline: none;
   transition: border 0.18s;
@@ -73,7 +73,7 @@
 
 .label {
   font-size: 13px;
-  color: #444;
+  color: var(--bs-black-4);
   font-weight: 500;
   margin-block-end: 6px;
   margin-inline-end: 0;

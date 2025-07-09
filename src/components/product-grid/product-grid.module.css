@@ -1,4 +1,3 @@
-/* todo: can we use flexbox instead? */
 .grid {
   display: flex;
   flex-wrap: wrap;

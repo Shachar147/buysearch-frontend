@@ -3,9 +3,10 @@
   flex-wrap: wrap;
   gap: 16px;
   background: #fff;
-  padding: 18px 28px;
+  padding-block: 18px;
+  padding-inline: 28px;
   border-radius: 12px;
-  margin-bottom: 32px;
+  margin-block-end: 32px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.07);
   border: 1px solid #e0e0e0;
   align-items: center;
@@ -64,8 +65,8 @@
   display: flex;
   flex-direction: column;
   min-width: 160px;
-  margin-right: 0;
-  margin-bottom: 0;
+  margin-inline-end: 0;
+  margin-block-end: 0;
   flex: 1 1 160px;
   justify-content: flex-start;
 }
@@ -74,6 +75,6 @@
   font-size: 13px;
   color: #444;
   font-weight: 500;
-  margin-bottom: 6px;
-  margin-right: 0;
+  margin-block-end: 6px;
+  margin-inline-end: 0;
 } 

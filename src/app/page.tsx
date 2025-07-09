@@ -2,11 +2,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import productStore from '../stores/product-store';
-import filtersStore from '../stores/filters-store';
 import ProductGrid from '../components/product-grid/product-grid';
 import FilterBar from '../components/filter-bar/filter-bar';
 import styles from './page.module.css';
-import getClasses from '../utils/get-classes';
+import Header from '../components/header/header';
 
 function HomePage() {
   const [showScrollUp, setShowScrollUp] = useState(false);
@@ -28,43 +27,8 @@ function HomePage() {
 
   return (
     <div className={styles.root}>
-      <header className={styles.header}>
-        <span className={styles.headerLogo}>BUYSEARCH</span>
-        <span className={styles.headerDivider}>|</span>
-        <div className={styles.genderSwitch}>
-          <span
-            className={getClasses([
-              styles.genderOption,
-              filtersStore.selected.gender === 'men' && styles.genderOptionActive,
-            ])}
-            onClick={() => filtersStore.setGender('men')}
-          >
-            Men
-          </span>
-          <span className={styles.headerDivider}>|</span>
-          <span
-            className={getClasses([
-              styles.genderOption,
-              filtersStore.selected.gender === 'women' && styles.genderOptionActive,
-            ])}
-            onClick={() => filtersStore.setGender('women')}
-          >
-            Women
-          </span>
-        </div>
-        <div className={styles.headerSearch}>
-          <input
-            className={styles.headerSearchInput}
-            type="text"
-            placeholder="Search for items and brands"
-            aria-label="Search"
-            value={filtersStore.selected.search}
-            onChange={e => filtersStore.setFilter('search', e.target.value)}
-          />
-        </div>
-      </header>
+      <Header />
       <main className={styles.main}>
-        {/* <h2 className={styles.title}>Men's Products</h2> */}
         <FilterBar />
         <ProductGrid
           products={productStore.products.map((p) => ({

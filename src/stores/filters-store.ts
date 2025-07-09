@@ -18,6 +18,7 @@ export class FiltersStore {
   colors: any[] = [];
   loading = false;
 
+  // todo: move these to a const file and re-use whenever needed
   selected = {
     search: '',
     sort: 'Relevance',

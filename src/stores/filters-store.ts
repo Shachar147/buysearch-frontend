@@ -4,21 +4,13 @@ import { fetchAllCategories } from '../services/category-api-service';
 import { fetchAllColors } from '../services/color-api-service';
 import { parseSearchQuery } from '../services/search-api-service';
 import productStore from './product-store';
-
-function debounce<T extends (...args: any[]) => void>(fn: T, ms: number) {
-  let timeout: ReturnType<typeof setTimeout>;
-  return (...args: Parameters<T>) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => fn(...args), ms);
-  };
-}
+import _ from 'lodash';
 
 export class FiltersStore {
   brands: any[] = [];
   menCategories: any[] = [];
   womenCategories: any[] = [];
   get categories() {
-    console.log("hereee", this.selected.gender);
     return this.selected.gender?.toLowerCase() === 'men' ? this.menCategories : this.womenCategories;
   }
   colors: any[] = [];
@@ -49,15 +41,15 @@ export class FiltersStore {
     });
     this.loadAll();
 
-    // Debounced reaction for search
-    reaction(
-      () => this.selected.search,
-      debounce((search) => {
-        const filters = this.buildFilters();
-        productStore.reset(filters);
-        productStore.loadMore(filters);
-      }, 400)
-    );
+    // // Debounced reaction for search
+    // reaction(
+    //   () => this.selected.search,
+    //   debounce((search) => {
+    //     const filters = this.buildFilters();
+    //     productStore.reset(filters);
+    //     productStore.loadMore(filters);
+    //   }, 400)
+    // );
 
     // Immediate reaction for other filters
     reaction(
@@ -126,10 +118,6 @@ export class FiltersStore {
         this.brands = brands;
         this.menCategories = menCategories.filter((c: any) => !brandNames.has(c.name?.toLowerCase() || c?.toLowerCase?.()) && !brandNamesAliases.includes(c.name?.toLowerCase?.()));
         this.womenCategories = womenCategories.filter((c: any) => !brandNames.has(c.name?.toLowerCase() || c?.toLowerCase?.()) && !brandNamesAliases.includes(c.name?.toLowerCase?.()));
-        console.log("hereee", {
-            men: this.menCategories,
-            women: this.womenCategories
-        })
         this.colors = colors;
       });
     } finally {
@@ -139,10 +127,7 @@ export class FiltersStore {
     }
   }
 
-  setSearchFilter = async (value: any) => {
-    this.selected.search = value;
-      
-    // Debounced: parse search and update filters
+  setSearchFilter = async (value: any) => {  
     const filters = await parseSearchQuery(value);
     if (filters && (
       filters.colors.length ||
@@ -165,9 +150,14 @@ export class FiltersStore {
     }
   }
 
+  debouncedSearch = _.debounce((value) => {
+    void this.setSearchFilter(value)
+  }, 300);
+
   setFilter = async (key: keyof typeof this.selected, value: any) => {
     if (key === 'search') {
-      void this.setSearchFilter(value);
+      this.selected.search = value;
+      this.debouncedSearch(value);
     } else {
       this.selected[key] = value;
     }

@@ -59,10 +59,10 @@ function ProductCard({ image, title, brand, price, oldPrice, currency, colors, u
       <div className={styles['flip-container']}>
         <div className={styles.flipper}>
           <div className={styles.front}>
-            <img src={firstImage} alt={title} className={getClasses([styles.image, 'border-radius-8'])} />
+            <img src={firstImage || "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"} alt={title} className={getClasses([styles.image, 'border-radius-8'])} />
           </div>
           <div className={styles.back}>
-            <img src={secondImage} alt={title + ' alt'} className={getClasses([styles.image, 'border-radius-8'])} />
+            <img src={secondImage || "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"} alt={title + ' alt'} className={getClasses([styles.image, 'border-radius-8'])} />
           </div>
         </div>
       </div>

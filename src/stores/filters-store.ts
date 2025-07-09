@@ -2,6 +2,7 @@ import { makeObservable, observable, action, runInAction, reaction, toJS } from 
 import { fetchAllBrands } from '../services/brand-api-service';
 import { fetchAllCategories } from '../services/category-api-service';
 import { fetchAllColors } from '../services/color-api-service';
+import { parseSearchQuery } from '../services/search-api-service';
 import productStore from './product-store';
 
 function debounce<T extends (...args: any[]) => void>(fn: T, ms: number) {
@@ -125,8 +126,38 @@ export class FiltersStore {
     }
   }
 
-  setFilter = (key: keyof typeof this.selected, value: any) => {
-    this.selected[key] = value;
+  setSearchFilter = async (value: any) => {
+    this.selected.search = value;
+      
+    // Debounced: parse search and update filters
+    const filters = await parseSearchQuery(value);
+    if (filters && (
+      filters.colors.length ||
+      filters.categories.length ||
+      filters.brands.length ||
+      filters.maxPrice !== null ||
+      filters.minPrice !== null ||
+      filters.gender
+    )) {
+      // Apply parsed filters
+      this.selected.color = filters.colors.length ? filters.colors.join(',') : 'All';
+      this.selected.category = filters.categories.length ? filters.categories.join(',') : 'All';
+      this.selected.brand = filters.brands.length ? filters.brands.join(',') : 'All';
+      if (filters.maxPrice !== null || filters.minPrice !== null) {
+        this.selected.priceRange = { label: 'Custom' };
+      } else {
+        this.selected.priceRange = { label: 'All' };
+      }
+      if (filters.gender) this.selected.gender = filters.gender.toLowerCase();
+    }
+  }
+
+  setFilter = async (key: keyof typeof this.selected, value: any) => {
+    if (key === 'search') {
+      void this.setSearchFilter(value);
+    } else {
+      this.selected[key] = value;
+    }
   }
 
   setGender = (gender: string) => {

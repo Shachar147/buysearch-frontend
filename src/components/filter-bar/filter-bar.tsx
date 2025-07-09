@@ -4,6 +4,7 @@ import styles from './filter-bar.module.css';
 import getClasses from '../../utils/get-classes';
 import CustomSelect from '../custom-select/custom-select';
 import filtersStore from '../../stores/filters-store';
+import { ucfirst } from '../../utils/utils';
 
 const sortOptions = [
   { label: 'Relevance', value: 'Relevance' },
@@ -66,7 +67,7 @@ const FilterBar = observer(() => {
       <div className={styles.filterItem}>
         <label className={getClasses([styles.label, 'text-caption'])}>Color</label>
         <CustomSelect
-          options={[{ label: 'All', value: 'All' }, ...colors.map(toOption)]}
+          options={[{ label: 'All', value: 'All' }, ...colors.map(toOption)].map((o) => ({ value: ucfirst(o.value), label: ucfirst(o.label) }))}
           selected={Array.isArray(selected.color) ? selected.color : [selected.color]}
           onChange={vals => setFilter('color', vals)}
           defaultLabel="All"

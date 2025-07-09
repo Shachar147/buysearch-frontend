@@ -43,16 +43,18 @@ export interface ProductFilters {
 
 export async function fetchProducts(offset = 0, limit = 20, filters: ProductFilters = {}): Promise<ProductApiResponse> {
   const params = new URLSearchParams();
-  if (filters.offset !== undefined) params.append('offset', String(filters.offset));
-  if (filters.limit !== undefined) params.append('limit', String(filters.limit));
   if (filters.color && filters.color !== 'All') params.append('color', filters.color);
   if (filters.brand && filters.brand !== 'All') params.append('brand', filters.brand);
   if (filters.category && filters.category !== 'All') params.append('category', filters.category);
   if (filters.priceFrom !== undefined) params.append('priceFrom', String(filters.priceFrom));
   if (filters.priceTo !== undefined) params.append('priceTo', String(filters.priceTo));
-  if (filters.sort && filters.sort !== 'Relevance') params.append('sort', filters.sort);
-  if (filters.search) params.append('search', filters.search);
+
+  if (params.size == 0 && filters.search) params.append('search', filters.search);
+
   if (filters.gender) params.append('gender', filters.gender);
+  if (filters.sort && filters.sort !== 'Relevance') params.append('sort', filters.sort);
+  if (filters.offset !== undefined) params.append('offset', String(filters.offset));
+  if (filters.limit !== undefined) params.append('limit', String(filters.limit));
   const res = await axios.get<ProductApiResponse>(`${API_BASE}/products?offset=${offset}&limit=${limit}&${params.toString()}`);
   return res.data;
 }

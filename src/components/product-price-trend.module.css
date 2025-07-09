@@ -1,0 +1,46 @@
+.trendWrapper {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  margin-left: 8px;
+  cursor: pointer;
+}
+
+.sparkline {
+  display: inline-block;
+  vertical-align: middle;
+  width: 40px;
+  height: 14px;
+}
+
+.trendIcon {
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.tooltip {
+  position: absolute;
+  background: var(--bs-white);
+  border: 1px solid var(--bs-gray-4);
+  border-radius: 6px;
+  box-shadow: var(--bs-shadow-2);
+  padding: 8px;
+  z-index: 10000;
+  min-width: 120px;
+  font-size: 13px;
+  inset-inline-start: 0;
+  top: 20px;
+}
+
+.tooltipList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trendCenter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 8px 0;
+} 

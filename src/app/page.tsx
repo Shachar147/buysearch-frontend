@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import productStore from '../stores/product-store';
 import ProductGrid from '../components/product-grid/product-grid';
@@ -7,6 +7,7 @@ import FilterBar from '../components/filter-bar/filter-bar';
 import styles from './page.module.css';
 import Header from '../components/header/header';
 import getClasses from '../utils/get-classes';
+import ScrollUpButton from '../components/scroll-up-button';
 
 function HomePage() {
   const [showScrollUp, setShowScrollUp] = useState(false);
@@ -66,13 +67,7 @@ function HomePage() {
         {productStore.loading && <div className={styles.message}>Loading...</div>}
         {total > 0 && !productStore.hasNextPage && <div className={styles.message}>No more products.</div>}
         {showScrollUp && (
-          <button
-            className={getClasses([styles.scrollUpBtn, 'text-headline-6', 'color-white'])}
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            aria-label="Scroll to top"
-          >
-            ↑
-          </button>
+          <ScrollUpButton show={showScrollUp} />
         )}
       </main>
     </div>

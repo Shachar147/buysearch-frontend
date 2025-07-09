@@ -21,7 +21,11 @@ const priceRangeOptions = [
   { label: '1000+ ILS', value: '1000+ ILS', from: 1001 },
 ];
 
-const toOption = (v: any) => typeof v === 'string' ? { label: v, value: v } : { label: v.name, value: v.name };
+const toOption = (v: any) => {
+  if (typeof v === 'string') return { label: v, value: v };
+  if (v && typeof v === 'object' && 'name' in v) return { label: v.name, value: v.name };
+  return { label: String(v), value: String(v) };
+};
 
 const FilterBar = observer(() => {
   const { brands, categories, colors, selected, setFilter, loading } = filtersStore;
@@ -29,7 +33,7 @@ const FilterBar = observer(() => {
   return (
     <div className={getClasses([styles.filterBar])}>
       <div className={styles.filterItem}>
-        <label className={styles.label}>Sort</label>
+        <label className={getClasses([styles.label, 'text-caption'])}>Sort</label>
         <CustomSelect
           options={sortOptions}
           selected={[selected.sort || 'Relevance']}
@@ -38,7 +42,7 @@ const FilterBar = observer(() => {
         />
       </div>
       <div className={styles.filterItem}>
-        <label className={styles.label}>Brand</label>
+        <label className={getClasses([styles.label, 'text-caption'])}>Brand</label>
         <CustomSelect
           options={[{ label: 'All', value: 'All' }, ...brands.map(toOption)]}
           selected={Array.isArray(selected.brand) ? selected.brand : [selected.brand]}
@@ -49,7 +53,7 @@ const FilterBar = observer(() => {
         />
       </div>
       <div className={styles.filterItem}>
-        <label className={styles.label}>Category</label>
+        <label className={getClasses([styles.label, 'text-caption'])}>Category</label>
         <CustomSelect
           options={[{ label: 'All', value: 'All' }, ...categories.map(toOption)]}
           selected={Array.isArray(selected.category) ? selected.category : [selected.category]}
@@ -60,7 +64,7 @@ const FilterBar = observer(() => {
         />
       </div>
       <div className={styles.filterItem}>
-        <label className={styles.label}>Color</label>
+        <label className={getClasses([styles.label, 'text-caption'])}>Color</label>
         <CustomSelect
           options={[{ label: 'All', value: 'All' }, ...colors.map(toOption)]}
           selected={Array.isArray(selected.color) ? selected.color : [selected.color]}
@@ -71,12 +75,12 @@ const FilterBar = observer(() => {
         />
       </div>
       <div className={styles.filterItem}>
-        <label className={styles.label}>Price Range</label>
+        <label className={getClasses([styles.label, 'text-caption'])}>Price Range</label>
         <CustomSelect
-          options={priceRangeOptions}
-          selected={selected.priceRange && selected.priceRange.value ? [selected.priceRange.value] : ['All']}
+          options={priceRangeOptions.map(opt => typeof opt === 'object' ? opt : { label: String(opt), value: String(opt) })}
+          selected={selected.priceRange && typeof selected.priceRange === 'object' && 'value' in selected.priceRange && selected.priceRange.value ? [String(selected.priceRange.value)] : ['All']}
           onChange={vals => {
-            const found = priceRangeOptions.find(opt => opt.value === vals[0]) || priceRangeOptions[0];
+            const found = priceRangeOptions.find(opt => (typeof opt === 'object' ? opt.value : opt) === vals[0]) || priceRangeOptions[0];
             setFilter('priceRange', found);
           }}
           defaultLabel="All"

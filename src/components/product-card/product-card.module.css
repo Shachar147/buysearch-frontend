@@ -113,9 +113,12 @@
 }
 
 .title {
-  @apply .text-headline-4 .color-black-6;
+  margin-top: 0;
+  font-weight: 600;
+  font-size: 0.92rem;
   text-align: left;
   margin-bottom: 6px;
+  color: var(--bs-black-6);
   line-height: 1.3;
   min-height: 2.5em;
   max-height: 2.5em;
@@ -123,39 +126,56 @@
   text-overflow: ellipsis;
   white-space: normal;
 }
+
 .brand {
-  @apply .text-headline-6 .color-gray-6;
+  color: var(--bs-gray-6);
+  font-size: 13px;
   margin-bottom: 8px;
   text-align: left;
 }
+
 .priceRow {
   display: flex;
   align-items: flex-end;
   gap: 4px;
   margin-block-end: 4px;
 }
+
 .discountPercent {
-  @apply .text-headline-6 .color-red-5;
+  color: var(--bs-red-5);
+  font-size: 15px;
+  font-weight: 600;
   margin-inline-end: 0;
   margin-block-end: 0;
 }
+
 .price {
-  @apply .text-headline-6 .color-black-6;
+  font-weight: 600;
+  font-size: 1.08rem;
   text-align: left;
+  color: var(--bs-black-6);
   letter-spacing: 0.2px;
   margin: 0;
 }
+
 .oldPrice {
   text-decoration: line-through;
-  @apply .text-headline-6 .color-gray-5;
+  color: var(--bs-gray-5);
   margin-inline-start: 0;
+  font-size: 1rem;
+  font-weight: 400;
 }
+
 .salePrice {
-  @apply .text-headline-6 .color-red-5;
+  color: var(--bs-red-5);
+  font-weight: 600;
+  font-size: 1.08rem;
   margin-inline-start: 4px;
 }
+
 .colors {
-  @apply .text-headline-6 .color-black-4;
+  font-size: 13px;
+  color: var(--bs-black-4);
   text-align: left;
   margin-block-end: 8px;
 }
@@ -168,7 +188,9 @@
 
 .badge {
   background: var(--bs-black-6);
-  @apply .text-headline-6 .color-white;
+  color: var(--bs-white);
+  font-size: 12px;
+  font-weight: 600;
   border-radius: 2px;
   padding-block: 4px;
   padding-inline: 12px;
@@ -176,8 +198,9 @@
   text-transform: uppercase;
   display: inline-block;
 }
+
 .badgeAlt {
   background: var(--bs-gray-1);
-  @apply .color-black-6;
+  color: var(--bs-black-6);
   border: 1px solid var(--bs-gray-5);
 } 

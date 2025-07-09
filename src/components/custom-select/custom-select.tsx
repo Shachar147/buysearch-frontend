@@ -6,6 +6,7 @@ import getClasses from '../../utils/get-classes';
 interface Option {
   label: string;
   value: string;
+  disabled?: boolean;
 }
 
 interface CustomSelectProps {
@@ -70,11 +71,11 @@ const CustomSelect = observer(function CustomSelect({ options, itemType, selecte
 
   return (
     <div className={getClasses([styles.customSelect, isActive && styles.activeSelect])} ref={ref}>
-      <div className={getClasses([styles.selected, isActive && styles.activeSelect])} onClick={() => setOpen((o) => !o)}>
+      <div className={getClasses([styles.selected, isActive && styles.activeSelect, 'text-body'])} onClick={() => setOpen((o) => !o)}>
         {displayLabel}
         {isActive ? (
           <span
-            className={styles.clearIcon}
+            className={getClasses([styles.clearIcon, 'text-body'])}
             onClick={e => {
               e.stopPropagation();
               if (multiselect) {
@@ -96,7 +97,7 @@ const CustomSelect = observer(function CustomSelect({ options, itemType, selecte
       {open && (
         <div className={styles.dropdown}>
           <input
-            className={styles.searchInput}
+            className={getClasses([styles.searchInput, 'text-body'])}
             type="text"
             placeholder={placeholder}
             value={search}
@@ -107,17 +108,23 @@ const CustomSelect = observer(function CustomSelect({ options, itemType, selecte
             {filteredOptions.map((opt, idx) => (
               <li
                 key={opt.value || opt.label || idx}
-                className={safeSelected.includes(opt.value) ? styles.active : ''}
-                onClick={!multiselect ? () => selectSingle(opt.value) : undefined}
+                className={getClasses([
+                  safeSelected.includes(opt.value) ? styles.active : '',
+                  'text-body',
+                  opt.disabled && 'text-disabled',
+                ])}
+                onClick={!multiselect && !opt.disabled ? () => selectSingle(opt.value) : undefined}
                 style={!multiselect ? { cursor: 'pointer' } : {}}
+                aria-disabled={opt.disabled}
               >
                 {multiselect ? (
-                  <label className={styles.checkboxLabel}>
+                  <label className={getClasses([styles.checkboxLabel, 'text-body', opt.disabled && 'text-disabled'])}>
                     <input
                       type="checkbox"
                       checked={safeSelected.includes(opt.value)}
-                      onChange={() => toggleOption(opt.value)}
+                      onChange={() => !opt.disabled && toggleOption(opt.value)}
                       onClick={e => e.stopPropagation()}
+                      disabled={opt.disabled}
                     />
                     <span>{opt.label}</span>
                   </label>

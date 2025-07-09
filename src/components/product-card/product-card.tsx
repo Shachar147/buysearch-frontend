@@ -1,8 +1,10 @@
 import React from 'react';
+import { observer } from 'mobx-react-lite';
 import styles from './product-card.module.css';
 import getClasses from '../../utils/get-classes';
 import getSourceLogo from '../../utils/source-logo';
 import { getTimeAgo, formatDateTime } from '../../utils/utils';
+import favouritesStore from '../../stores/favourites-store';
 
 export interface ProductCardProps {
   image: string;
@@ -19,11 +21,15 @@ export interface ProductCardProps {
   hasMoreColours?: boolean;
   updatedAt?: string | Date;
   createdAt?: string | Date;
+  productId: number;
+  isFavourite?: boolean;
 }
 
 const DEFAULT_IMAGE_URL = "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg";
 
-function ProductCard({ image, title, brand, price, oldPrice, currency, colors, url, images = [], source, isSellingFast = false, hasMoreColours = false, updatedAt, createdAt }: ProductCardProps) {
+const ProductCard = observer(({
+  image, title, brand, price, oldPrice, currency, colors, url, images = [], source, isSellingFast = false, hasMoreColours = false, updatedAt, createdAt, productId, isFavourite
+}: ProductCardProps) => {
   const firstImage = images[0] || image;
   const secondImage = images[1] || images[0] || image;
   const handleClick = () => {
@@ -37,6 +43,19 @@ function ProductCard({ image, title, brand, price, oldPrice, currency, colors, u
     discountPercent = Math.round(((oldPrice - price) / oldPrice) * 100);
   }
   const timeValue = updatedAt || createdAt;
+
+  const fav = favouritesStore.isFavourite(productId);
+
+  const handleHeartClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (fav) {
+      await favouritesStore.removeFavourite(productId);
+    } else {
+      await favouritesStore.addFavourite(productId);
+    }
+  };
+
   return (
     <div
       className={styles.card}
@@ -58,8 +77,20 @@ function ProductCard({ image, title, brand, price, oldPrice, currency, colors, u
         />
       )}
       {/* Heart icon */}
-      <span className={styles.heart} title="Add to wishlist">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#222" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.8 4.6c-1.5-1.4-3.9-1.4-5.4 0l-.7.7-.7-.7c-1.5-1.4-3.9-1.4-5.4 0-1.6 1.5-1.6 3.9 0 5.4l6.1 6.1c.2.2.5.2.7 0l6.1-6.1c1.6-1.5 1.6-3.9 0-5.4z"/></svg>
+      <span
+        className={getClasses([
+          styles.heart,
+          fav && styles.heartFilled
+        ])}
+        title={fav ? 'Remove from wishlist' : 'Add to wishlist'}
+        onClick={handleHeartClick}
+        aria-pressed={fav}
+        role="button"
+        tabIndex={0}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill={fav ? 'var(--bs-red-5)' : 'none'} stroke={fav ? 'var(--bs-red-5)' : '#222'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20.8 4.6c-1.5-1.4-3.9-1.4-5.4 0l-.7.7-.7-.7c-1.5-1.4-3.9-1.4-5.4 0-1.6 1.5-1.6 3.9 0 5.4l6.1 6.1c.2.2.5.2.7 0l6.1-6.1c1.6-1.5 1.6-3.9 0-5.4z"/>
+        </svg>
       </span>
       {/* Flip image */}
       <div className={styles['flip-container']}>
@@ -107,6 +138,6 @@ function ProductCard({ image, title, brand, price, oldPrice, currency, colors, u
       )}
     </div>
   );
-}
+});
 
 export default ProductCard; 

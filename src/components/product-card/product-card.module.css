@@ -204,4 +204,13 @@
   background: var(--bs-gray-1);
   color: var(--bs-black-6);
   border: 1px solid var(--bs-gray-5);
+}
+
+.heartFilled {
+  background: var(--bs-red-1);
+  border: 1px solid var(--bs-red-5);
+}
+.heartFilled svg path {
+  fill: var(--bs-red-5);
+  stroke: var(--bs-red-5);
 } 

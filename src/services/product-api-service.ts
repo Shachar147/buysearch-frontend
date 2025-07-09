@@ -16,6 +16,8 @@ export interface ProductApi {
   categories: { id: number; name: string }[];
   gender: string;
   source: { id: number; name: string } | null;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
 
 export interface ProductApiResponse {

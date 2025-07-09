@@ -43,7 +43,10 @@ function HomePage() {
             colors: p.colors.map((c) => c.name),
             url: p.url,
             images: p.images,
-            source: p.source?.name
+            source: p.source?.name,
+            updatedAt: p.updatedAt,
+            createdAt: p.createdAt,
+            productId: p.id
           }))}
         />
         {!productStore.loading && (!productStore.products || productStore.products.length === 0) && 

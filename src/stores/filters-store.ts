@@ -6,6 +6,42 @@ import { parseSearchQuery } from '../services/search-api-service';
 import productStore from './product-store';
 import _ from 'lodash';
 
+// Add a type for price range options
+export interface PriceRangeOption {
+  label: string;
+  value: string;
+  from?: number;
+  to?: number;
+}
+
+export const priceRangeOptions: PriceRangeOption[] = [
+  { label: 'All', value: 'All' },
+  { label: 'Up to 100 ILS', value: 'Up to 100 ILS', to: 100 },
+  { label: '100-150 ILS', value: '100-150 ILS', from: 100, to: 150 },
+  { label: '151-200 ILS', value: '151-200 ILS', from: 151, to: 200 },
+  { label: '201-300 ILS', value: '201-300 ILS', from: 201, to: 300 },
+  { label: '301-600 ILS', value: '301-600 ILS', from: 301, to: 600 },
+  { label: '601-1000 ILS', value: '601-1000 ILS', from: 601, to: 1000 },
+  { label: '1000+ ILS', value: '1000+ ILS', from: 1001 },
+  { label: 'Custom', value: 'Custom' },
+];
+
+export function getPriceRangeOption(minPrice: number | null, maxPrice: number | null) {
+  for (const option of priceRangeOptions) {
+    if (option.label === 'All') {
+      if (minPrice === null && maxPrice === null) return option;
+      continue;
+    }
+    if (
+      (option.from === undefined || option.from === minPrice) &&
+      (option.to === undefined || option.to === maxPrice)
+    ) {
+      return option;
+    }
+  }
+  return { label: 'Custom', from: minPrice, to: maxPrice };
+}
+
 export class FiltersStore {
   brands: any[] = [];
   menCategories: any[] = [];
@@ -42,25 +78,22 @@ export class FiltersStore {
 
     this.loadAll();
 
-    // // Debounced reaction for search
-    // reaction(
-    //   () => this.selected.search,
-    //   debounce((search) => {
-    //     const filters = this.buildFilters();
-    //     productStore.reset(filters);
-    //     productStore.loadMore(filters);
-    //   }, 400)
-    // );
-
     // Immediate reaction for other filters
     reaction(
-      () => [this.selected.sort, this.selected.brand, this.selected.category, this.selected.color, toJS(this.selected.priceRange)],
+      () => [this.selected.sort, this.selected.brand, this.selected.category, this.selected.color],
       () => {
         const filters = this.buildFilters();
         productStore.reset(filters);
         productStore.loadMore(filters);
       }
     );
+
+    reaction(
+      () => [toJS(this.selected.priceRange)],
+      () => {
+        this.debouncedFilterChange();
+      }
+    )
   }
 
   buildFilters() {
@@ -92,15 +125,8 @@ export class FiltersStore {
       filters.color = selected.color;
     }
     // Handle priceRange
-    if (Array.isArray(selected.priceRange)) {
-      const ranges = selected.priceRange.filter((p: any) => p !== 'All');
-      if (ranges.length > 0) filters.priceRange = ranges.join(',');
-    } else if (selected.priceRange && (typeof selected.priceRange === 'object')) {
-      const value = 'value' in selected.priceRange ? selected.priceRange.value : selected.priceRange.label;
-      if (value !== 'All') {
-        filters.priceRange = value;
-      }
-    }
+    filters.priceFrom = typeof selected.priceRange === 'object' && 'from' in selected.priceRange ? selected.priceRange.from : undefined;
+    filters.priceTo = typeof selected.priceRange === 'object' && 'to' in selected.priceRange ? selected.priceRange.to : undefined;
     return filters;
   }
 
@@ -142,10 +168,25 @@ export class FiltersStore {
       this.selected.color = filters.colors.length ? filters.colors.join(',') : 'All';
       this.selected.category = filters.categories.length ? filters.categories.join(',') : 'All';
       this.selected.brand = filters.brands.length ? filters.brands.join(',') : 'All';
-      if (filters.maxPrice !== null || filters.minPrice !== null) {
-        this.selected.priceRange = { label: 'Custom' };
+      const priceRange = getPriceRangeOption(filters.minPrice, filters.maxPrice);
+      if (priceRange.label === 'Custom' || priceRange.label.startsWith('Custom')) {
+        // Only set a custom label if the range is not a built-in option
+        const min = filters.minPrice === null ? 0 : filters.minPrice;
+        const max = filters.maxPrice === null ? 2000 : filters.maxPrice;
+        if (!priceRangeOptions.some(opt => opt.from === min && opt.to === max)) {
+          const customRange: PriceRangeOption = {
+            label: `Custom: ${min} - ${max} ILS`,
+            value: 'Custom',
+            from: min,
+            to: max,
+          };
+          this.selected.priceRange = customRange;
+        } else {
+          // Use the default 'Custom' label
+          this.selected.priceRange = priceRangeOptions.find(opt => opt.value === 'Custom') || priceRange;
+        }
       } else {
-        this.selected.priceRange = { label: 'All' };
+        this.selected.priceRange = priceRange;
       }
       if (filters.gender) this.selected.gender = filters.gender.toLowerCase();
     }
@@ -154,6 +195,12 @@ export class FiltersStore {
   debouncedSearch = _.debounce((value) => {
     void this.setSearchFilter(value)
   }, 300);
+
+  debouncedFilterChange = _.debounce(() => {
+    const filters = this.buildFilters();
+    productStore.reset(filters);
+    productStore.loadMore(filters);
+  }, 600);
 
   setFilter = async (key: keyof typeof this.selected, value: any) => {
     if (key === 'search') {

@@ -17,9 +17,10 @@ interface CustomSelectProps {
   defaultLabel?: string;
   multiselect?: boolean;
   itemType?: string;
+  renderCustomContent?: (() => React.ReactNode) | undefined;
 }
 
-const CustomSelect = observer(function CustomSelect({ options, itemType, selected, onChange, placeholder = 'Select...', defaultLabel = 'All', multiselect = false }: CustomSelectProps) {
+const CustomSelect = observer(function CustomSelect({ options, itemType, selected, onChange, placeholder = 'Select...', defaultLabel = 'All', multiselect = false, renderCustomContent }: CustomSelectProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const ref = useRef<HTMLDivElement>(null);
@@ -37,12 +38,21 @@ const CustomSelect = observer(function CustomSelect({ options, itemType, selecte
   const safeSelected = Array.isArray(selected) ? selected : [];
   const filteredOptions = options.filter(opt => (typeof opt.label === 'string' ? opt.label.toLowerCase() : '').includes(search.toLowerCase()));
   const isActive = safeSelected.length > 0 && !(safeSelected.length === 1 && safeSelected[0] === defaultLabel);
+  const customSelected = safeSelected.length === 1 && (safeSelected[0].toLowerCase().startsWith('custom') || safeSelected[0] === 'Custom');
   let displayLabel: string;
   if (multiselect && safeSelected.length > 2) {
     // Exclude 'All' from the count
     const count = safeSelected.filter(v => v !== 'All').length;
     let word = itemType ?? 'items';
     displayLabel = `${count} ${word}`;
+  } else if (customSelected && options) {
+    // Try to find the custom option and show its label if it contains a range
+    const customOpt = options.find(opt => opt.value === 'Custom');
+    if (customOpt && typeof customOpt.label === 'string' && customOpt.label.toLowerCase().startsWith('custom:')) {
+      displayLabel = customOpt.label;
+    } else {
+      displayLabel = 'Custom';
+    }
   } else {
     displayLabel = safeSelected.length === 0 || (safeSelected.length === 1 && safeSelected[0] === defaultLabel)
       ? defaultLabel
@@ -65,6 +75,11 @@ const CustomSelect = observer(function CustomSelect({ options, itemType, selecte
   }
 
   function selectSingle(value: string) {
+    if (value === 'Custom') {
+      onChange([value]);
+      // Do not close dropdown for custom
+      return;
+    }
     onChange([value]);
     setOpen(false);
   }
@@ -134,6 +149,9 @@ const CustomSelect = observer(function CustomSelect({ options, itemType, selecte
               </li>
             ))}
           </ul>
+          {renderCustomContent && customSelected && (
+            <div className={styles.customContentContainer}>{renderCustomContent()}</div>
+          )}
         </div>
       )}
     </div>

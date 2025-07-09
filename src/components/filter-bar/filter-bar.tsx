@@ -4,22 +4,15 @@ import styles from './filter-bar.module.css';
 import getClasses from '../../utils/get-classes';
 import CustomSelect from '../custom-select/custom-select';
 import filtersStore from '../../stores/filters-store';
+import { priceRangeOptions } from '../../stores/filters-store';
 import { ucfirst } from '../../utils/utils';
+import Slider from 'rc-slider';
+import 'rc-slider/assets/index.css';
 
 const sortOptions = [
   { label: 'Relevance', value: 'Relevance' },
   { label: 'Price: Low to High', value: 'Price: Low to High' },
   { label: 'Price: High to Low', value: 'Price: High to Low' },
-];
-const priceRangeOptions = [
-  { label: 'All', value: 'All' },
-  { label: 'Up to 100 ILS', value: 'Up to 100 ILS', to: 100 },
-  { label: '100-150 ILS', value: '100-150 ILS', from: 100, to: 150 },
-  { label: '151-200 ILS', value: '151-200 ILS', from: 151, to: 200 },
-  { label: '201-300 ILS', value: '201-300 ILS', from: 201, to: 300 },
-  { label: '301-600 ILS', value: '301-600 ILS', from: 301, to: 600 },
-  { label: '601-1000 ILS', value: '601-1000 ILS', from: 601, to: 1000 },
-  { label: '1000+ ILS', value: '1000+ ILS', from: 1001 },
 ];
 
 const toOption = (v: any) => {
@@ -30,6 +23,13 @@ const toOption = (v: any) => {
 
 const FilterBar = observer(() => {
   const { brands, categories, colors, selected, setFilter, loading } = filtersStore;
+  const isCustom = selected.priceRange && typeof selected.priceRange === 'object' && selected.priceRange.label && selected.priceRange.label.startsWith('Custom');
+  const min = 0;
+  const max = 2000;
+  const step = 10;
+  const from = typeof selected.priceRange === 'object' && 'from' in selected.priceRange && typeof selected.priceRange.from === 'number' ? selected.priceRange.from : min;
+  const to = typeof selected.priceRange === 'object' && 'to' in selected.priceRange && typeof selected.priceRange.to === 'number' ? selected.priceRange.to : max;
+  const sliderValue: [number, number] = [from, to];
 
   return (
     <div className={getClasses([styles.filterBar])}>
@@ -78,13 +78,47 @@ const FilterBar = observer(() => {
       <div className={styles.filterItem}>
         <label className={getClasses([styles.label, 'text-caption'])}>Price Range</label>
         <CustomSelect
-          options={priceRangeOptions.map(opt => typeof opt === 'object' ? opt : { label: String(opt), value: String(opt) })}
+          options={priceRangeOptions.map(opt => typeof opt === 'object' ? {
+            ...opt,
+            label: opt.label === 'Custom' && typeof selected.priceRange === 'object' && 'from' in selected.priceRange && 'to' in selected.priceRange && typeof selected.priceRange.from === 'number' && typeof selected.priceRange.to === 'number'
+              ? `Custom: ${selected.priceRange.from} - ${selected.priceRange.to} ILS`
+              : opt.label
+          } : { label: String(opt), value: String(opt) })}
           selected={selected.priceRange && typeof selected.priceRange === 'object' && 'value' in selected.priceRange && selected.priceRange.value ? [String(selected.priceRange.value)] : ['All']}
           onChange={vals => {
             const found = priceRangeOptions.find(opt => (typeof opt === 'object' ? opt.value : opt) === vals[0]) || priceRangeOptions[0];
             setFilter('priceRange', found);
           }}
           defaultLabel="All"
+          renderCustomContent={() => (
+            <div className={styles.sliderContainer}>
+              <Slider
+                range
+                min={min}
+                max={max}
+                step={step}
+                value={sliderValue}
+                onChange={(val) => {
+                  if (Array.isArray(val) && val.length === 2) {
+                    setFilter('priceRange', { label: `Custom: ${val[0]} - ${val[1]} ILS`, from: val[0], to: val[1], value: 'Custom' });
+                  }
+                }}
+                allowCross={false}
+                trackStyle={[{ backgroundColor: 'var(--bs-red-5)', height: 6, paddingInline: '20px' }]}
+                handleStyle={[
+                  { borderColor: 'var(--bs-red-5)', backgroundColor: 'var(--bs-white)', boxShadow: '0 0 0 2px var(--bs-red-1)', height: 22, width: 22 },
+                  { borderColor: 'var(--bs-red-5)', backgroundColor: 'var(--bs-white)', boxShadow: '0 0 0 2px var(--bs-red-1)', height: 22, width: 22 }
+                ]}
+                railStyle={{ backgroundColor: 'var(--bs-gray-2)', height: 6,  width: 'CALC(100% - 20px)' }}
+                className={styles.slider}
+                style={{ paddingInline: '20px' }}
+              />
+              <div className={styles.sliderValueLabels}>
+                <span>{sliderValue[0]} ILS</span>
+                <span>{sliderValue[1]} ILS</span>
+              </div>
+            </div>
+          )}
         />
       </div>
     </div>

@@ -79,8 +79,6 @@
 } 
 
 .empty {
-  font-size: var(--text-headline-6-size);
-  font-weight: var(--text-headline-6-weight);
   color: var(--bs-gray-7);
   display: flex;
   align-items: center;

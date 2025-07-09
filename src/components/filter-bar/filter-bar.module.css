@@ -77,4 +77,35 @@
   font-weight: 500;
   margin-block-end: 6px;
   margin-inline-end: 0;
+}
+
+.sliderContainer {
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 16px 20px 10px 20px;
+}
+
+.sliderTrack {
+  background-color: var(--bs-red-5);
+  height: 6px;
+}
+
+.sliderHandle {
+  border-color: var(--bs-red-5);
+  background-color: var(--bs-white);
+  box-shadow: 0 0 0 2px var(--bs-red-1);
+  height: 22px;
+  width: 22px;
+}
+
+.sliderRail {
+  background-color: var(--bs-gray-2);
+  height: 6px;
+}
+
+.sliderValueLabels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 13px;
 } 

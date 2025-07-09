@@ -63,8 +63,9 @@
 }
 
 .heart svg {
-  display: block;
-  margin: auto;
+  position: relative;
+  top: 2px;
+  inset-inline-end: 2px;
 }
 
 .flip-container {

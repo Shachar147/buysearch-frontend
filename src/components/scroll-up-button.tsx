@@ -22,11 +22,11 @@ const ScrollUpButton: React.FC<ScrollUpButtonProps> = ({ show }) => {
 
   return (
     <button
-      className={getClasses([styles.scrollUpBtn, 'text-body', 'color-white'])}
+      className={getClasses([styles.scrollUpBtn, 'text-headline-4', 'color-white'])}
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
       aria-label="Scroll to top"
     >
-      ↑
+      ⌃
     </button>
   );
 };

@@ -61,6 +61,7 @@ export class FiltersStore {
     color: 'All',
     priceRange: { label: 'All' },
     gender: 'men',
+    isFavourite: false,
   };
 
   constructor() {
@@ -127,6 +128,8 @@ export class FiltersStore {
     // Handle priceRange
     filters.priceFrom = typeof selected.priceRange === 'object' && 'from' in selected.priceRange ? selected.priceRange.from : undefined;
     filters.priceTo = typeof selected.priceRange === 'object' && 'to' in selected.priceRange ? selected.priceRange.to : undefined;
+    // Handle isFavourite
+    if (selected.isFavourite) filters.isFavourite = true;
     return filters;
   }
 

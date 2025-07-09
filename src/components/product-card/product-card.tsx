@@ -5,6 +5,10 @@ import getClasses from '../../utils/get-classes';
 import getSourceLogo from '../../utils/source-logo';
 import { getTimeAgo, formatDateTime } from '../../utils/utils';
 import favouritesStore from '../../stores/favourites-store';
+import filtersStore from '../../stores/filters-store';
+import productStore from '../../stores/product-store';
+import { runInAction } from 'mobx';
+import ProductPriceTrend from '../product-price-trend';
 
 export interface ProductCardProps {
   image: string;
@@ -23,12 +27,13 @@ export interface ProductCardProps {
   createdAt?: string | Date;
   productId: number;
   isFavourite?: boolean;
+  priceHistory?: { price: number; date: string }[];
 }
 
 const DEFAULT_IMAGE_URL = "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg";
 
 const ProductCard = observer(({
-  image, title, brand, price, oldPrice, currency, colors, url, images = [], source, isSellingFast = false, hasMoreColours = false, updatedAt, createdAt, productId, isFavourite
+  image, title, brand, price, oldPrice, currency, colors, url, images = [], source, isSellingFast = false, hasMoreColours = false, updatedAt, createdAt, productId, isFavourite, priceHistory: externalPriceHistory
 }: ProductCardProps) => {
   const firstImage = images[0] || image;
   const secondImage = images[1] || images[0] || image;
@@ -51,9 +56,50 @@ const ProductCard = observer(({
     e.stopPropagation();
     if (fav) {
       await favouritesStore.removeFavourite(productId);
+      if (filtersStore.selected.isFavourite) {
+        runInAction(() => {
+          productStore.products = productStore.products.filter((p) => p.id != productId)
+          productStore.total -= 1;
+        });
+      }
     } else {
       await favouritesStore.addFavourite(productId);
     }
+  };
+
+  // Use priceHistory prop only (from productStore)
+  const priceHistory = (externalPriceHistory && externalPriceHistory.length > 0)
+    ? externalPriceHistory
+    : [{ price: price ?? 0, date: createdAt?.toString() || new Date().toISOString() }];
+
+  // Determine price trend
+  let trend: 'up' | 'down' | 'none' = 'none';
+  if (priceHistory.length >= 2) {
+    if (priceHistory[priceHistory.length - 1].price > priceHistory[priceHistory.length - 2].price) trend = 'up';
+    else if (priceHistory[priceHistory.length - 1].price < priceHistory[priceHistory.length - 2].price) trend = 'down';
+  }
+
+  // Render sparkline SVG
+  const renderSparkline = () => {
+    if (priceHistory.length < 2) return null;
+    const max = Math.max(...priceHistory.map(h => h.price));
+    const min = Math.min(...priceHistory.map(h => h.price));
+    const w = 48, h = 18;
+    const points = priceHistory.map((p, i) => {
+      const x = (w / (priceHistory.length - 1)) * i;
+      const y = h - ((p.price - min) / (max - min || 1)) * h;
+      return `${x},${y}`;
+    }).join(' ');
+    return (
+      <svg width={w} height={h} style={{ marginLeft: 4, verticalAlign: 'middle' }}>
+        <polyline
+          fill="none"
+          stroke="#d72660"
+          strokeWidth="2"
+          points={points}
+        />
+      </svg>
+    );
   };
 
   return (
@@ -118,6 +164,8 @@ const ProductCard = observer(({
           ) : (
             <span>{price !== null ? `${price} ${currency}` : 'N/A'}</span>
           )}
+          {/* Price trend sparkline and tooltip */}
+          <ProductPriceTrend history={priceHistory} />
         </div>
       </div>
       <div className={getClasses([styles.colors, 'text-body', 'color-black-4'])}>

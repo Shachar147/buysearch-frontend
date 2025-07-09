@@ -13,6 +13,10 @@ const sortOptions = [
   { label: 'Relevance', value: 'Relevance' },
   { label: 'Price: Low to High', value: 'Price: Low to High' },
   { label: 'Price: High to Low', value: 'Price: High to Low' },
+  { label: 'Created: Newest First', value: 'Created: Newest First' },
+  { label: 'Created: Oldest First', value: 'Created: Oldest First' },
+  { label: 'Updated: Newest First', value: 'Updated: Newest First' },
+  { label: 'Updated: Oldest First', value: 'Updated: Oldest First' },
 ];
 
 const toOption = (v: any) => {

@@ -8,10 +8,70 @@ import styles from './page.module.css';
 import Header from '../components/header/header';
 import getClasses from '../utils/get-classes';
 import ScrollUpButton from '../components/scroll-up-button';
-import filtersStore from '../stores/filters-store';
+import filtersStore, { filtersToQueryString, queryStringToFilters } from '../stores/filters-store';
+import { toJS, reaction } from 'mobx';
 
 function HomePage() {
   const [showScrollUp, setShowScrollUp] = useState(false);
+
+  // On mount, read filters from hash if present
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash.startsWith('#?')) {
+      try {
+        const hash = window.location.hash.slice(2);
+        const parsed = queryStringToFilters(hash);
+        Object.assign(filtersStore.selected, parsed);
+        // Ensure isFavourite and gender are set as expected
+        if (typeof parsed.isFavourite !== 'undefined') {
+          if (Array.isArray(parsed.isFavourite)) {
+            filtersStore.selected.isFavourite = parsed.isFavourite.includes('true');
+          } else {
+            filtersStore.selected.isFavourite = parsed.isFavourite === 'true' || parsed.isFavourite === true;
+          }
+        }
+        if (typeof parsed.gender === 'string') {
+          filtersStore.selected.gender = parsed.gender;
+        } else if (Array.isArray(parsed.gender) && typeof parsed.gender[0] === 'string') {
+          filtersStore.selected.gender = parsed.gender[0];
+        }
+      } catch (e) { /* ignore */ }
+    }
+  }, []);
+
+  // When filters change, update the hash
+  useEffect(() => {
+    const disposer = reaction(
+      () => toJS(filtersStore.selected),
+      (selected) => {
+        if (typeof window !== 'undefined') {
+          const query = filtersToQueryString(selected);
+          window.location.hash = query ? '?' + query : '';
+        }
+      }
+    );
+    return () => disposer();
+  }, []);
+
+  // Handler for toggling favourites (heart icon)
+  const handleToggleFavourites = (val: boolean) => {
+    filtersStore.selected.isFavourite = val;
+    filtersStore.debouncedFilterChange();
+    // Update hash immediately
+    if (typeof window !== 'undefined') {
+      const query = filtersToQueryString(filtersStore.selected);
+      window.location.hash = query ? '?' + query : '';
+    }
+  };
+
+  // Handler for gender switch
+  const handleGenderSwitch = (gender: string) => {
+    filtersStore.setGender(gender);
+    // Update hash immediately
+    if (typeof window !== 'undefined') {
+      const query = filtersToQueryString(filtersStore.selected);
+      window.location.hash = query ? '?' + query : '';
+    }
+  };
 
   useEffect(() => {
     productStore.loadMore();
@@ -32,7 +92,7 @@ function HomePage() {
     <div className={styles.root}>
       <Header
         showFavouritesOnly={filtersStore.selected.isFavourite}
-        onToggleFavourites={(val) => { filtersStore.selected.isFavourite = val; filtersStore.debouncedFilterChange(); }}
+        onToggleFavourites={handleToggleFavourites}
       />
       <main className={styles.main}>
         <FilterBar />

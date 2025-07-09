@@ -8,9 +8,12 @@ import Cookies from 'js-cookie';
 
 interface HeaderProps {
     hideSearch?: boolean;
-    hideGenderSwitch?: boolean
+    hideGenderSwitch?: boolean;
+    onGenderSwitch?: (gender: string) => void;
+    onToggleFavourites?: (show: boolean) => void;
+    showFavouritesOnly?: boolean;
 }
-const Header = (props: HeaderProps & { onToggleFavourites?: (show: boolean) => void, showFavouritesOnly?: boolean }) => {
+const Header = (props: HeaderProps) => {
 
   const [loggedIn, setLoggedIn] = useState(false);
   const [showFavourites, setShowFavourites] = useState(false);
@@ -43,7 +46,10 @@ const Header = (props: HeaderProps & { onToggleFavourites?: (show: boolean) => v
             'color-white',
             filtersStore.selected.gender === 'women' && styles.genderOptionActive,
           ])}
-          onClick={() => filtersStore.setGender('women')}
+          onClick={() => {
+            filtersStore.setGender('women');
+            if (props.onGenderSwitch) props.onGenderSwitch('women');
+          }}
         >
           WOMEN
         </span>
@@ -55,7 +61,10 @@ const Header = (props: HeaderProps & { onToggleFavourites?: (show: boolean) => v
             'color-white',
             filtersStore.selected.gender === 'men' && styles.genderOptionActive,
           ])}
-          onClick={() => filtersStore.setGender('men')}
+          onClick={() => {
+            filtersStore.setGender('men');
+            if (props.onGenderSwitch) props.onGenderSwitch('men');
+          }}
         >
           MEN
         </span>
@@ -107,14 +116,16 @@ const Header = (props: HeaderProps & { onToggleFavourites?: (show: boolean) => v
       {loggedIn && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           {/* Heart (favorites) icon */}
-          <span
+          {!props.hideGenderSwitch && <span
             className={getClasses([
               styles.iconBtn,
-              showFavourites ? styles.heartFilled : undefined
+              props.showFavouritesOnly ? styles.heartFilled : undefined
             ])}
-            title={showFavourites ? 'Show all products' : 'Show only favourites'}
-            onClick={handleToggleFavourites}
-            aria-pressed={showFavourites}
+            title={props.showFavouritesOnly ? 'Show all products' : 'Show only favourites'}
+            onClick={() => {
+              if (props.onToggleFavourites) props.onToggleFavourites(!props.showFavouritesOnly);
+            }}
+            aria-pressed={props.showFavouritesOnly}
             role="button"
             tabIndex={0}
             style={{ 
@@ -122,12 +133,12 @@ const Header = (props: HeaderProps & { onToggleFavourites?: (show: boolean) => v
               paddingInlineEnd: "6px"
             }}
           >
-            <svg width="32" height="32" viewBox="0 0 24 24" fill={showFavourites ? 'var(--bs-red-5)' : 'none'} stroke={showFavourites ? 'var(--bs-red-5)' : '#fff'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill={props.showFavouritesOnly ? 'var(--bs-red-5)' : 'none'} stroke={props.showFavouritesOnly ? 'var(--bs-red-5)' : '#fff'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20.8 4.6c-1.5-1.4-3.9-1.4-5.4 0l-.7.7-.7-.7c-1.5-1.4-3.9-1.4-5.4 0-1.6 1.5-1.6 3.9 0 5.4l6.1 6.1c.2.2.5.2.7 0l6.1-6.1c1.6-1.5 1.6-3.9 0-5.4z"/>
             </svg>
-          </span>
+          </span>}
           {/* Logout icon */}
-          <span
+          {!props.hideGenderSwitch && <span
             className={getClasses([styles.iconBtn])}
             title="Logout"
             onClick={handleLogout}
@@ -139,7 +150,7 @@ const Header = (props: HeaderProps & { onToggleFavourites?: (show: boolean) => v
               <path d="M21 12H9" />
               <path d="M12 19v2a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v2" />
             </svg>
-          </span>
+          </span>}
         </div>
       )}
     </header>

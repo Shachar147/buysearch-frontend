@@ -42,6 +42,51 @@ export function getPriceRangeOption(minPrice: number | null, maxPrice: number | 
   return { label: 'Custom', from: minPrice, to: maxPrice };
 }
 
+// --- URL hash sync helpers ---
+export function filtersToQueryString(filters: Record<string, any>): string {
+  const params = new URLSearchParams();
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === '' || value === 'All' || (Array.isArray(value) && value.length === 0)) return;
+    if (Array.isArray(value)) {
+      value.forEach((v) => {
+        if (v !== 'All' && v !== undefined && v !== null && v !== '') params.append(key, String(v));
+      });
+    } else {
+      params.append(key, String(value));
+    }
+  });
+  return params.toString();
+}
+
+export function queryStringToFilters(query: string): Record<string, string | string[]> {
+  const params = new URLSearchParams(query);
+  const filters: Record<string, string | string[]> = {};
+  for (const [key, value] of params.entries()) {
+    if (Object.prototype.hasOwnProperty.call(filters, key)) {
+      if (Array.isArray(filters[key])) {
+        filters[key] = [...(filters[key] as string[]), value];
+      } else {
+        filters[key] = [filters[key] as string, value];
+      }
+    } else {
+      filters[key] = value;
+    }
+  }
+  return filters;
+}
+// --- end URL hash sync helpers ---
+
+export interface Filters {
+  search: string;
+  sort: string;
+  brand: string | string[];
+  category: string | string[];
+  color: string | string[];
+  priceRange: { label: string; from?: number; to?: number };
+  gender: string;
+  isFavourite: boolean;
+}
+
 export class FiltersStore {
   brands: any[] = [];
   menCategories: any[] = [];
@@ -53,7 +98,7 @@ export class FiltersStore {
   loading = false;
 
   // todo: move these to a const file and re-use whenever needed
-  selected = {
+  selected: Filters = {
     search: '',
     sort: 'Relevance',
     brand: 'All',
@@ -158,6 +203,7 @@ export class FiltersStore {
   }
 
   setSearchFilter = async (value: any) => {  
+    this.selected.search = value;
     const filters = await parseSearchQuery(value);
     if (filters && (
       filters.colors.length ||
@@ -193,6 +239,8 @@ export class FiltersStore {
       }
       if (filters.gender) this.selected.gender = filters.gender.toLowerCase();
     }
+    // Always trigger search
+    this.debouncedFilterChange();
   }
 
   debouncedSearch = _.debounce((value) => {

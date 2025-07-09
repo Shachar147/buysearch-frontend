@@ -1,4 +1,4 @@
-import { makeObservable, observable, action, runInAction, reaction, toJS } from 'mobx';
+import { makeObservable, observable, action, runInAction, reaction, toJS, computed } from 'mobx';
 import { fetchAllBrands } from '../services/brand-api-service';
 import { fetchAllCategories } from '../services/category-api-service';
 import { fetchAllColors } from '../services/color-api-service';
@@ -15,7 +15,12 @@ function debounce<T extends (...args: any[]) => void>(fn: T, ms: number) {
 
 export class FiltersStore {
   brands: any[] = [];
-  categories: any[] = [];
+  menCategories: any[] = [];
+  womenCategories: any[] = [];
+  get categories() {
+    console.log("hereee", this.selected.gender);
+    return this.selected.gender?.toLowerCase() === 'men' ? this.menCategories : this.womenCategories;
+  }
   colors: any[] = [];
   loading = false;
 
@@ -33,7 +38,9 @@ export class FiltersStore {
   constructor() {
     makeObservable(this, {
       brands: observable,
-      categories: observable,
+      menCategories: observable,
+      womenCategories: observable,
+      categories: computed,
       colors: observable,
       loading: observable,
       selected: observable,
@@ -107,16 +114,22 @@ export class FiltersStore {
   async loadAll() {
     this.loading = true;
     try {
-      const [brands, categories, colors] = await Promise.all([
+      const [brands, menCategories, womenCategories, colors] = await Promise.all([
         fetchAllBrands(),
-        fetchAllCategories(),
+        fetchAllCategories('men'),
+        fetchAllCategories('women'),
         fetchAllColors(),
       ]);
       runInAction(() => {
         const brandNamesAliases = ['abercrombie and fitch', 'ellesse'];
         const brandNames = new Set(brands.map((b: any) => b.name?.toLowerCase?.() || b?.toLowerCase?.()));
         this.brands = brands;
-        this.categories = categories.filter((c: any) => !brandNames.has(c.name?.toLowerCase() || c?.toLowerCase()) && !brandNamesAliases.includes(c.name?.toLowerCase()));
+        this.menCategories = menCategories.filter((c: any) => !brandNames.has(c.name?.toLowerCase() || c?.toLowerCase?.()) && !brandNamesAliases.includes(c.name?.toLowerCase?.()));
+        this.womenCategories = womenCategories.filter((c: any) => !brandNames.has(c.name?.toLowerCase() || c?.toLowerCase?.()) && !brandNamesAliases.includes(c.name?.toLowerCase?.()));
+        console.log("hereee", {
+            men: this.menCategories,
+            women: this.womenCategories
+        })
         this.colors = colors;
       });
     } finally {

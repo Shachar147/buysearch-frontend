@@ -2,13 +2,14 @@ import axios from 'axios';
 
 const API_BASE = 'http://localhost:3001/api';
 
-export async function fetchAllCategories() {
+export async function fetchAllCategories(gender: string) {
   let allCategories = [];
   let offset = 0;
   const limit = 200;
   let hasNextPage = true;
   while (hasNextPage) {
-    const res = await axios.get(`${API_BASE}/categories?offset=${offset}&limit=${limit}`);
+    const genderParam = `&gender=${encodeURIComponent(gender)}`;
+    const res = await axios.get(`${API_BASE}/categories?offset=${offset}&limit=${limit}${genderParam}`);
     const { data, hasNextPage: next, total } = res.data;
     allCategories = allCategories.concat(data);
     offset += data.length;

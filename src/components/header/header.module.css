@@ -9,9 +9,8 @@
   justify-content: center;
 }
 .logo {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--bs-white);
+  /* font-size: 20px; font-weight: 800; */
+  @apply .text-headline-1 .color-white;
   letter-spacing: 2px;
   margin-inline-end: 32px;
 }
@@ -22,13 +21,12 @@
   gap: 0;
 }
 .genderOption {
-  color: var(--bs-white);
+  @apply .text-headline-6 .color-white;
   opacity: 0.8;
   cursor: pointer;
   padding-inline-start: 36px;
   padding-inline-end: 36px;
-  font-size: 14px;
-  font-weight: 700;
+  /* font-size: 14px; font-weight: 700; */
   text-transform: uppercase;
   height: 56px;
   display: flex;
@@ -39,7 +37,7 @@
 }
 .genderOptionActive {
   background: var(--bs-black-3);
-  color: var(--bs-white);
+  @apply .color-white;
   opacity: 1;
 }
 .genderDivider {

@@ -6,11 +6,13 @@ import styles from './header.module.css';
 const Header = () => {
   return (
     <header className={styles.header}>
-      <div className={styles.logo}>BUYSEARCH</div>
+      <div className={getClasses([styles.logo, 'text-headline-4', 'color-white'])}>BUYSEARCH</div>
       <div className={styles.genderSwitch}>
         <span
           className={getClasses([
             styles.genderOption,
+            'text-headline-6',
+            'color-white',
             filtersStore.selected.gender === 'women' && styles.genderOptionActive,
           ])}
           onClick={() => filtersStore.setGender('women')}
@@ -21,6 +23,8 @@ const Header = () => {
         <span
           className={getClasses([
             styles.genderOption,
+            'text-headline-6',
+            'color-white',
             filtersStore.selected.gender === 'men' && styles.genderOptionActive,
           ])}
           onClick={() => filtersStore.setGender('men')}

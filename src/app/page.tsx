@@ -6,6 +6,7 @@ import ProductGrid from '../components/product-grid/product-grid';
 import FilterBar from '../components/filter-bar/filter-bar';
 import styles from './page.module.css';
 import Header from '../components/header/header';
+import getClasses from '../utils/get-classes';
 
 function HomePage() {
   const [showScrollUp, setShowScrollUp] = useState(false);
@@ -46,16 +47,16 @@ function HomePage() {
         />
         {!productStore.loading && (!productStore.products || productStore.products.length === 0) && 
             (
-                <div className={styles.empty}>No items found.</div>
+                <div className={getClasses([styles.empty, 'text-headline-6', 'color-gray-7'])}>No items found.</div>
             )
         }
         {total > 0 && <div className={styles.loadMoreWrapper}>
-          <div className={styles.productCount}>
+          <div className={getClasses([styles.productCount, 'text-headline-6', 'color-black-4'])}>
             {`You've viewed ${viewed} of ${total} products`}
           </div>
           {productStore.hasNextPage && (
             <button
-              className={styles.loadMoreBtn}
+              className={getClasses([styles.loadMoreBtn, 'text-headline-6', 'color-black-6'])}
               onClick={() => productStore.loadMore()}
             >
               LOAD MORE
@@ -66,7 +67,7 @@ function HomePage() {
         {total > 0 && !productStore.hasNextPage && <div className={styles.message}>No more products.</div>}
         {showScrollUp && (
           <button
-            className={styles.scrollUpBtn}
+            className={getClasses([styles.scrollUpBtn, 'text-headline-6', 'color-white'])}
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             aria-label="Scroll to top"
           >

@@ -66,29 +66,29 @@ function ProductCard({ image, title, brand, price, oldPrice, currency, colors, u
           </div>
         </div>
       </div>
-      <div className={styles.title}>{title}</div>
-      <div className={styles.brand}>{brand}</div>
+      <div className={getClasses([styles.title, 'text-headline-4', 'color-black-6'])}>{title}</div>
+      <div className={getClasses([styles.brand, 'text-headline-6', 'color-gray-6'])}>{brand}</div>
       <div className={styles.priceRow}>
         {discountPercent !== null && (
-          <span className={styles.discountPercent}>-{discountPercent}%</span>
+          <span className={getClasses([styles.discountPercent, 'text-headline-6', 'color-red-5'])}>-{discountPercent}%</span>
         )}
-        <div className={styles.price}>
+        <div className={getClasses([styles.price, 'text-headline-6', 'color-black-6'])}>
           {oldPrice && oldPrice > (price ?? 0) ? (
             <>
-              <span className={styles.oldPrice}>{oldPrice} {currency}</span>
-              <span className={styles.salePrice}>{price} {currency}</span>
+              <span className={getClasses([styles.oldPrice, 'text-headline-6', 'color-gray-5'])}>{oldPrice} {currency}</span>
+              <span className={getClasses([styles.salePrice, 'text-headline-6', 'color-red-5'])}>{price} {currency}</span>
             </>
           ) : (
             <span>{price !== null ? `${price} ${currency}` : 'N/A'}</span>
           )}
         </div>
       </div>
-      <div className={styles.colors}>
+      <div className={getClasses([styles.colors, 'text-headline-6', 'color-black-4'])}>
         {colors.length > 0 ? `Colors: ${colors.join(', ')}` : ''}
       </div>
       <div className={styles.badges}>
-        {hasMoreColours && <span className={getClasses([styles.badge, styles.badgeAlt])}>More Colours</span>}
-        {isSellingFast && <span className={styles.badge}>Selling Fast</span>}
+        {hasMoreColours && <span className={getClasses([styles.badge, styles.badgeAlt, 'text-headline-6', 'color-black-6'])}>More Colours</span>}
+        {isSellingFast && <span className={getClasses([styles.badge, 'text-headline-6', 'color-white'])}>Selling Fast</span>}
       </div>
     </div>
   );

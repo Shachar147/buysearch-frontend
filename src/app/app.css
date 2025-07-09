@@ -2,8 +2,8 @@
 
 html, body {
   font-family: 'Inter', Arial, Helvetica, sans-serif;
-  background: #f7f7f7;
-  color: #222;
+  background: var(--bs-gray-1);
+  color: var(--bs-black-6);
   margin: 0;
   padding: 0;
   min-height: 100vh;
@@ -11,7 +11,7 @@ html, body {
 }
 
 .box-shadow {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07), 0 1.5px 4px rgba(0,0,0,0.04);
+  box-shadow: var(--bs-shadow-1), var(--bs-shadow-3);
 }
 
 .border-radius-8 {

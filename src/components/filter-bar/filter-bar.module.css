@@ -72,9 +72,7 @@
 }
 
 .label {
-  font-size: 13px;
-  color: var(--bs-black-4);
-  font-weight: 500;
+  @apply .text-headline-6 .color-black-4;
   margin-block-end: 6px;
   margin-inline-end: 0;
 } 

@@ -18,6 +18,8 @@ export interface ProductCardProps {
   hasMoreColours?: boolean;
 }
 
+const DEFAULT_IMAGE_URL = "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg";
+
 function ProductCard({ image, title, brand, price, oldPrice, currency, colors, url, images = [], source, isSellingFast = false, hasMoreColours = false }: ProductCardProps) {
   const firstImage = images[0] || image;
   const secondImage = images[1] || images[0] || image;
@@ -59,10 +61,10 @@ function ProductCard({ image, title, brand, price, oldPrice, currency, colors, u
       <div className={styles['flip-container']}>
         <div className={styles.flipper}>
           <div className={styles.front}>
-            <img src={firstImage || "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"} alt={title} className={getClasses([styles.image, 'border-radius-8'])} />
+            <img src={firstImage || DEFAULT_IMAGE_URL} alt={title} className={getClasses([styles.image, 'border-radius-8'])} />
           </div>
           <div className={styles.back}>
-            <img src={secondImage || "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg"} alt={title + ' alt'} className={getClasses([styles.image, 'border-radius-8'])} />
+            <img src={secondImage || DEFAULT_IMAGE_URL} alt={title + ' alt'} className={getClasses([styles.image, 'border-radius-8'])} />
           </div>
         </div>
       </div>

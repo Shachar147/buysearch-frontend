@@ -1,6 +1,5 @@
-import axios from 'axios';
-
-const API_BASE = 'http://localhost:3001/api';
+import { API_BASE_URL } from '../utils/config';
+import api from './axios-instance';
 
 export async function fetchAllBrands() {
   let allBrands = [];
@@ -8,7 +7,7 @@ export async function fetchAllBrands() {
   const limit = 200;
   let hasNextPage = true;
   while (hasNextPage) {
-    const res = await axios.get(`${API_BASE}/brands?offset=${offset}&limit=${limit}`);
+    const res = await api.get(`${API_BASE_URL}/brands?offset=${offset}&limit=${limit}`);
     const { data, hasNextPage: next, total } = res.data;
     allBrands = allBrands.concat(data);
     offset += data.length;
@@ -18,6 +17,6 @@ export async function fetchAllBrands() {
 }
 
 export async function fetchBrandById(id: string) {
-  const res = await axios.get(`${API_BASE}/brands/${id}`);
+  const res = await api.get(`${API_BASE_URL}/brands/${id}`);
   return res.data;
 } 

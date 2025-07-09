@@ -1,6 +1,9 @@
 {
   "dependencies": {
+    "@nestjs/jwt": "^11.0.0",
     "axios": "^1.10.0",
+    "bcryptjs": "^3.0.2",
+    "js-cookie": "^3.0.5",
     "lodash": "^4.17.21",
     "mobx": "^6.13.7",
     "mobx-react-lite": "^4.1.0",

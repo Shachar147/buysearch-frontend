@@ -10,6 +10,10 @@ html, body {
   scroll-behavior: smooth;
 }
 
+.cursor-pointer {
+    cursor: pointer;
+}
+
 .box-shadow {
   box-shadow: var(--bs-shadow-1), var(--bs-shadow-3);
 }

@@ -1,3 +1,4 @@
+import api from './axios-instance';
 import { API_BASE_URL } from '../utils/config';
 
 export interface ParsedFilters {
@@ -11,12 +12,10 @@ export interface ParsedFilters {
 }
 
 export async function parseSearchQuery(query: string): Promise<ParsedFilters | null> {
-  const res = await fetch(`${API_BASE_URL}/search/parse`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ search: query })
-  });
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data.filters || null;
+  try {
+    const res = await api.post(`${API_BASE_URL}/search/parse`, { search: query });
+    return res.data.filters || null;
+  } catch {
+    return null;
+  }
 } 

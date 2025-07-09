@@ -39,6 +39,7 @@ export class FiltersStore {
       loadAll: action,
       setFilter: action,
     });
+
     this.loadAll();
 
     // // Debounced reaction for search

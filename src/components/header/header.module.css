@@ -64,3 +64,15 @@
   box-shadow: var(--bs-shadow-3);
   transition: box-shadow 0.18s;
 }
+
+.logoutButton {
+    color: white;
+    text-decoration: underline;
+    cursor: pointer;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.logoutButton:hover {
+    text-decoration: none;
+    opacity: 0.8;
+}

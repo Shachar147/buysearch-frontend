@@ -1,6 +1,5 @@
-import axios from 'axios';
-
-const API_BASE = 'http://localhost:3001/api';
+import { API_BASE_URL } from '../utils/config';
+import api from './axios-instance';
 
 export async function fetchAllColors() {
   let allColors = [];
@@ -8,7 +7,7 @@ export async function fetchAllColors() {
   const limit = 200;
   let hasNextPage = true;
   while (hasNextPage) {
-    const res = await axios.get(`${API_BASE}/colors?offset=${offset}&limit=${limit}`);
+    const res = await api.get(`${API_BASE_URL}/colors?offset=${offset}&limit=${limit}`);
     const { data, hasNextPage: next, total } = res.data;
     allColors = allColors.concat(data);
     offset += data.length;
@@ -18,6 +17,6 @@ export async function fetchAllColors() {
 }
 
 export async function fetchColorById(id: string) {
-  const res = await axios.get(`${API_BASE}/colors/${id}`);
+  const res = await api.get(`${API_BASE_URL}/colors/${id}`);
   return res.data;
 } 

@@ -3,12 +3,26 @@ import { observer } from 'mobx-react-lite';
 import filtersStore from '../../stores/filters-store';
 import getClasses from '../../utils/get-classes';
 import styles from './header.module.css';
+import { isLoggedIn } from '../../utils/auth';
+import Cookies from 'js-cookie';
 
-const Header = () => {
-  return (
-    <header className={styles.header}>
-      <div className={getClasses([styles.logo, 'text-headline-4', 'color-white'])}>BUYSEARCH</div>
-      <div className={styles.genderSwitch}>
+interface HeaderProps {
+    hideSearch?: boolean;
+    hideGenderSwitch?: boolean
+}
+const Header = (props: HeaderProps) => {
+
+  function handleLogout() {
+    Cookies.remove('accessToken');
+    window.location.reload();
+  }
+
+  function renderGenderSwitch(){
+    if (props.hideGenderSwitch) {
+        return;
+    }
+    return (
+        <div className={styles.genderSwitch}>
         <span
           className={getClasses([
             styles.genderOption,
@@ -33,7 +47,16 @@ const Header = () => {
           MEN
         </span>
       </div>
-      <div className={styles.headerSearch}>
+    )
+  }
+
+  function renderSearch(){
+    if (props.hideSearch) {
+        return;
+    }
+
+    return (
+        <div className={styles.headerSearch}>
         <input
           className={styles.headerSearchInput}
           type="text"
@@ -43,6 +66,21 @@ const Header = () => {
           onChange={e => filtersStore.setFilter('search', e.target.value)}
         />
       </div>
+    )
+  }
+
+  return (
+    <header className={styles.header}>
+      <div className={getClasses([styles.logo, 'text-headline-4', 'color-white', 'cursor-pointer'])} onClick={() => window.location.href = isLoggedIn() ? '/' : '/login'}>
+        BUYSEARCH
+      </div>
+      {renderGenderSwitch()}
+      {renderSearch()}
+      {isLoggedIn() && (
+        <a className={styles.logoutButton} onClick={handleLogout}>
+          Logout
+        </a>
+      )}
     </header>
   );
 };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import filtersStore from '../../stores/filters-store';
 import getClasses from '../../utils/get-classes';
@@ -11,6 +11,12 @@ interface HeaderProps {
     hideGenderSwitch?: boolean
 }
 const Header = (props: HeaderProps) => {
+
+  const [loggedIn, setLoggedIn] = useState(false);
+
+  useEffect(() => {
+    setLoggedIn(isLoggedIn());
+  }, []);
 
   function handleLogout() {
     Cookies.remove('accessToken');
@@ -86,12 +92,12 @@ const Header = (props: HeaderProps) => {
 
   return (
     <header className={styles.header}>
-      <div className={getClasses([styles.logo, 'text-headline-4', 'color-white', 'cursor-pointer'])} onClick={() => window.location.href = isLoggedIn() ? '/' : '/login'}>
+      <div className={getClasses([styles.logo, 'text-headline-4', 'color-white', 'cursor-pointer'])} onClick={() => window.location.href = loggedIn ? '/' : '/login'}>
         BUYSEARCH
       </div>
       {renderGenderSwitch()}
       {renderSearch()}
-      {isLoggedIn() && (
+      {loggedIn && (
         <a className={styles.logoutButton} onClick={handleLogout}>
           Logout
         </a>

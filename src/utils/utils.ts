@@ -3,6 +3,7 @@ export function ucfirst(str: string): string {
 }
 
 export function getTimeAgo(date: Date | string): string {
+console.log("hereee", date);
   const now = new Date();
   const d = typeof date === 'string' ? new Date(date) : date;
   const diff = (now.getTime() - d.getTime()) / 1000; // seconds

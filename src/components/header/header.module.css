@@ -117,3 +117,15 @@
     text-decoration: underline;
     opacity: 1;
 }
+
+@media (max-width: 600px) {
+  .logo {
+    font-size: 18px !important;
+    margin-inline-end: 12px;
+    letter-spacing: 1px;
+    padding: 0;
+  }
+  .headerSearch {
+    display: none !important;
+  }
+}

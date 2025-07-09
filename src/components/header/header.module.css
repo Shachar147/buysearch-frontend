@@ -67,12 +67,13 @@
 
 .logoutButton {
     color: white;
-    text-decoration: underline;
+    text-decoration: none;
     cursor: pointer;
+    opacity: 0.8;
     transition: opacity 0.2s ease-in-out;
 }
 
 .logoutButton:hover {
-    text-decoration: none;
-    opacity: 0.8;
+    text-decoration: underline;
+    opacity: 1;
 }

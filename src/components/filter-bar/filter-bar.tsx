@@ -29,17 +29,6 @@ const FilterBar = observer(() => {
   return (
     <div className={getClasses([styles.filterBar])}>
       <div className={styles.filterItem}>
-        <label className={styles.label}>Search</label>
-        <input
-          type="text"
-          className={styles.searchInput}
-          placeholder="Search for items and brands"
-          aria-label="Search"
-          value={selected.search}
-          onChange={e => setFilter('search', e.target.value)}
-        />
-      </div>
-      <div className={styles.filterItem}>
         <label className={styles.label}>Sort</label>
         <CustomSelect
           options={sortOptions}

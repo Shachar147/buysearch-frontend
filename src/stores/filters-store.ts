@@ -25,6 +25,7 @@ export class FiltersStore {
     category: 'All',
     color: 'All',
     priceRange: { label: 'All' },
+    gender: 'men',
   };
 
   constructor() {
@@ -65,6 +66,7 @@ export class FiltersStore {
     const filters: any = {
       search: selected.search,
       sort: selected.sort,
+      gender: selected.gender,
     };
     // Handle brand
     if (Array.isArray(selected.brand)) {
@@ -124,6 +126,13 @@ export class FiltersStore {
 
   setFilter = (key: keyof typeof this.selected, value: any) => {
     this.selected[key] = value;
+  }
+
+  setGender = (gender: string) => {
+    this.selected.gender = gender;
+    const filters = this.buildFilters();
+    productStore.reset(filters);
+    productStore.loadMore(filters);
   }
 }
 

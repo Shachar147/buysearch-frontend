@@ -38,6 +38,7 @@ export interface ProductFilters {
   limit?: number;
   priceFrom?: number;
   priceTo?: number;
+  gender?: string;
 }
 
 export async function fetchProducts(offset = 0, limit = 20, filters: ProductFilters = {}): Promise<ProductApiResponse> {
@@ -51,6 +52,7 @@ export async function fetchProducts(offset = 0, limit = 20, filters: ProductFilt
   if (filters.priceTo !== undefined) params.append('priceTo', String(filters.priceTo));
   if (filters.sort && filters.sort !== 'Relevance') params.append('sort', filters.sort);
   if (filters.search) params.append('search', filters.search);
+  if (filters.gender) params.append('gender', filters.gender);
   const res = await axios.get<ProductApiResponse>(`${API_BASE}/products?offset=${offset}&limit=${limit}&${params.toString()}`);
   return res.data;
 }

@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import productStore from '../stores/product-store';
+import filtersStore from '../stores/filters-store';
 import ProductGrid from '../components/product-grid/product-grid';
 import FilterBar from '../components/filter-bar/filter-bar';
 import styles from './page.module.css';
@@ -28,10 +29,42 @@ function HomePage() {
   return (
     <div className={styles.root}>
       <header className={styles.header}>
-        <span>BUY</span> <span className={styles.headerMen}>SEARCH</span>
+        <span className={styles.headerLogo}>BUYSEARCH</span>
+        <span className={styles.headerDivider}>|</span>
+        <div className={styles.genderSwitch}>
+          <span
+            className={getClasses([
+              styles.genderOption,
+              filtersStore.selected.gender === 'men' && styles.genderOptionActive,
+            ])}
+            onClick={() => filtersStore.setGender('men')}
+          >
+            Men
+          </span>
+          <span className={styles.headerDivider}>|</span>
+          <span
+            className={getClasses([
+              styles.genderOption,
+              filtersStore.selected.gender === 'women' && styles.genderOptionActive,
+            ])}
+            onClick={() => filtersStore.setGender('women')}
+          >
+            Women
+          </span>
+        </div>
+        <div className={styles.headerSearch}>
+          <input
+            className={styles.headerSearchInput}
+            type="text"
+            placeholder="Search for items and brands"
+            aria-label="Search"
+            value={filtersStore.selected.search}
+            onChange={e => filtersStore.setFilter('search', e.target.value)}
+          />
+        </div>
       </header>
       <main className={styles.main}>
-        <h2 className={styles.title}>Men's Products</h2>
+        {/* <h2 className={styles.title}>Men's Products</h2> */}
         <FilterBar />
         <ProductGrid
           products={productStore.products.map((p) => ({
@@ -47,7 +80,12 @@ function HomePage() {
             source: p.source?.name
           }))}
         />
-        <div className={styles.loadMoreWrapper}>
+        {!productStore.loading && (!productStore.products || productStore.products.length === 0) && 
+            (
+                <div className={styles.empty}>No items found.</div>
+            )
+        }
+        {total > 0 && <div className={styles.loadMoreWrapper}>
           <div className={styles.productCount}>
             {`You've viewed ${viewed} of ${total} products`}
           </div>
@@ -59,9 +97,9 @@ function HomePage() {
               LOAD MORE
             </button>
           )}
-        </div>
+        </div>}
         {productStore.loading && <div className={styles.message}>Loading...</div>}
-        {!productStore.hasNextPage && <div className={styles.message}>No more products.</div>}
+        {total > 0 && !productStore.hasNextPage && <div className={styles.message}>No more products.</div>}
         {showScrollUp && (
           <button
             className={styles.scrollUpBtn}

@@ -7,9 +7,6 @@ export interface ProductGridProps {
 }
 
 function ProductGrid({ products }: ProductGridProps) {
-  if (!products || products.length === 0) {
-    return <div className={styles.empty}>No items found.</div>;
-  }
   return (
     <div className={styles.grid}>
       {products.map((product, idx) => (

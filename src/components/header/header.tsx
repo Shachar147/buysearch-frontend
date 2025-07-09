@@ -1,4 +1,5 @@
 import React from 'react';
+import { observer } from 'mobx-react-lite';
 import filtersStore from '../../stores/filters-store';
 import getClasses from '../../utils/get-classes';
 import styles from './header.module.css';
@@ -46,4 +47,4 @@ const Header = () => {
   );
 };
 
-export default Header; 
+export default observer(Header); 

@@ -85,6 +85,7 @@ export interface Filters {
   priceRange: { label: string; from?: number; to?: number };
   gender: string;
   isFavourite: boolean;
+  withPriceChange?: boolean;
 }
 
 export class FiltersStore {
@@ -107,6 +108,7 @@ export class FiltersStore {
     priceRange: { label: 'All' },
     gender: 'men',
     isFavourite: false,
+    withPriceChange: false,
   };
 
   constructor() {
@@ -175,6 +177,8 @@ export class FiltersStore {
     filters.priceTo = typeof selected.priceRange === 'object' && 'to' in selected.priceRange ? selected.priceRange.to : undefined;
     // Handle isFavourite
     if (selected.isFavourite) filters.isFavourite = true;
+    // Handle withPriceChange
+    if (selected.withPriceChange) filters.withPriceChange = true;
     return filters;
   }
 

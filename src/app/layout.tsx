@@ -1,6 +1,7 @@
 import '../app/app.css';
 import type { ReactNode } from 'react';
 import AuthGuard from '../components/auth-guard';
+import ReactQueryProvider from '../components/react-query-provider';
 
 export const metadata = {
   title: 'BuySearch',
@@ -11,7 +12,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <AuthGuard>{children}</AuthGuard>
+        <ReactQueryProvider>
+          <AuthGuard>{children}</AuthGuard>
+        </ReactQueryProvider>
       </body>
     </html>
   );

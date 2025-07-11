@@ -2,7 +2,7 @@ import { makeObservable, observable, action, runInAction, reaction, toJS, comput
 import { fetchAllBrands } from '../services/brand-api-service';
 import { fetchAllCategories } from '../services/category-api-service';
 import { fetchAllColors } from '../services/color-api-service';
-import { parseSearchQuery } from '../services/search-api-service';
+import { ParsedFilters } from '../services/search-api-service';
 import productStore from './product-store';
 import _ from 'lodash';
 
@@ -206,9 +206,12 @@ export class FiltersStore {
     }
   }
 
-  setSearchFilter = async (value: any) => {  
+  setSearchFilter = (value: any) => {  
     this.selected.search = value;
-    const filters = await parseSearchQuery(value);
+    this.debouncedFilterChange();
+  }
+
+  applyParsedFilters = (filters: ParsedFilters | null) => {
     if (filters && (
       filters.colors.length ||
       filters.categories.length ||
@@ -257,12 +260,12 @@ export class FiltersStore {
     productStore.loadMore(filters);
   }, 600);
 
-  setFilter = async (key: keyof typeof this.selected, value: any) => {
+  setFilter = (key: keyof Filters, value: any) => {
     if (key === 'search') {
       this.selected.search = value;
       this.debouncedSearch(value);
     } else {
-      this.selected[key] = value;
+      (this.selected as any)[key] = value;
     }
   }
 

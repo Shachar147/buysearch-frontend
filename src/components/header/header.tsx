@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import filtersStore from '../../stores/filters-store';
 import getClasses from '../../utils/get-classes';
 import styles from './header.module.css';
 import { isLoggedIn } from '../../utils/auth';
 import Cookies from 'js-cookie';
+import { useParsedSearchQuery } from '../../api/search/queries';
 
 interface HeaderProps {
     hideSearch?: boolean;
@@ -82,6 +83,29 @@ const Header = (props: HeaderProps) => {
         return;
     }
     const hasSearch = !!filtersStore.selected.search;
+    // Debounce the search value
+    const [debouncedSearch, setDebouncedSearch] = useState(filtersStore.selected.search);
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+    React.useEffect(() => {
+      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+      debounceTimeout.current = setTimeout(() => {
+        setDebouncedSearch(filtersStore.selected.search);
+      }, 400); // 400ms debounce
+      return () => {
+        if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+      };
+    }, [filtersStore.selected.search]);
+    // Use the React Query hook for parsing the search query
+    const { data: parsedFilters } = useParsedSearchQuery(debouncedSearch, {
+      cacheTime: 1000 * 60 * 10, // 10 minutes
+      staleTime: 1000 * 60 * 5,  // 5 minutes
+    });
+    
+    useEffect(() => {
+      if (parsedFilters) {
+        filtersStore.applyParsedFilters(parsedFilters);
+      }
+    }, [parsedFilters]);
     return (
         <div className={styles.headerSearch}>
           <input

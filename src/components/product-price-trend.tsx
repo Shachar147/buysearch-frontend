@@ -9,6 +9,14 @@ export interface PriceHistoryPoint {
   date: string;
 }
 
+function formatDateDDMMYYYY(date: string | Date) {
+  const d = new Date(date);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
 const ProductPriceTrend: React.FC<{ history: PriceHistoryPoint[] }> = ({ history }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipPos, setTooltipPos] = useState({ top: 0, insetInlineStart: 0 });
@@ -66,7 +74,7 @@ const ProductPriceTrend: React.FC<{ history: PriceHistoryPoint[] }> = ({ history
           <ul className={styles.tooltipList}>
             {history.map((h, i) => (
               <li key={i}>
-                <span className={getClasses(['text-body', 'color-gray-7'])}>{new Date(h.date).toLocaleString()} — <b className={getClasses(['color-black-6'])}>{h.price} ILS</b></span>
+                <span className={getClasses(['text-body', 'color-gray-7'])}>{formatDateDDMMYYYY(h.date)} — <b className={getClasses(['color-black-6'])}>{h.price} ILS</b></span>
               </li>
             ))}
           </ul>

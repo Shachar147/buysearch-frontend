@@ -13,6 +13,7 @@ import { toJS, reaction } from 'mobx';
 
 function HomePage() {
   const [showScrollUp, setShowScrollUp] = useState(false);
+  const [showPriceChangeOnly, setShowPriceChangeOnly] = useState(false);
 
   // On mount, read filters from hash if present
   useEffect(() => {
@@ -23,16 +24,19 @@ function HomePage() {
         Object.assign(filtersStore.selected, parsed);
         // Ensure isFavourite and gender are set as expected
         if (typeof parsed.isFavourite !== 'undefined') {
-          if (Array.isArray(parsed.isFavourite)) {
-            filtersStore.selected.isFavourite = parsed.isFavourite.includes('true');
-          } else {
-            filtersStore.selected.isFavourite = parsed.isFavourite === 'true' || parsed.isFavourite === true;
-          }
+          const favVal = Array.isArray(parsed.isFavourite) ? parsed.isFavourite[0] : parsed.isFavourite;
+          filtersStore.selected.isFavourite = favVal === 'true';
         }
         if (typeof parsed.gender === 'string') {
           filtersStore.selected.gender = parsed.gender;
         } else if (Array.isArray(parsed.gender) && typeof parsed.gender[0] === 'string') {
           filtersStore.selected.gender = parsed.gender[0];
+        }
+        // Read price change filter from hash
+        if (typeof parsed.withPriceChange !== 'undefined') {
+          const val = Array.isArray(parsed.withPriceChange) ? parsed.withPriceChange[0] : parsed.withPriceChange;
+          setShowPriceChangeOnly(val === 'true');
+          filtersStore.selected.withPriceChange = val === 'true';
         }
       } catch (e) { /* ignore */ }
     }
@@ -44,13 +48,13 @@ function HomePage() {
       () => toJS(filtersStore.selected),
       (selected) => {
         if (typeof window !== 'undefined') {
-          const query = filtersToQueryString(selected);
+          const query = filtersToQueryString({ ...selected, withPriceChange: showPriceChangeOnly });
           window.location.hash = query ? '?' + query : '';
         }
       }
     );
     return () => disposer();
-  }, []);
+  }, [showPriceChangeOnly]);
 
   // Handler for toggling favourites (heart icon)
   const handleToggleFavourites = (val: boolean) => {
@@ -58,7 +62,19 @@ function HomePage() {
     filtersStore.debouncedFilterChange();
     // Update hash immediately
     if (typeof window !== 'undefined') {
-      const query = filtersToQueryString(filtersStore.selected);
+      const query = filtersToQueryString({ ...filtersStore.selected, withPriceChange: showPriceChangeOnly });
+      window.location.hash = query ? '?' + query : '';
+    }
+  };
+
+  // Handler for toggling price change filter (trend icon)
+  const handleTogglePriceChange = (val: boolean) => {
+    setShowPriceChangeOnly(val);
+    filtersStore.selected.withPriceChange = val;
+    filtersStore.debouncedFilterChange();
+    // Update hash immediately
+    if (typeof window !== 'undefined') {
+      const query = filtersToQueryString({ ...filtersStore.selected, withPriceChange: val });
       window.location.hash = query ? '?' + query : '';
     }
   };
@@ -68,7 +84,7 @@ function HomePage() {
     filtersStore.setGender(gender);
     // Update hash immediately
     if (typeof window !== 'undefined') {
-      const query = filtersToQueryString(filtersStore.selected);
+      const query = filtersToQueryString({ ...filtersStore.selected, withPriceChange: showPriceChangeOnly });
       window.location.hash = query ? '?' + query : '';
     }
   };
@@ -93,6 +109,8 @@ function HomePage() {
       <Header
         showFavouritesOnly={filtersStore.selected.isFavourite}
         onToggleFavourites={handleToggleFavourites}
+        showPriceChangeOnly={showPriceChangeOnly}
+        onTogglePriceChange={handleTogglePriceChange}
       />
       <main className={styles.main}>
         <FilterBar />

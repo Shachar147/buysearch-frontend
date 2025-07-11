@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { login } from '../../services/auth-api-service';
+import { useLogin } from '../../api/auth/mutations';
 import styles from './login.module.css';
 import Header from '../../components/header/header';
 import { useRouter } from 'next/navigation';
@@ -13,22 +13,30 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  const loginMutation = useLogin();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
-    try {
-      const res = await login(username, password);
-      if (res.status === 'success') {
-        router.push('/');
-      } else {
-        setError(res.error || 'Login failed');
+    setLoading(true);
+    loginMutation.mutate(
+      { username, password },
+      {
+        onSuccess: (res: any) => {
+          if (res.status === 'success') {
+            router.push('/');
+          } else {
+            setError(res.error || 'Login failed');
+          }
+        },
+        onError: () => {
+          setError('Invalid credentials');
+        },
+        onSettled: () => {
+          setLoading(false);
+        },
       }
-    } catch (e: any) {
-      setError('Invalid credentials');
-    } finally {
-      setLoading(false);
-    }
+    );
   };
 
   return (

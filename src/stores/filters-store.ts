@@ -1,9 +1,5 @@
-import { makeObservable, observable, action, runInAction, reaction, toJS, computed } from 'mobx';
-import { fetchAllBrands } from '../services/brand-api-service';
-import { fetchAllCategories } from '../services/category-api-service';
-import { fetchAllColors } from '../services/color-api-service';
+import { makeObservable, observable, action, reaction, toJS, computed } from 'mobx';
 import { ParsedFilters } from '../services/search-api-service';
-import productStore from './product-store';
 import _ from 'lodash';
 
 // Add a type for price range options
@@ -89,14 +85,16 @@ export interface Filters {
 }
 
 export class FiltersStore {
+  // No server data, only selected filters and derived state
+  // Optionally, you can keep these for UI state if you want to sync from components:
   brands: any[] = [];
   menCategories: any[] = [];
   womenCategories: any[] = [];
+  colors: any[] = [];
   get categories() {
     return this.selected.gender?.toLowerCase() === 'men' ? this.menCategories : this.womenCategories;
   }
-  colors: any[] = [];
-  loading = false;
+  // No loading state needed for server data
 
   // todo: move these to a const file and re-use whenever needed
   selected: Filters = {
@@ -118,30 +116,41 @@ export class FiltersStore {
       womenCategories: observable,
       categories: computed,
       colors: observable,
-      loading: observable,
       selected: observable,
-      loadAll: action,
+      setBrands: action,
+      setMenCategories: action,
+      setWomenCategories: action,
+      setColors: action,
       setFilter: action,
     });
-
-    this.loadAll();
 
     // Immediate reaction for other filters
     reaction(
       () => [this.selected.sort, this.selected.brand, this.selected.category, this.selected.color],
       () => {
-        const filters = this.buildFilters();
-        productStore.reset(filters);
-        productStore.loadMore(filters);
+        this.setSearchFilter(this.selected.search);
       }
     );
 
     reaction(
       () => [toJS(this.selected.priceRange)],
       () => {
-        this.debouncedFilterChange();
+        this.setSearchFilter(this.selected.search);
       }
     )
+  }
+
+  setBrands = (brands: any[]) => {
+    this.brands = brands;
+  }
+  setMenCategories = (categories: any[]) => {
+    this.menCategories = categories;
+  }
+  setWomenCategories = (categories: any[]) => {
+    this.womenCategories = categories;
+  }
+  setColors = (colors: any[]) => {
+    this.colors = colors;
   }
 
   buildFilters() {
@@ -182,35 +191,6 @@ export class FiltersStore {
     return filters;
   }
 
-  async loadAll() {
-    this.loading = true;
-    try {
-      const [brands, menCategories, womenCategories, colors] = await Promise.all([
-        fetchAllBrands(),
-        fetchAllCategories('men'),
-        fetchAllCategories('women'),
-        fetchAllColors(),
-      ]);
-      runInAction(() => {
-        const brandNamesAliases = ['abercrombie and fitch', 'ellesse'];
-        const brandNames = new Set(brands.map((b: any) => b.name?.toLowerCase?.() || b?.toLowerCase?.()));
-        this.brands = brands;
-        this.menCategories = menCategories.filter((c: any) => !brandNames.has(c.name?.toLowerCase() || c?.toLowerCase?.()) && !brandNamesAliases.includes(c.name?.toLowerCase?.()));
-        this.womenCategories = womenCategories.filter((c: any) => !brandNames.has(c.name?.toLowerCase() || c?.toLowerCase?.()) && !brandNamesAliases.includes(c.name?.toLowerCase?.()));
-        this.colors = colors;
-      });
-    } finally {
-      runInAction(() => {
-        this.loading = false;
-      });
-    }
-  }
-
-  setSearchFilter = (value: any) => {  
-    this.selected.search = value;
-    this.debouncedFilterChange();
-  }
-
   applyParsedFilters = (filters: ParsedFilters | null) => {
     if (filters && (
       filters.colors.length ||
@@ -247,18 +227,12 @@ export class FiltersStore {
       if (filters.gender) this.selected.gender = filters.gender.toLowerCase();
     }
     // Always trigger search
-    this.debouncedFilterChange();
+    this.setSearchFilter(this.selected.search);
   }
 
   debouncedSearch = _.debounce((value) => {
     void this.setSearchFilter(value)
   }, 300);
-
-  debouncedFilterChange = _.debounce(() => {
-    const filters = this.buildFilters();
-    productStore.reset(filters);
-    productStore.loadMore(filters);
-  }, 600);
 
   setFilter = (key: keyof Filters, value: any) => {
     if (key === 'search') {
@@ -269,11 +243,12 @@ export class FiltersStore {
     }
   }
 
+  setSearchFilter = (value: any) => {
+    this.selected.search = value;
+  }
+
   setGender = (gender: string) => {
     this.selected.gender = gender;
-    const filters = this.buildFilters();
-    productStore.reset(filters);
-    productStore.loadMore(filters);
   }
 }
 

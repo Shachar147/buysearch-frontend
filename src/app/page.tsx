@@ -1,7 +1,7 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import productStore from '../stores/product-store';
+import { useProductStore } from '../stores/product-store';
 import ProductGrid from '../components/product-grid/product-grid';
 import FilterBar from '../components/filter-bar/filter-bar';
 import styles from './page.module.css';
@@ -14,6 +14,45 @@ import { toJS, reaction } from 'mobx';
 function HomePage() {
   const [showScrollUp, setShowScrollUp] = useState(false);
   const [showPriceChangeOnly, setShowPriceChangeOnly] = useState(false);
+  // Memoize selectedFilters to prevent infinite loops
+  const selectedFilters = useMemo(() => ({
+    ...filtersStore.selected,
+    brand: Array.isArray(filtersStore.selected.brand) ? filtersStore.selected.brand.join(',') : (filtersStore.selected.brand || ''),
+    category: Array.isArray(filtersStore.selected.category) ? filtersStore.selected.category.join(',') : (filtersStore.selected.category || ''),
+    color: Array.isArray(filtersStore.selected.color) ? filtersStore.selected.color.join(',') : (filtersStore.selected.color || ''),
+  }), [
+    filtersStore.selected.brand,
+    filtersStore.selected.category,
+    filtersStore.selected.color,
+    filtersStore.selected.search,
+    filtersStore.selected.sort,
+    filtersStore.selected.priceRange,
+    filtersStore.selected.gender,
+    filtersStore.selected.isFavourite,
+    filtersStore.selected.withPriceChange,
+  ]);
+  const [offset, setOffset] = useState(0);
+  const limit = 20;
+  const { products, loading, hasNextPage, total, priceHistoryMap } = useProductStore(offset, limit, selectedFilters);
+
+  // State to accumulate all loaded products
+  const [allProducts, setAllProducts] = useState<any[]>([]);
+  // Track filters for reset
+  const [lastFilters, setLastFilters] = useState(selectedFilters);
+
+  // Accumulate products or reset on filter change
+  useEffect(() => {
+    const filtersChanged = JSON.stringify(selectedFilters) !== JSON.stringify(lastFilters);
+    if (filtersChanged) {
+      setAllProducts(products);
+      setLastFilters(selectedFilters);
+    } else if (offset > 0 && products.length > 0) {
+      setAllProducts(prev => [...prev, ...products]);
+    } else if (offset === 0) {
+      setAllProducts(products);
+    }
+    // eslint-disable-next-line
+  }, [products, offset, selectedFilters, lastFilters]);
 
   // On mount, read filters from hash if present
   useEffect(() => {
@@ -59,7 +98,6 @@ function HomePage() {
   // Handler for toggling favourites (heart icon)
   const handleToggleFavourites = (val: boolean) => {
     filtersStore.selected.isFavourite = val;
-    filtersStore.debouncedFilterChange();
     // Update hash immediately
     if (typeof window !== 'undefined') {
       const query = filtersToQueryString({ ...filtersStore.selected, withPriceChange: showPriceChangeOnly });
@@ -71,7 +109,6 @@ function HomePage() {
   const handleTogglePriceChange = (val: boolean) => {
     setShowPriceChangeOnly(val);
     filtersStore.selected.withPriceChange = val;
-    filtersStore.debouncedFilterChange();
     // Update hash immediately
     if (typeof window !== 'undefined') {
       const query = filtersToQueryString({ ...filtersStore.selected, withPriceChange: val });
@@ -90,19 +127,14 @@ function HomePage() {
   };
 
   useEffect(() => {
-    productStore.loadMore();
-  }, []);
-
-  useEffect(() => {
     function onScroll() {
-      setShowScrollUp(productStore.offset > productStore.limit);
+      setShowScrollUp(offset > limit);
     }
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  }, [offset, limit]);
 
-  const viewed = productStore.products.length;
-  const total = productStore.total;
+  const viewed = allProducts.length;
 
   return (
     <div className={styles.root}>
@@ -115,23 +147,24 @@ function HomePage() {
       <main className={styles.main}>
         <FilterBar />
         <ProductGrid
-          products={productStore.products.map((p) => ({
-            image: p.images[0] || '',
+          products={allProducts.map((p) => ({
+            image: p.images && p.images[0] ? p.images[0] : '',
             title: p.title,
             brand: p.brand?.name || '',
             price: p.price,
             oldPrice: p.oldPrice,
             currency: p.currency,
-            colors: p.colors.map((c) => c.name),
+            colors: p.colors ? p.colors.map((c) => c.name) : [],
             url: p.url,
-            images: p.images,
+            images: p.images || [],
             source: p.source?.name,
             updatedAt: p.updatedAt,
             createdAt: p.createdAt,
             productId: p.id
           }))}
+          priceHistoryMap={priceHistoryMap}
         />
-        {!productStore.loading && (!productStore.products || productStore.products.length === 0) && 
+        {!loading && (!allProducts || allProducts.length === 0) && 
             (
               <div className={getClasses([styles.empty, 'text-headline-6', 'color-gray-7'])}>No items found.</div>
             )
@@ -140,17 +173,17 @@ function HomePage() {
           <div className={getClasses([styles.productCount, 'text-headline-6', 'color-black-4'])}>
             {`You've viewed ${viewed} of ${total} products`}
           </div>
-          {productStore.hasNextPage && (
+          {hasNextPage && (
             <button
               className={getClasses([styles.loadMoreBtn, 'text-headline-6', 'color-black-6'])}
-              onClick={() => productStore.loadMore()}
+              onClick={() => setOffset(offset + limit)}
             >
               LOAD MORE
             </button>
           )}
         </div>}
-        {productStore.loading && <div className={styles.message}>Loading...</div>}
-        {total > 0 && !productStore.hasNextPage && <div className={styles.message}>No more products.</div>}
+        {loading && <div className={styles.message}>Loading...</div>}
+        {total > 0 && !hasNextPage && <div className={styles.message}>No more products.</div>}
         {showScrollUp && (
           <ScrollUpButton show={showScrollUp} />
         )}

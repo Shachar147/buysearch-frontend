@@ -35,7 +35,6 @@ const FilterBar = observer(() => {
   const { data: menCategories = [] } = useAllCategories('men');
   const { data: womenCategories = [] } = useAllCategories('women');
   const categories = selected.gender?.toLowerCase() === 'men' ? menCategories : womenCategories;
-  const isCustom = selected.priceRange && typeof selected.priceRange === 'object' && selected.priceRange.label && selected.priceRange.label.startsWith('Custom');
   const min = 0;
   const max = 2000;
   const step = 10;

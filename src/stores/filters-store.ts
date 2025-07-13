@@ -43,7 +43,13 @@ export function filtersToQueryString(filters: Record<string, any>): string {
   const params = new URLSearchParams();
   Object.entries(filters).forEach(([key, value]) => {
     if (value === undefined || value === null || value === '' || value === 'All' || (Array.isArray(value) && value.length === 0)) return;
-    if (Array.isArray(value)) {
+    if (key === 'priceRange' && typeof value === 'object' && value !== null) {
+      // Serialize priceRange as label:from-to
+      const label = value.label ?? 'All';
+      const from = value.from ?? '';
+      const to = value.to ?? '';
+      params.append('priceRange', `${label}:${from}-${to}`);
+    } else if (Array.isArray(value)) {
       value.forEach((v) => {
         if (v !== 'All' && v !== undefined && v !== null && v !== '') params.append(key, String(v));
       });
@@ -54,11 +60,23 @@ export function filtersToQueryString(filters: Record<string, any>): string {
   return params.toString();
 }
 
-export function queryStringToFilters(query: string): Record<string, string | string[]> {
+export function queryStringToFilters(query: string): Record<string, string | string[] | { label: string; from?: number; to?: number }> {
   const params = new URLSearchParams(query);
-  const filters: Record<string, string | string[]> = {};
+  const filters: Record<string, string | string[] | { label: string; from?: number; to?: number }> = {};
   for (const [key, value] of params.entries()) {
-    if (Object.prototype.hasOwnProperty.call(filters, key)) {
+    if (key === 'priceRange') {
+      // Parse priceRange from label:from-to
+      const match = value.match(/^([^:]+):([^\-]*)-([^\-]*)$/);
+      if (match) {
+        const label = match[1];
+        const from = match[2] !== '' ? Number(match[2]) : undefined;
+        const to = match[3] !== '' ? Number(match[3]) : undefined;
+        const value = `${from ?? 0}-${to ?? 2000}`;
+        filters[key] = { label, from, to, value };
+      } else {
+        filters[key] = { label: value };
+      }
+    } else if (Object.prototype.hasOwnProperty.call(filters, key)) {
       if (Array.isArray(filters[key])) {
         filters[key] = [...(filters[key] as string[]), value];
       } else {

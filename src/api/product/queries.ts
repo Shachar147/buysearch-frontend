@@ -8,6 +8,7 @@ return `${priceRange.label}:${priceRange.from ?? ''}-${priceRange.to ?? ''}`;
 }
 
 export function useInfiniteProducts(filters: ProductFilters = {}, limit = 20) {
+    console.log('filters', filters);
   return useInfiniteQuery<ProductApiResponse, Error>({
     queryKey: [
       'products',

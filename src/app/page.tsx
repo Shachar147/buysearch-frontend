@@ -1,7 +1,6 @@
 'use client';
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
-import { useProductStore } from '../stores/product-store';
 import ProductGrid from '../components/product-grid/product-grid';
 import FilterBar from '../components/filter-bar/filter-bar';
 import styles from './page.module.css';

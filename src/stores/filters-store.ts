@@ -124,14 +124,6 @@ export class FiltersStore {
       setFilter: action,
     });
 
-    // Immediate reaction for other filters
-    reaction(
-      () => [this.selected.sort, this.selected.brand, this.selected.category, this.selected.color],
-      () => {
-        this.setSearchFilter(this.selected.search);
-      }
-    );
-
     reaction(
       () => [toJS(this.selected.priceRange)],
       () => {

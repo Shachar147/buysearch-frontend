@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useProductStore } from '../stores/product-store';
 import ProductGrid from '../components/product-grid/product-grid';
@@ -10,6 +10,7 @@ import getClasses from '../utils/get-classes';
 import ScrollUpButton from '../components/scroll-up-button';
 import filtersStore, { filtersToQueryString, queryStringToFilters } from '../stores/filters-store';
 import { toJS, reaction } from 'mobx';
+import { useInfiniteProducts } from '../api/product/queries';
 
 function HomePage() {
   const [showScrollUp, setShowScrollUp] = useState(false);
@@ -31,28 +32,18 @@ function HomePage() {
     filtersStore.selected.isFavourite,
     filtersStore.selected.withPriceChange,
   ]);
-  const [offset, setOffset] = useState(0);
   const limit = 20;
-  const { products, loading, hasNextPage, total, priceHistoryMap } = useProductStore(offset, limit, selectedFilters);
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useInfiniteProducts(selectedFilters, limit);
 
-  // State to accumulate all loaded products
-  const [allProducts, setAllProducts] = useState<any[]>([]);
-  // Track filters for reset
-  const [lastFilters, setLastFilters] = useState(selectedFilters);
-
-  // Accumulate products or reset on filter change
-  useEffect(() => {
-    const filtersChanged = JSON.stringify(selectedFilters) !== JSON.stringify(lastFilters);
-    if (filtersChanged) {
-      setAllProducts(products);
-      setLastFilters(selectedFilters);
-    } else if (offset > 0 && products.length > 0) {
-      setAllProducts(prev => [...prev, ...products]);
-    } else if (offset === 0) {
-      setAllProducts(products);
-    }
-    // eslint-disable-next-line
-  }, [products, offset, selectedFilters, lastFilters]);
+  const allProducts = data?.pages.flatMap((page) => page.data) ?? [];
+  const total = data?.pages[0]?.total ?? 0;
+  const priceHistoryMap = {};
 
   // On mount, read filters from hash if present
   useEffect(() => {
@@ -128,11 +119,11 @@ function HomePage() {
 
   useEffect(() => {
     function onScroll() {
-      setShowScrollUp(offset > limit);
+      setShowScrollUp(window.scrollY > 1000);
     }
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
-  }, [offset, limit]);
+  }, []);
 
   const viewed = allProducts.length;
 
@@ -164,7 +155,7 @@ function HomePage() {
           }))}
           priceHistoryMap={priceHistoryMap}
         />
-        {!loading && (!allProducts || allProducts.length === 0) && 
+        {!isLoading && (!allProducts || allProducts.length === 0) && 
             (
               <div className={getClasses([styles.empty, 'text-headline-6', 'color-gray-7'])}>No items found.</div>
             )
@@ -176,13 +167,14 @@ function HomePage() {
           {hasNextPage && (
             <button
               className={getClasses([styles.loadMoreBtn, 'text-headline-6', 'color-black-6'])}
-              onClick={() => setOffset(offset + limit)}
+              onClick={() => fetchNextPage()}
+              disabled={isFetchingNextPage}
             >
-              LOAD MORE
+              {isFetchingNextPage ? 'Loading...' : 'LOAD MORE'}
             </button>
           )}
         </div>}
-        {loading && <div className={styles.message}>Loading...</div>}
+        {isLoading && <div className={styles.message}>Loading...</div>}
         {total > 0 && !hasNextPage && <div className={styles.message}>No more products.</div>}
         {showScrollUp && (
           <ScrollUpButton show={showScrollUp} />

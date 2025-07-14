@@ -212,7 +212,9 @@ export class FiltersStore {
       filters.brands.length ||
       filters.maxPrice !== null ||
       filters.minPrice !== null ||
-      filters.gender
+      filters.gender || 
+      filters.sources.length ||
+      filters.isOnSale
     )) {
       // Apply parsed filters
       this.selected.color = filters.colors.length ? filters.colors.join(',') : 'All';
@@ -239,6 +241,8 @@ export class FiltersStore {
         this.selected.priceRange = priceRange;
       }
       if (filters.gender) this.selected.gender = filters.gender.toLowerCase();
+      if (filters.sources && filters.sources.length) this.selected.source = filters.sources;
+      if (filters.isOnSale) this.selected.isOnSale = filters.isOnSale;
     }
     // Always trigger search
     this.setSearchFilter(this.selected.search);

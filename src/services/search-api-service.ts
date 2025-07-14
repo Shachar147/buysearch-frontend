@@ -9,6 +9,8 @@ export interface ParsedFilters {
   minPrice: number | null;
   keywords: string[];
   gender: string | null;
+  isOnSale?: boolean | null;
+  sources?: string[];
 }
 
 export async function parseSearchQuery(query: string): Promise<ParsedFilters | null> {

@@ -49,13 +49,13 @@ const FilterBar = observer(() => {
   // Is On Sale options
   const isOnSaleOptions = [
     { label: 'All', value: undefined },
-    { label: 'On Sale', value: 'true' },
-    { label: 'Not On Sale', value: 'false' },
+    { label: 'Yes', value: 'Yes' },
+    { label: 'No', value: 'No' },
   ];
 
   return (
     <div className={getClasses([styles.filterBar])}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', width: '100%' }}>
+      <div className={styles.filterBarRow}>
         {/* First row: existing filters */}
         <div className={styles.filterItem}>
           <label className={getClasses([styles.label, 'text-caption'])}>Sort</label>
@@ -147,7 +147,7 @@ const FilterBar = observer(() => {
         </div>
       </div>
       {/* Second row: Source and Is On Sale, inside the same filterBar */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', width: '100%', marginTop: 12 }}>
+      <div className={styles.filterBarRow}>
         <div className={styles.filterItem}>
           <label className={getClasses([styles.label, 'text-caption'])}>Source</label>
           <CustomSelect
@@ -162,7 +162,9 @@ const FilterBar = observer(() => {
           <CustomSelect
             options={isOnSaleOptions}
             selected={[selected.isOnSale === undefined ? 'All' : String(selected.isOnSale)]}
-            onChange={vals => setFilter('isOnSale', vals[0] === 'All' ? undefined : vals[0] === 'true')}
+            onChange={vals => {
+              setFilter('isOnSale', vals[0] === 'All' ? undefined : vals[0])
+            }}
             defaultLabel="All"
           />
         </div>

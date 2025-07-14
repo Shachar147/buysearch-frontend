@@ -138,6 +138,11 @@ function HomePage() {
       />
       <main className={styles.main}>
         <FilterBar />
+        {total > 0 && <div className={styles.totalResultsWrapper}>
+          <div className={getClasses([styles.productCount, 'text-headline-6', 'color-black-4'])}>
+            {`Total results: ${total.toLocaleString()}`}
+          </div>
+        </div>}
         <ProductGrid
           products={allProducts.map((p) => ({
             image: p.images && p.images[0] ? p.images[0] : '',
@@ -163,7 +168,7 @@ function HomePage() {
         }
         {(total > 0) && <div className={styles.loadMoreWrapper}>
           <div className={getClasses([styles.productCount, 'text-headline-6', 'color-black-4'])}>
-            {`You've viewed ${viewed} of ${total} products`}
+            {`You've viewed ${viewed.toLocaleString()} of ${total.toLocaleString()} products`}
           </div>
           {hasNextPage && (
             <button

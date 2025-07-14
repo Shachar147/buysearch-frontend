@@ -29,6 +29,12 @@ const toOption = (v: any) => {
   return { label: String(v), value: String(v) };
 };
 
+// Utility to uppercase only the first character
+function ucfirstFirstOnly(str: string) {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 const FilterBar = observer(() => {
   const { selected, setFilter } = filtersStore;
   const { data: brands = [] } = useAllBrands();
@@ -151,7 +157,7 @@ const FilterBar = observer(() => {
         <div className={styles.filterItem}>
           <label className={getClasses([styles.label, 'text-caption'])}>Source</label>
           <CustomSelect
-            options={sourceOptions}
+            options={sourceOptions.map((o) => ({ ...o, label: ucfirstFirstOnly(o.label)}))}
             selected={selected.source}
             onChange={vals => setFilter('source', vals)}
             defaultLabel="All"

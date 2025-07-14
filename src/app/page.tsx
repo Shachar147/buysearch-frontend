@@ -30,6 +30,8 @@ function HomePage() {
     filtersStore.selected.gender,
     filtersStore.selected.isFavourite,
     filtersStore.selected.withPriceChange,
+    filtersStore.selected.source,
+    filtersStore.selected.isOnSale
   ]);
   const limit = 20;
   const {

@@ -42,6 +42,8 @@ export interface ProductFilters {
   gender?: string;
   isFavourite?: boolean;
   withPriceChange?: boolean;
+  source?: string;
+  isOnSale?: boolean;
 }
 
 export async function fetchProducts(offset = 0, limit = 20, filters: ProductFilters = {}): Promise<ProductApiResponse> {
@@ -63,6 +65,10 @@ export async function fetchProducts(offset = 0, limit = 20, filters: ProductFilt
   if (filters.limit !== undefined) params.append('limit', String(filters.limit));
   if (filters.isFavourite) params.append('isFavourite', 'true');
   if (filters.withPriceChange) params.append('withPriceChange', 'true');
+
+  if (filters.source && filters.source !== 'All') params.append('source', String(filters.source));
+  if (filters.isOnSale !== undefined) params.append('isOnSale', String(filters.isOnSale));
+
   const res = await api.get<ProductApiResponse>(`${API_BASE_URL}/products?offset=${offset}&limit=${limit}&${params.toString()}`);
   return res.data;
 }

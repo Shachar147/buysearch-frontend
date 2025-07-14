@@ -100,6 +100,8 @@ export interface Filters {
   gender: string;
   isFavourite: boolean;
   withPriceChange?: boolean;
+  source?: string | string[];
+  isOnSale?: boolean;
 }
 
 export class FiltersStore {
@@ -125,6 +127,8 @@ export class FiltersStore {
     gender: 'men',
     isFavourite: false,
     withPriceChange: false,
+    source: 'All',
+    isOnSale: undefined,
   };
 
   constructor() {

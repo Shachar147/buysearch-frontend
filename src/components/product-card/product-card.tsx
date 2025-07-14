@@ -154,7 +154,7 @@ const ProductCard = observer(({
           <span className={getClasses([styles.discountPercent, 'text-body', 'color-red-5'])}>-{discountPercent}%</span>
         )}
         <div className={getClasses([styles.price, 'text-body', 'color-black-6'])}>
-          {oldPrice && oldPrice > (price ?? 0) ? (
+          {oldPrice && Number(oldPrice) > Number(price ?? 0) ? (
             <>
               <span className={getClasses([styles.oldPrice, 'text-body', 'color-gray-5'])}>{oldPrice} {currency}</span>
               <span className={getClasses([styles.salePrice, 'text-body', 'color-red-5'])}>{price} {currency}</span>

@@ -71,7 +71,7 @@ export function queryStringToFilters(query: string): Record<string, string | str
         const label = match[1];
         const from = match[2] !== '' ? Number(match[2]) : undefined;
         const to = match[3] !== '' ? Number(match[3]) : undefined;
-        const value = `${from ?? 0}-${to ?? 2000}`;
+        const value = !from && !to ? 'All' : `${from ?? 0}-${to ?? 2000}`;
         filters[key] = { label, from, to, value };
       } else {
         filters[key] = { label: value };

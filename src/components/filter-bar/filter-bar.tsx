@@ -152,9 +152,10 @@ const FilterBar = observer(() => {
           <label className={getClasses([styles.label, 'text-caption'])}>Source</label>
           <CustomSelect
             options={sourceOptions}
-            selected={typeof selected.source === 'string' ? [selected.source] : ['All']}
-            onChange={vals => setFilter('source', vals[0])}
+            selected={selected.source}
+            onChange={vals => setFilter('source', vals)}
             defaultLabel="All"
+            multiselect
           />
         </div>
         <div className={styles.filterItem}>

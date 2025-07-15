@@ -84,6 +84,11 @@ const CustomSelect = observer(function CustomSelect({ options, itemType, selecte
     setOpen(false);
   }
 
+  // Utility for normalized comparison
+  function isSelected(value: string) {
+    return safeSelected.map(v => v.trim().toLowerCase()).includes(value.trim().toLowerCase());
+  }
+
   return (
     <div className={getClasses([styles.customSelect, isActive && styles.activeSelect])} ref={ref}>
       <div className={getClasses([styles.selected, isActive && styles.activeSelect, 'text-body'])} onClick={() => setOpen((o) => !o)}>
@@ -124,7 +129,7 @@ const CustomSelect = observer(function CustomSelect({ options, itemType, selecte
               <li
                 key={opt.value || opt.label || idx}
                 className={getClasses([
-                  safeSelected.includes(opt.value) ? styles.active : '',
+                  isSelected(opt.value) ? styles.active : '',
                   'text-body',
                   opt.disabled && 'text-disabled',
                 ])}
@@ -136,7 +141,7 @@ const CustomSelect = observer(function CustomSelect({ options, itemType, selecte
                   <label className={getClasses([styles.checkboxLabel, 'text-body', opt.disabled && 'text-disabled'])}>
                     <input
                       type="checkbox"
-                      checked={safeSelected.includes(opt.value)}
+                      checked={isSelected(opt.value)}
                       onChange={() => !opt.disabled && toggleOption(opt.value)}
                       onClick={e => e.stopPropagation()}
                       disabled={opt.disabled}

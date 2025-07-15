@@ -71,7 +71,8 @@ export function queryStringToFilters(query: string): Record<string, string | str
         const label = match[1];
         const from = match[2] !== '' ? Number(match[2]) : undefined;
         const to = match[3] !== '' ? Number(match[3]) : undefined;
-        const value = !from && !to ? 'All' : `${from ?? 0}-${to ?? from < 2000 ? 2000 : 10000}`;
+        console.log({ label, from, to });
+        const value = !from && !to ? 'All' : `${from ?? 0}-${to ?? (from < 2000 ? 2000 : 10000)}`;
         filters[key] = { label, from, to, value };
       } else {
         filters[key] = { label: value };
@@ -120,14 +121,14 @@ export class FiltersStore {
   selected: Filters = {
     search: '',
     sort: 'Relevance',
-    brand: 'All',
-    category: 'All',
-    color: 'All',
+    brand: ['All'],
+    category: ['All'],
+    color: ['All'],
     priceRange: { label: 'All' },
     gender: 'men',
     isFavourite: false,
     withPriceChange: false,
-    source: 'All',
+    source: ['All'],
     isOnSale: undefined,
   };
 
@@ -178,22 +179,21 @@ export class FiltersStore {
     if (Array.isArray(selected.brand)) {
       const brands = selected.brand.filter((b: string) => b !== 'All');
       if (brands.length > 0) filters.brand = brands.join(',');
-    } else if (selected.brand !== 'All') {
-      filters.brand = selected.brand;
     }
     // Handle category
     if (Array.isArray(selected.category)) {
       const categories = selected.category.filter((c: string) => c !== 'All');
       if (categories.length > 0) filters.category = categories.join(',');
-    } else if (selected.category !== 'All') {
-      filters.category = selected.category;
     }
     // Handle color
     if (Array.isArray(selected.color)) {
       const colors = selected.color.filter((c: string) => c !== 'All');
       if (colors.length > 0) filters.color = colors.join(',');
-    } else if (selected.color !== 'All') {
-      filters.color = selected.color;
+    }
+    // Handle source
+    if (Array.isArray(selected.source)) {
+      const sources = selected.source.filter((s: string) => s !== 'All');
+      if (sources.length > 0) filters.source = sources.join(',');
     }
     // Handle priceRange
     filters.priceFrom = typeof selected.priceRange === 'object' && 'from' in selected.priceRange ? selected.priceRange.from : undefined;
@@ -217,9 +217,9 @@ export class FiltersStore {
       filters.isOnSale
     )) {
       // Apply parsed filters
-      this.selected.color = filters.colors.length ? filters.colors.join(',') : 'All';
-      this.selected.category = filters.categories.length ? filters.categories.join(',') : 'All';
-      this.selected.brand = filters.brands.length ? filters.brands.join(',') : 'All';
+      this.selected.color = filters.colors.length ? filters.colors : ['All'];
+      this.selected.category = filters.categories.length ? filters.categories : ['All'];
+      this.selected.brand = filters.brands.length ? filters.brands : ['All'];
       const priceRange = getPriceRangeOption(filters.minPrice, filters.maxPrice);
       if (priceRange.label === 'Custom' || priceRange.label.startsWith('Custom')) {
         // Only set a custom label if the range is not a built-in option
@@ -241,7 +241,7 @@ export class FiltersStore {
         this.selected.priceRange = priceRange;
       }
       if (filters.gender) this.selected.gender = filters.gender.toLowerCase();
-      if (filters.sources && filters.sources.length) this.selected.source = filters.sources;
+      this.selected.source = filters.sources && filters.sources.length ? filters.sources : ['All'];
       if (filters.isOnSale) this.selected.isOnSale = filters.isOnSale;
     }
     // Always trigger search
@@ -257,7 +257,11 @@ export class FiltersStore {
       this.selected.search = value;
       this.debouncedSearch(value);
     } else {
-      (this.selected as any)[key] = value;
+      if (['category', 'color', 'brand', 'source'].includes(key)) {
+        (this.selected as any)[key] = Array.isArray(value) ? value : [value];
+      } else {
+        (this.selected as any)[key] = value;
+      }
     }
   }
 

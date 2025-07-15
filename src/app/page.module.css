@@ -25,6 +25,12 @@
   color: #888;
 }
 
+.totalResultsWrapper {
+  max-width: 400px;
+  margin: 0 auto 32px auto;
+  text-align: center;
+}
+
 .loadMoreWrapper {
   max-width: 400px;
   margin: 32px auto 0 auto;

@@ -10,6 +10,7 @@ import ScrollUpButton from '../components/scroll-up-button';
 import filtersStore, { filtersToQueryString, queryStringToFilters } from '../stores/filters-store';
 import { toJS, reaction } from 'mobx';
 import { useInfiniteProducts } from '../api/product/queries';
+import { fetchBulkPriceHistory } from '../services/product-api-service';
 
 function HomePage() {
   const [showScrollUp, setShowScrollUp] = useState(false);
@@ -30,6 +31,8 @@ function HomePage() {
     filtersStore.selected.gender,
     filtersStore.selected.isFavourite,
     filtersStore.selected.withPriceChange,
+    filtersStore.selected.source,
+    filtersStore.selected.isOnSale
   ]);
   const limit = 20;
   const {
@@ -42,7 +45,19 @@ function HomePage() {
 
   const allProducts = data?.pages.flatMap((page) => page.data) ?? [];
   const total = data?.pages[0]?.total ?? 0;
-  const priceHistoryMap = {};
+  const [priceHistoryMap, setPriceHistoryMap] = useState<Record<number, { price: number; date: string }[]>>({});
+
+  useEffect(() => {
+    if (allProducts.length === 0) return;
+    const productIds = allProducts.map((p) => p.id).filter(Boolean);
+    fetchBulkPriceHistory(productIds, 5)
+      .then((result) => {
+        setPriceHistoryMap(result);
+      })
+      .catch(() => {
+        setPriceHistoryMap({});
+      });
+  }, [allProducts]);
 
   // On mount, read filters from hash if present
   useEffect(() => {
@@ -136,6 +151,11 @@ function HomePage() {
       />
       <main className={styles.main}>
         <FilterBar />
+        {total > 0 && <div className={styles.totalResultsWrapper}>
+          <div className={getClasses([styles.productCount, 'text-headline-6', 'color-black-4'])}>
+            {`Total results: ${total.toLocaleString()}`}
+          </div>
+        </div>}
         <ProductGrid
           products={allProducts.map((p) => ({
             image: p.images && p.images[0] ? p.images[0] : '',
@@ -150,7 +170,8 @@ function HomePage() {
             source: p.source?.name,
             updatedAt: p.updatedAt,
             createdAt: p.createdAt,
-            productId: p.id
+            productId: p.id,
+            categories: p.categories ? p.categories.map((c) => c.name) : [],
           }))}
           priceHistoryMap={priceHistoryMap}
         />
@@ -161,7 +182,7 @@ function HomePage() {
         }
         {(total > 0) && <div className={styles.loadMoreWrapper}>
           <div className={getClasses([styles.productCount, 'text-headline-6', 'color-black-4'])}>
-            {`You've viewed ${viewed} of ${total} products`}
+            {`You've viewed ${viewed.toLocaleString()} of ${total.toLocaleString()} products`}
           </div>
           {hasNextPage && (
             <button

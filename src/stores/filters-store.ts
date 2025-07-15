@@ -71,7 +71,7 @@ export function queryStringToFilters(query: string): Record<string, string | str
         const label = match[1];
         const from = match[2] !== '' ? Number(match[2]) : undefined;
         const to = match[3] !== '' ? Number(match[3]) : undefined;
-        const value = !from && !to ? 'All' : `${from ?? 0}-${to ?? 2000}`;
+        const value = !from && !to ? 'All' : `${from ?? 0}-${to ?? from < 2000 ? 2000 : 10000}`;
         filters[key] = { label, from, to, value };
       } else {
         filters[key] = { label: value };
@@ -100,6 +100,8 @@ export interface Filters {
   gender: string;
   isFavourite: boolean;
   withPriceChange?: boolean;
+  source?: string[];
+  isOnSale?: boolean;
 }
 
 export class FiltersStore {
@@ -125,6 +127,8 @@ export class FiltersStore {
     gender: 'men',
     isFavourite: false,
     withPriceChange: false,
+    source: 'All',
+    isOnSale: undefined,
   };
 
   constructor() {
@@ -208,7 +212,9 @@ export class FiltersStore {
       filters.brands.length ||
       filters.maxPrice !== null ||
       filters.minPrice !== null ||
-      filters.gender
+      filters.gender || 
+      filters.sources.length ||
+      filters.isOnSale
     )) {
       // Apply parsed filters
       this.selected.color = filters.colors.length ? filters.colors.join(',') : 'All';
@@ -218,7 +224,7 @@ export class FiltersStore {
       if (priceRange.label === 'Custom' || priceRange.label.startsWith('Custom')) {
         // Only set a custom label if the range is not a built-in option
         const min = filters.minPrice === null ? 0 : filters.minPrice;
-        const max = filters.maxPrice === null ? 2000 : filters.maxPrice;
+        const max = filters.maxPrice === null ? min < 2000 ? 2000 : 10000 : filters.maxPrice;
         if (!priceRangeOptions.some(opt => opt.from === min && opt.to === max)) {
           const customRange: PriceRangeOption = {
             label: `Custom: ${min} - ${max} ILS`,
@@ -235,6 +241,8 @@ export class FiltersStore {
         this.selected.priceRange = priceRange;
       }
       if (filters.gender) this.selected.gender = filters.gender.toLowerCase();
+      if (filters.sources && filters.sources.length) this.selected.source = filters.sources;
+      if (filters.isOnSale) this.selected.isOnSale = filters.isOnSale;
     }
     // Always trigger search
     this.setSearchFilter(this.selected.search);

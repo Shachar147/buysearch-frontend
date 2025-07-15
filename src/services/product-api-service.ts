@@ -42,7 +42,7 @@ export interface ProductFilters {
   gender?: string;
   isFavourite?: boolean;
   withPriceChange?: boolean;
-  source?: string;
+  source?: string[];
   isOnSale?: boolean;
 }
 

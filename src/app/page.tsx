@@ -10,6 +10,7 @@ import ScrollUpButton from '../components/scroll-up-button';
 import filtersStore, { filtersToQueryString, queryStringToFilters } from '../stores/filters-store';
 import { toJS, reaction } from 'mobx';
 import { useInfiniteProducts } from '../api/product/queries';
+import { fetchBulkPriceHistory } from '../services/product-api-service';
 
 function HomePage() {
   const [showScrollUp, setShowScrollUp] = useState(false);
@@ -44,7 +45,19 @@ function HomePage() {
 
   const allProducts = data?.pages.flatMap((page) => page.data) ?? [];
   const total = data?.pages[0]?.total ?? 0;
-  const priceHistoryMap = {};
+  const [priceHistoryMap, setPriceHistoryMap] = useState<Record<number, { price: number; date: string }[]>>({});
+
+  useEffect(() => {
+    if (allProducts.length === 0) return;
+    const productIds = allProducts.map((p) => p.id).filter(Boolean);
+    fetchBulkPriceHistory(productIds, 5)
+      .then((result) => {
+        setPriceHistoryMap(result);
+      })
+      .catch(() => {
+        setPriceHistoryMap({});
+      });
+  }, [allProducts]);
 
   // On mount, read filters from hash if present
   useEffect(() => {
@@ -157,7 +170,8 @@ function HomePage() {
             source: p.source?.name,
             updatedAt: p.updatedAt,
             createdAt: p.createdAt,
-            productId: p.id
+            productId: p.id,
+            categories: p.categories ? p.categories.map((c) => c.name) : [],
           }))}
           priceHistoryMap={priceHistoryMap}
         />

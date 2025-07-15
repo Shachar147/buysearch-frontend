@@ -26,12 +26,14 @@ export interface ProductCardProps {
   productId: number;
   isFavourite?: boolean;
   priceHistory?: { price: number; date: string }[];
+  categories?: (string | { name: string })[];
 }
 
 const DEFAULT_IMAGE_URL = "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg";
 
 const ProductCard = observer(({
-  image, title, brand, price, oldPrice, currency, colors, url, images = [], source, isSellingFast = false, hasMoreColours = false, updatedAt, createdAt, productId, isFavourite, priceHistory: externalPriceHistory
+  image, title, brand, price, oldPrice, currency, colors, url, images = [], source, isSellingFast = false, hasMoreColours = false, updatedAt, createdAt, productId, isFavourite, priceHistory: externalPriceHistory,
+  categories = [],
 }: ProductCardProps) => {
   const firstImage = images[0] || image;
   const secondImage = images[1] || images[0] || image;
@@ -100,6 +102,12 @@ const ProductCard = observer(({
     );
   };
 
+  // Render categories as comma-separated string
+  const categoryNames = categories
+    .map((c) => typeof c === 'string' ? c : (c && typeof c === 'object' && 'name' in c ? c.name : ''))
+    .filter(Boolean)
+    .join(', ');
+
   return (
     <div
       className={styles.card}
@@ -149,7 +157,7 @@ const ProductCard = observer(({
       </div>
       <div className={getClasses([styles.title, 'text-headline-4', 'color-black-6'])}>{title}</div>
       <div className={getClasses([styles.brand, 'text-body', 'color-gray-6'])}>{brand}</div>
-      <div className={styles.priceRow}>
+      <div className={getClasses([styles.priceRow])}>
         {discountPercent !== null && (
           <span className={getClasses([styles.discountPercent, 'text-body', 'color-red-5'])}>-{discountPercent}%</span>
         )}
@@ -166,6 +174,11 @@ const ProductCard = observer(({
           <ProductPriceTrend history={priceHistory} />
         </div>
       </div>
+      {categoryNames && (
+        <div className={getClasses([styles.categories, 'text-body', 'color-black-4'])}>
+          {`Categories: ${categoryNames}`}
+        </div>
+      )}
       <div className={getClasses([styles.colors, 'text-body', 'color-black-4'])}>
         {colors.length > 0 ? `Colors: ${colors.join(', ')}` : ''}
       </div>

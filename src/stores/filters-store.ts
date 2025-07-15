@@ -71,7 +71,7 @@ export function queryStringToFilters(query: string): Record<string, string | str
         const label = match[1];
         const from = match[2] !== '' ? Number(match[2]) : undefined;
         const to = match[3] !== '' ? Number(match[3]) : undefined;
-        const value = !from && !to ? 'All' : `${from ?? 0}-${to ?? 2000}`;
+        const value = !from && !to ? 'All' : `${from ?? 0}-${to ?? from < 2000 ? 2000 : 10000}`;
         filters[key] = { label, from, to, value };
       } else {
         filters[key] = { label: value };
@@ -224,7 +224,7 @@ export class FiltersStore {
       if (priceRange.label === 'Custom' || priceRange.label.startsWith('Custom')) {
         // Only set a custom label if the range is not a built-in option
         const min = filters.minPrice === null ? 0 : filters.minPrice;
-        const max = filters.maxPrice === null ? 2000 : filters.maxPrice;
+        const max = filters.maxPrice === null ? min < 2000 ? 2000 : 10000 : filters.maxPrice;
         if (!priceRangeOptions.some(opt => opt.from === min && opt.to === max)) {
           const customRange: PriceRangeOption = {
             label: `Custom: ${min} - ${max} ILS`,

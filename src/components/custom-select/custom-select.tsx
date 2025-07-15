@@ -115,7 +115,7 @@ const CustomSelect = observer(function CustomSelect({ options, itemType, selecte
 
   // Utility for normalized comparison
   function isSelected(value: string) {
-    return safeSelected.map(v => v.trim().toLowerCase()).includes(value.trim().toLowerCase());
+    return safeSelected.map(v => v?.trim()?.toLowerCase()).includes(value?.trim()?.toLowerCase());
   }
 
   return (

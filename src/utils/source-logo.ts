@@ -15,6 +15,8 @@ export default function getSourceLogo(source?: string): string | undefined {
       return 'https://buysearch.s3.eu-north-1.amazonaws.com/logos/factory54.png';
     case 'itaybrands':
       return 'https://buysearch.s3.eu-north-1.amazonaws.com/logos/itaybrands.png';
+    case 'zara':
+      return 'https://buysearch.s3.eu-north-1.amazonaws.com/logos/zara.png';
     // Add more sources here as needed
     default:
       return undefined;

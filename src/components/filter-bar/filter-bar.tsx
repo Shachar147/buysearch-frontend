@@ -120,6 +120,7 @@ const FilterBar = observer(() => {
               setFilter('priceRange', found);
             }}
             defaultLabel="All"
+            disableAlphabetSorting
             renderCustomContent={() => (
               <div className={styles.sliderContainer}>
                 <Slider

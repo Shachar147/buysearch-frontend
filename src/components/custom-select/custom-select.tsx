@@ -18,12 +18,14 @@ interface CustomSelectProps {
   multiselect?: boolean;
   itemType?: string;
   renderCustomContent?: (() => React.ReactNode) | undefined;
+  disableAlphabetSorting?: boolean;
 }
 
-const CustomSelect = observer(function CustomSelect({ options, itemType, selected, onChange, placeholder = 'Select...', defaultLabel = 'All', multiselect = false, renderCustomContent }: CustomSelectProps) {
+const CustomSelect = observer(function CustomSelect({ options, itemType, selected, onChange, placeholder = 'Select...', defaultLabel = 'All', multiselect = false, renderCustomContent, disableAlphabetSorting = false }: CustomSelectProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const ref = useRef<HTMLDivElement>(null);
+  const initialSelected = useRef<string[]>([]);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -36,7 +38,34 @@ const CustomSelect = observer(function CustomSelect({ options, itemType, selecte
   }, []);
 
   const safeSelected = Array.isArray(selected) ? selected : [];
-  const filteredOptions = options.filter(opt => (typeof opt.label === 'string' ? opt.label.toLowerCase() : '').includes(search.toLowerCase()));
+  let filteredOptions = options.filter(opt => (typeof opt.label === 'string' ? opt.label.toLowerCase() : '').includes(search.toLowerCase()));
+  // On initial open for multiselect, show selected items first (from initialSelected) until dropdown is closed
+  let selectedSet = new Set<string>();
+  if (multiselect && open) {
+    // Use the snapshot from when dropdown was opened
+    selectedSet = new Set(initialSelected.current.map(v => v.trim().toLowerCase()));
+    const allOption = filteredOptions.find(opt => opt.value === defaultLabel);
+    const restOptions = filteredOptions.filter(opt => opt.value !== defaultLabel);
+    const selectedOptions = restOptions.filter(opt => selectedSet.has(opt.value.trim().toLowerCase()));
+    const unselectedOptions = restOptions.filter(opt => !selectedSet.has(opt.value.trim().toLowerCase()));
+    const sortFn = (a: Option, b: Option) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' });
+    const sortedSelected = disableAlphabetSorting ? selectedOptions : [...selectedOptions].sort(sortFn);
+    const sortedUnselected = disableAlphabetSorting ? unselectedOptions : [...unselectedOptions].sort(sortFn);
+    filteredOptions = [
+      ...(allOption ? [allOption] : []),
+      ...sortedSelected,
+      ...sortedUnselected,
+    ];
+  } else if (!disableAlphabetSorting) {
+    // Always sort alphabetically if not disabled (for single select or after user interaction)
+    const allOption = filteredOptions.find(opt => opt.value === defaultLabel);
+    const restOptions = filteredOptions.filter(opt => opt.value !== defaultLabel);
+    filteredOptions = [
+      ...(allOption ? [allOption] : []),
+      ...restOptions.sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: 'base' })),
+    ];
+  }
+
   const isActive = safeSelected.length > 0 && !(safeSelected.length === 1 && safeSelected[0] === defaultLabel);
   const customSelected = safeSelected.length === 1 && (safeSelected[0].toLowerCase().startsWith('custom') || safeSelected[0] === 'Custom');
   let displayLabel: string;
@@ -91,7 +120,18 @@ const CustomSelect = observer(function CustomSelect({ options, itemType, selecte
 
   return (
     <div className={getClasses([styles.customSelect, isActive && styles.activeSelect])} ref={ref}>
-      <div className={getClasses([styles.selected, isActive && styles.activeSelect, 'text-body'])} onClick={() => setOpen((o) => !o)}>
+      <div
+        className={getClasses([styles.selected, isActive && styles.activeSelect, 'text-body'])}
+        onClick={() => {
+          setOpen((o) => {
+            const willOpen = !o;
+            if (willOpen && multiselect) {
+              initialSelected.current = [...safeSelected];
+            }
+            return willOpen;
+          });
+        }}
+      >
         {displayLabel}
         {isActive ? (
           <span

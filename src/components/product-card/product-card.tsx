@@ -4,10 +4,8 @@ import styles from './product-card.module.css';
 import getClasses from '../../utils/get-classes';
 import getSourceLogo from '../../utils/source-logo';
 import { getTimeAgo, formatDateTime } from '../../utils/utils';
-import favouritesStore from '../../stores/favourites-store';
-import filtersStore from '../../stores/filters-store';
-import productStore from '../../stores/product-store';
-import { runInAction } from 'mobx';
+import { useFavourites } from '../../api/favourites/queries';
+import { useAddToFavourite, useRemoveFromFavourite } from '../../api/favourites/mutations';
 import ProductPriceTrend from '../product-price-trend';
 
 export interface ProductCardProps {
@@ -49,21 +47,21 @@ const ProductCard = observer(({
   }
   const timeValue = updatedAt || createdAt;
 
-  const fav = favouritesStore.isFavourite(productId);
+  const { data: favourites, refetch: refetchFavourites } = useFavourites();
+  const addToFavouriteMutation = useAddToFavourite();
+  const removeFromFavouriteMutation = useRemoveFromFavourite();
+
+  const fav = favourites ? favourites.some((f: any) => f.productId === productId || f === productId) : false;
 
   const handleHeartClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (fav) {
-      await favouritesStore.removeFavourite(productId);
-      if (filtersStore.selected.isFavourite) {
-        runInAction(() => {
-          productStore.products = productStore.products.filter((p) => p.id != productId)
-          productStore.total -= 1;
-        });
-      }
+      await removeFromFavouriteMutation.mutateAsync(productId);
+      refetchFavourites();
     } else {
-      await favouritesStore.addFavourite(productId);
+      await addToFavouriteMutation.mutateAsync(productId);
+      refetchFavourites();
     }
   };
 

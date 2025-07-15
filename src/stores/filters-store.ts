@@ -1,9 +1,5 @@
-import { makeObservable, observable, action, runInAction, reaction, toJS, computed } from 'mobx';
-import { fetchAllBrands } from '../services/brand-api-service';
-import { fetchAllCategories } from '../services/category-api-service';
-import { fetchAllColors } from '../services/color-api-service';
-import { parseSearchQuery } from '../services/search-api-service';
-import productStore from './product-store';
+import { makeObservable, observable, action, reaction, toJS, computed } from 'mobx';
+import { ParsedFilters } from '../services/search-api-service';
 import _ from 'lodash';
 
 // Add a type for price range options
@@ -47,7 +43,13 @@ export function filtersToQueryString(filters: Record<string, any>): string {
   const params = new URLSearchParams();
   Object.entries(filters).forEach(([key, value]) => {
     if (value === undefined || value === null || value === '' || value === 'All' || (Array.isArray(value) && value.length === 0)) return;
-    if (Array.isArray(value)) {
+    if (key === 'priceRange' && typeof value === 'object' && value !== null) {
+      // Serialize priceRange as label:from-to
+      const label = value.label ?? 'All';
+      const from = value.from ?? '';
+      const to = value.to ?? '';
+      params.append('priceRange', `${label}:${from}-${to}`);
+    } else if (Array.isArray(value)) {
       value.forEach((v) => {
         if (v !== 'All' && v !== undefined && v !== null && v !== '') params.append(key, String(v));
       });
@@ -58,11 +60,23 @@ export function filtersToQueryString(filters: Record<string, any>): string {
   return params.toString();
 }
 
-export function queryStringToFilters(query: string): Record<string, string | string[]> {
+export function queryStringToFilters(query: string): Record<string, string | string[] | { label: string; from?: number; to?: number }> {
   const params = new URLSearchParams(query);
-  const filters: Record<string, string | string[]> = {};
+  const filters: Record<string, string | string[] | { label: string; from?: number; to?: number }> = {};
   for (const [key, value] of params.entries()) {
-    if (Object.prototype.hasOwnProperty.call(filters, key)) {
+    if (key === 'priceRange') {
+      // Parse priceRange from label:from-to
+      const match = value.match(/^([^:]+):([^\-]*)-([^\-]*)$/);
+      if (match) {
+        const label = match[1];
+        const from = match[2] !== '' ? Number(match[2]) : undefined;
+        const to = match[3] !== '' ? Number(match[3]) : undefined;
+        const value = !from && !to ? 'All' : `${from ?? 0}-${to ?? 2000}`;
+        filters[key] = { label, from, to, value };
+      } else {
+        filters[key] = { label: value };
+      }
+    } else if (Object.prototype.hasOwnProperty.call(filters, key)) {
       if (Array.isArray(filters[key])) {
         filters[key] = [...(filters[key] as string[]), value];
       } else {
@@ -89,14 +103,16 @@ export interface Filters {
 }
 
 export class FiltersStore {
+  // No server data, only selected filters and derived state
+  // Optionally, you can keep these for UI state if you want to sync from components:
   brands: any[] = [];
   menCategories: any[] = [];
   womenCategories: any[] = [];
+  colors: any[] = [];
   get categories() {
     return this.selected.gender?.toLowerCase() === 'men' ? this.menCategories : this.womenCategories;
   }
-  colors: any[] = [];
-  loading = false;
+  // No loading state needed for server data
 
   // todo: move these to a const file and re-use whenever needed
   selected: Filters = {
@@ -118,30 +134,33 @@ export class FiltersStore {
       womenCategories: observable,
       categories: computed,
       colors: observable,
-      loading: observable,
       selected: observable,
-      loadAll: action,
+      setBrands: action,
+      setMenCategories: action,
+      setWomenCategories: action,
+      setColors: action,
       setFilter: action,
     });
-
-    this.loadAll();
-
-    // Immediate reaction for other filters
-    reaction(
-      () => [this.selected.sort, this.selected.brand, this.selected.category, this.selected.color],
-      () => {
-        const filters = this.buildFilters();
-        productStore.reset(filters);
-        productStore.loadMore(filters);
-      }
-    );
 
     reaction(
       () => [toJS(this.selected.priceRange)],
       () => {
-        this.debouncedFilterChange();
+        this.setSearchFilter(this.selected.search);
       }
     )
+  }
+
+  setBrands = (brands: any[]) => {
+    this.brands = brands;
+  }
+  setMenCategories = (categories: any[]) => {
+    this.menCategories = categories;
+  }
+  setWomenCategories = (categories: any[]) => {
+    this.womenCategories = categories;
+  }
+  setColors = (colors: any[]) => {
+    this.colors = colors;
   }
 
   buildFilters() {
@@ -182,33 +201,7 @@ export class FiltersStore {
     return filters;
   }
 
-  async loadAll() {
-    this.loading = true;
-    try {
-      const [brands, menCategories, womenCategories, colors] = await Promise.all([
-        fetchAllBrands(),
-        fetchAllCategories('men'),
-        fetchAllCategories('women'),
-        fetchAllColors(),
-      ]);
-      runInAction(() => {
-        const brandNamesAliases = ['abercrombie and fitch', 'ellesse'];
-        const brandNames = new Set(brands.map((b: any) => b.name?.toLowerCase?.() || b?.toLowerCase?.()));
-        this.brands = brands;
-        this.menCategories = menCategories.filter((c: any) => !brandNames.has(c.name?.toLowerCase() || c?.toLowerCase?.()) && !brandNamesAliases.includes(c.name?.toLowerCase?.()));
-        this.womenCategories = womenCategories.filter((c: any) => !brandNames.has(c.name?.toLowerCase() || c?.toLowerCase?.()) && !brandNamesAliases.includes(c.name?.toLowerCase?.()));
-        this.colors = colors;
-      });
-    } finally {
-      runInAction(() => {
-        this.loading = false;
-      });
-    }
-  }
-
-  setSearchFilter = async (value: any) => {  
-    this.selected.search = value;
-    const filters = await parseSearchQuery(value);
+  applyParsedFilters = (filters: ParsedFilters | null) => {
     if (filters && (
       filters.colors.length ||
       filters.categories.length ||
@@ -244,33 +237,28 @@ export class FiltersStore {
       if (filters.gender) this.selected.gender = filters.gender.toLowerCase();
     }
     // Always trigger search
-    this.debouncedFilterChange();
+    this.setSearchFilter(this.selected.search);
   }
 
   debouncedSearch = _.debounce((value) => {
     void this.setSearchFilter(value)
   }, 300);
 
-  debouncedFilterChange = _.debounce(() => {
-    const filters = this.buildFilters();
-    productStore.reset(filters);
-    productStore.loadMore(filters);
-  }, 600);
-
-  setFilter = async (key: keyof typeof this.selected, value: any) => {
+  setFilter = (key: keyof Filters, value: any) => {
     if (key === 'search') {
       this.selected.search = value;
       this.debouncedSearch(value);
     } else {
-      this.selected[key] = value;
+      (this.selected as any)[key] = value;
     }
+  }
+
+  setSearchFilter = (value: any) => {
+    this.selected.search = value;
   }
 
   setGender = (gender: string) => {
     this.selected.gender = gender;
-    const filters = this.buildFilters();
-    productStore.reset(filters);
-    productStore.loadMore(filters);
   }
 }
 

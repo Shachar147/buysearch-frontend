@@ -8,6 +8,9 @@ import { priceRangeOptions } from '../../stores/filters-store';
 import { ucfirst } from '../../utils/utils';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
+import { useAllBrands } from '../../api/brand/queries';
+import { useAllColors } from '../../api/color/queries';
+import { useAllCategories } from '../../api/category/queries';
 
 const sortOptions = [
   { label: 'Relevance', value: 'Relevance' },
@@ -26,8 +29,12 @@ const toOption = (v: any) => {
 };
 
 const FilterBar = observer(() => {
-  const { brands, categories, colors, selected, setFilter, loading } = filtersStore;
-  const isCustom = selected.priceRange && typeof selected.priceRange === 'object' && selected.priceRange.label && selected.priceRange.label.startsWith('Custom');
+  const { selected, setFilter } = filtersStore;
+  const { data: brands = [] } = useAllBrands();
+  const { data: colors = [] } = useAllColors();
+  const { data: menCategories = [] } = useAllCategories('men');
+  const { data: womenCategories = [] } = useAllCategories('women');
+  const categories = selected.gender?.toLowerCase() === 'men' ? menCategories : womenCategories;
   const min = 0;
   const max = 2000;
   const step = 10;

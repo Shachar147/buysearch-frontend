@@ -50,7 +50,9 @@ export async function fetchProducts(offset = 0, limit = 20, filters: ProductFilt
   if (filters.brand && filters.brand !== 'All') params.append('brand', filters.brand);
   if (filters.category && filters.category !== 'All') params.append('category', filters.category);
   if (filters.priceFrom !== undefined) params.append('priceFrom', String(filters.priceFrom));
+  else if (filters.priceRange?.from !== undefined) params.append('priceFrom', String(filters.priceRange.from));
   if (filters.priceTo !== undefined) params.append('priceTo', String(filters.priceTo));
+  else if (filters.priceRange?.to !== undefined) params.append('priceTo', String(filters.priceRange.to));
 
   if (params.size == 0 && filters.search) params.append('search', filters.search);
 

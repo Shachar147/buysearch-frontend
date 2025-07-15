@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { register } from '../../services/auth-api-service';
+import { useRegister } from '../../api/auth/mutations';
 import styles from '../login/login.module.css';
 import Header from '../../components/header/header';
 import { useRouter } from 'next/navigation';
@@ -13,30 +13,37 @@ function RegisterPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const registerMutation = useRegister();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
     setError('');
+    setLoading(true);
     if (password !== passwordAgain) {
       setError('Passwords do not match');
       setLoading(false);
       return;
     }
-    try {
-      const res = await register(username, password);
-      if (res.status === 'success') {
-        router.push('/login');
-      } else if (res.error === 'userAlreadyExist') {
-        setError('Username already exists');
-      } else {
-        setError(res.error || 'Registration failed');
+    registerMutation.mutate(
+      { username, password },
+      {
+        onSuccess: (res: any) => {
+          if (res.status === 'success') {
+            router.push('/login');
+          } else if (res.error === 'userAlreadyExist') {
+            setError('Username already exists');
+          } else {
+            setError(res.error || 'Registration failed');
+          }
+        },
+        onError: () => {
+          setError('Registration failed');
+        },
+        onSettled: () => {
+          setLoading(false);
+        },
       }
-    } catch (e: any) {
-      setError('Registration failed');
-    } finally {
-      setLoading(false);
-    }
+    );
   }
 
   return (

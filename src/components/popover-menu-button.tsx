@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useRef, useState, useEffect, ReactElement, cloneElement } from 'react';
 import { createPortal } from 'react-dom';
 

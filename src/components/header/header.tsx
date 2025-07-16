@@ -6,6 +6,7 @@ import styles from './header.module.css';
 import { isLoggedIn } from '../../utils/auth';
 import Cookies from 'js-cookie';
 import { useParsedSearchQuery } from '../../api/search/queries';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface HeaderProps {
     hideSearch?: boolean;
@@ -23,6 +24,7 @@ const Header = (props: HeaderProps) => {
 
   const [loggedIn, setLoggedIn] = useState(false);
   const [showFavourites, setShowFavourites] = useState(false);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     setLoggedIn(isLoggedIn());
@@ -30,6 +32,7 @@ const Header = (props: HeaderProps) => {
 
   function handleLogout() {
     Cookies.remove('accessToken');
+    queryClient.invalidateQueries({ queryKey: ['saved-filters'] });
     window.location.reload();
   }
 

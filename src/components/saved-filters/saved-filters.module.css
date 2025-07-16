@@ -73,6 +73,8 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  max-height: 340px;
+  overflow-y: auto;
 }
 
 .filterItem {

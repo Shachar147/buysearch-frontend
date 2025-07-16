@@ -100,7 +100,7 @@ export interface Filters {
   gender: string;
   isFavourite: boolean;
   withPriceChange?: boolean;
-  source?: string[];
+  source?: string | string[];
   isOnSale?: boolean;
 }
 

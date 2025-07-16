@@ -56,10 +56,21 @@ export async function fetchProducts(offset = 0, limit = 20, filters: ProductFilt
   if (filters.priceTo !== undefined) params.append('priceTo', String(filters.priceTo));
   else if (filters.priceRange?.to !== undefined) params.append('priceTo', String(filters.priceRange.to));
 
-  if (filters.source && filters.source !== 'All') params.append('source', String(filters.source));
+  if (filters.source) {
+    if (Array.isArray(filters.source)) {
+      const filtered = filters.source.filter(s => s !== 'All');
+      if (filtered.length > 0) params.append('source', filtered.join(','));
+    } else if (filters.source !== 'All') {
+      params.append('source', String(filters.source));
+    }
+  }
   if (filters.isOnSale !== undefined) params.append('isOnSale', String(filters.isOnSale));
 
-  if (params.size == 0 && filters.search) params.append('search', filters.search);
+  if (filters.search && !(
+    filters.brand != 'All' || filters.category != 'All' || filters.priceFrom || filters.priceRange?.from || filters.priceTo || filters.priceRange?.to
+  )) {
+    params.append('search', filters.search);
+  }
 
   if (filters.gender) params.append('gender', filters.gender);
   else params.append('gender', 'men'); // todo: add to a const of defaults

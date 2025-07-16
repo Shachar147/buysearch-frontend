@@ -159,7 +159,7 @@ const FilterBar = observer(() => {
           <label className={getClasses([styles.label, 'text-caption'])}>Source</label>
           <CustomSelect
             options={sourceOptions.map((o) => ({ ...o, label: ucfirstFirstOnly(o.label)}))}
-            selected={selected.source}
+            selected={Array.isArray(selected.source) ? selected.source : [selected.source]}
             onChange={vals => setFilter('source', vals)}
             defaultLabel="All"
             multiselect

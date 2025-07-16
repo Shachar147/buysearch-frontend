@@ -241,7 +241,15 @@ const SavedFilters = observer(() => {
               <div key={filter.id} className={getClasses([styles.filterItem, 'flex', 'items-center', styles.filterRowBg])}>
                 <div className={getClasses(['flex', 'flex-column', 'items-start', 'flex-1'])}>
                   <span className={getClasses([styles.filterName])} title={filter.name}>{filter.name}</span>
-                  <span className={getClasses([styles.filterDate])}>{new Date(filter.createdAt).toLocaleDateString()}</span>
+                  <span className={getClasses([styles.filterDate])}>{
+                    (() => {
+                      const d = new Date(filter.createdAt);
+                      const day = String(d.getDate()).padStart(2, '0');
+                      const month = String(d.getMonth() + 1).padStart(2, '0');
+                      const year = d.getFullYear();
+                      return `${day}/${month}/${year}`;
+                    })()
+                  }</span>
                 </div>
                 <div className={getClasses(['flex', 'gap-4', 'justify-center', styles.actionButtons])}>
                   {isEditing ? (

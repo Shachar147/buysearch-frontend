@@ -3,6 +3,7 @@ import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import ProductGrid from '../components/product-grid/product-grid';
 import FilterBar from '../components/filter-bar/filter-bar';
+import SavedFilters from '../components/saved-filters/saved-filters';
 import styles from './page.module.css';
 import Header from '../components/header/header';
 import getClasses from '../utils/get-classes';
@@ -46,10 +47,22 @@ function HomePage() {
   const allProducts = data?.pages.flatMap((page) => page.data) ?? [];
   const total = data?.pages[0]?.total ?? 0;
   const [priceHistoryMap, setPriceHistoryMap] = useState<Record<number, { price: number; date: string }[]>>({});
+  const [lastProductIds, setLastProductIds] = useState<number[]>([]);
 
   useEffect(() => {
-    if (allProducts.length === 0) return;
     const productIds = allProducts.map((p) => p.id).filter(Boolean);
+
+    // Only fetch if productIds have changed
+    if (
+      productIds.length === 0 ||
+      (lastProductIds.length === productIds.length &&
+        lastProductIds.every((id, idx) => id === productIds[idx]))
+    ) {
+      return;
+    }
+
+    setLastProductIds(productIds);
+
     fetchBulkPriceHistory(productIds, 5)
       .then((result) => {
         setPriceHistoryMap(result);
@@ -57,7 +70,7 @@ function HomePage() {
       .catch(() => {
         setPriceHistoryMap({});
       });
-  }, [allProducts]);
+  }, [allProducts, lastProductIds]);
 
   // On mount, read filters from hash if present
   useEffect(() => {
@@ -150,6 +163,7 @@ function HomePage() {
         onTogglePriceChange={handleTogglePriceChange}
       />
       <main className={styles.main}>
+        <SavedFilters />
         <FilterBar />
         {total > 0 && <div className={styles.totalResultsWrapper}>
           <div className={getClasses([styles.productCount, 'text-headline-6', 'color-black-4'])}>

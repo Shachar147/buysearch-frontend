@@ -5,6 +5,7 @@ import { useLogin } from '../../api/auth/mutations';
 import styles from './login.module.css';
 import Header from '../../components/header/header';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -14,6 +15,7 @@ export default function LoginPage() {
   const router = useRouter();
 
   const loginMutation = useLogin();
+  const queryClient = useQueryClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,6 +26,7 @@ export default function LoginPage() {
       {
         onSuccess: (res: any) => {
           if (res.status === 'success') {
+            queryClient.invalidateQueries({ queryKey: ['saved-filters'] });
             router.push('/');
           } else {
             setError(res.error || 'Login failed');

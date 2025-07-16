@@ -1,0 +1,212 @@
+.container {
+  background: var(--bs-white);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--bs-shadow-1);
+  border: 1px solid var(--bs-gray-3);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.header h4 {
+  margin: 0;
+  color: var(--bs-black-6);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.saveButton {
+  background: var(--bs-red-5);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.saveButton:hover:not(:disabled) {
+  background: var(--bs-red-6);
+}
+
+.saveButton:disabled {
+  background: var(--bs-gray-3);
+  cursor: not-allowed;
+}
+
+.loading {
+  text-align: center;
+  color: var(--bs-black-4);
+  font-size: 14px;
+  padding: 20px;
+}
+
+.empty {
+  text-align: center;
+  color: var(--bs-black-4);
+  font-size: 14px;
+  padding: 20px;
+}
+
+.filterList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filterItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: var(--bs-gray-0);
+  border-radius: 8px;
+  border: 1px solid var(--bs-gray-2);
+}
+
+.filterInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filterName {
+  font-weight: 500;
+  color: var(--bs-black-6);
+  font-size: 14px;
+}
+
+.filterDate {
+  font-size: 12px;
+  color: var(--bs-black-4);
+}
+
+.filterActions {
+  display: flex;
+  gap: 8px;
+}
+
+.loadButton {
+  background: var(--bs-blue-5);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.loadButton:hover {
+  background: var(--bs-blue-6);
+}
+
+.deleteButton {
+  background: var(--bs-red-5);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.deleteButton:hover:not(:disabled) {
+  background: var(--bs-red-6);
+}
+
+.deleteButton:disabled {
+  background: var(--bs-gray-3);
+  cursor: not-allowed;
+}
+
+/* Modal styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--bs-white);
+  border-radius: 12px;
+  padding: 24px;
+  min-width: 400px;
+  max-width: 500px;
+  box-shadow: var(--bs-shadow-2);
+}
+
+.modal h3 {
+  margin: 0 0 16px 0;
+  color: var(--bs-black-6);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.modal input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--bs-gray-2);
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+
+.modal input:focus {
+  outline: none;
+  border-color: var(--bs-blue-5);
+}
+
+.modalActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.modalActions button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--bs-gray-2);
+  background: var(--bs-white);
+  color: var(--bs-black-6);
+  transition: all 0.2s;
+}
+
+.modalActions button:first-child:hover {
+  background: var(--bs-gray-1);
+}
+
+.modalActions button:last-child {
+  background: var(--bs-blue-5);
+  color: white;
+  border-color: var(--bs-blue-5);
+}
+
+.modalActions button:last-child:hover:not(:disabled) {
+  background: var(--bs-blue-6);
+}
+
+.modalActions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+} 

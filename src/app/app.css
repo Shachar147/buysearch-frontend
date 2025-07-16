@@ -31,6 +31,7 @@ html, body {
   flex-direction: row;
 }
 
+.flex-column,
 .flex-col {
   display: flex;
   flex-direction: column;
@@ -38,6 +39,10 @@ html, body {
 
 .flex-wrap {
   flex-wrap: wrap;
+}
+
+.gap-4 {
+  gap: 4px;
 }
 
 .gap-8 {
@@ -51,3 +56,8 @@ html, body {
 .gap-24 {
   gap: 24px;
 } 
+
+.justify-center {
+  display: flex;
+  justify-content: center;
+}

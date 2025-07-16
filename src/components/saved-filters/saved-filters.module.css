@@ -21,8 +21,20 @@
   font-weight: 600;
 }
 
+.cancelButton {
+  background: var(--bs-gray-6);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
 .saveButton {
-  background: var(--bs-red-5);
+  background: var(--bs-blue-5);
   color: white;
   border: none;
   padding: 8px 16px;
@@ -64,12 +76,14 @@
 
 .filterItem {
   display: flex;
-  justify-content: space-between;
+  flex-direction: row;
   align-items: center;
-  padding: 12px;
-  background: var(--bs-gray-0);
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--bs-gray-1);
   border-radius: 8px;
-  border: 1px solid var(--bs-gray-2);
+  padding: 10px;
+  margin-block-end: 1rem;
 }
 
 .filterInfo {
@@ -94,15 +108,26 @@
   gap: 8px;
 }
 
+.actionButtons {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  align-items: center;
+}
+
 .loadButton {
   background: var(--bs-blue-5);
-  color: white;
+  color: var(--bs-white);
   border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 12px;
+  border-radius: 6px;
+  padding-inline: 1rem;
+  padding-block: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
+  margin-inline-end: 0.5rem;
+  width: max-content;
+  min-width: 80px;
 }
 
 .loadButton:hover {
@@ -110,14 +135,15 @@
 }
 
 .deleteButton {
-  background: var(--bs-red-5);
-  color: white;
+  background: var(--bs-red-6);
+  color: var(--bs-white);
   border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 12px;
+  border-radius: 6px;
+  padding-inline: 1rem;
+  padding-block: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
 }
 
 .deleteButton:hover:not(:disabled) {
@@ -209,4 +235,136 @@
 .modalActions button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+} 
+
+/* Popover styles */
+.popover {
+  min-width: 320px;
+  width: max-content;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  padding: 16px;
+  border: 1px solid #eee;
+  position: absolute;
+  z-index: 9999;
+}
+
+.popoverHeader {
+  display: flex;
+  align-items: center;
+  /* gap: 0.5rem; */
+}
+
+.popoverTitle {
+  font-weight: 600;
+  font-size: 16px;
+  margin-right: 8px;
+}
+
+.saveButtonCircle {
+  margin-inline-start: auto;
+  margin-inline-end: 10px;
+  background: var(--bs-red-6);
+  color: var(--bs-white);
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 18px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popoverWrapper {
+  position: relative;
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.iconButton {
+  background: var(--bs-red-6);
+  color: var(--bs-white);
+  border: none;
+  border-radius: 8px;
+  width: 160px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: var(--bs-shadow-3);
+  cursor: pointer;
+  gap: 8px;
+}
+
+.editInput {
+  flex: 1;
+  margin-right: 8px;
+  border-radius: 8px;
+  padding: 4px;
+  height: 24px;
+  padding-inline: 8px;
+  border:1px solid var(--bs-gray-4);
+
+  &:active,
+  &:focus {
+    border:1px solid var(--bs-gray-4);
+    outline: none;
+  }
+}
+
+.editButton {
+  border: 1px solid var(--bs-gray-4);
+  background: var(--bs-white);
+  color: var(--bs-purple-6);
+  padding-inline: 0.75rem;
+  padding-block: 0.5rem;
+  border-radius: 6px;
+  margin-inline-end: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+} 
+
+.smallButton {
+  font-size: 0.95rem;
+  padding-inline: 0.75rem;
+  padding-block: 0.35rem;
+  min-width: 32px;
+  min-height: 32px;
+  height: 32px;
+  width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filterRowBg {
+  background: var(--bs-gray-1);
+} 
+
+.linkButton {
+  background: transparent !important;
+  color: var(--bs-blue-5) !important;
+  text-decoration: underline;
+  font-weight: 500;
+  box-shadow: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 0.5rem;
+  min-width: unset;
+  min-height: unset;
+  height: auto;
+  width: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
 } 

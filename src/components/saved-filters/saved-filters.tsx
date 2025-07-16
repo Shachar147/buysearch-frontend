@@ -315,7 +315,26 @@ const SavedFilters = observer(() => {
         >
           Saved Filtersets
         </button>
-        {showSaveAsFilterset && (
+        {editFiltersId && (
+          <div className={getClasses(['flex-row', 'align-items-center', 'gap-8', styles.editingBanner])}>
+            <span>Editing filterset <b>{savedFilters.find(f => f.id === editFiltersId)?.name}</b></span>
+            <button
+              className={getClasses([styles.saveButton, styles.smallButton, 'bg-blue-5', 'color-white'])}
+              onClick={() => handleSaveEditedFilters(savedFilters.find(f => f.id === editFiltersId))}
+              title="Save"
+            >
+              <FontAwesomeIcon icon={faCheck} />
+            </button>
+            <button
+              className={getClasses([styles.cancelButton, styles.smallButton])}
+              onClick={() => { setEditFiltersId(null); setEditName(''); }}
+              title="Cancel"
+            >
+              <FontAwesomeIcon icon={faXmark} />
+            </button>
+          </div>
+        )}
+        {showSaveAsFilterset && !editFiltersId && (
           <button
             className={getClasses([styles.saveButton, styles.smallButton, 'color-blue-5', 'bg-transparent', styles.linkButton])}
             onClick={() => { setIsModalOpen(true); setEditName(''); }}

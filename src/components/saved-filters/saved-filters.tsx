@@ -3,7 +3,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { observer } from 'mobx-react-lite';
-import { useSavedFilters, useCreateSavedFilter, useDeleteSavedFilter, useUpdateSavedFilter } from '../../api/saved-filters/queries';
+import { useSavedFilters } from '../../api/saved-filters/queries';
+import { useCreateSavedFilter, useDeleteSavedFilter, useUpdateSavedFilter, useUpdateSavedFilterLastUsed } from '../../api/saved-filters/mutations';
 import filtersStore from '../../stores/filters-store';
 import { isLoggedIn } from '../../utils/auth';
 import styles from './saved-filters.module.css';
@@ -20,6 +21,7 @@ const SavedFilters = observer(() => {
   const createSavedFilter = useCreateSavedFilter();
   const deleteSavedFilter = useDeleteSavedFilter();
   const updateSavedFilter = useUpdateSavedFilter();
+  const updateSavedFilterLastUsed = useUpdateSavedFilterLastUsed();
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
@@ -122,8 +124,8 @@ const SavedFilters = observer(() => {
     filtersStore.setFilter('withPriceChange', filters.withPriceChange || false);
     filtersStore.setFilter('source', filters.source || ['All']);
     filtersStore.setFilter('isOnSale', filters.isOnSale);
-    setIsPopoverOpen(false);
     setLastLoadedFilterId(savedFilter.id);
+    updateSavedFilterLastUsed.mutate(savedFilter.id);
   };
 
   const handleDeleteFilter = async (id: number) => {

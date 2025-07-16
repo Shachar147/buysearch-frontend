@@ -18,6 +18,7 @@ export interface SavedFilter {
   };
   createdAt: string;
   updatedAt: string;
+  lastUsedAt: string;
 }
 
 export interface CreateSavedFilterRequest {
@@ -32,7 +33,7 @@ export interface UpdateSavedFilterRequest {
 
 export async function fetchSavedFilters(): Promise<SavedFilter[]> {
   const res = await api.get<SavedFilter[]>(`${API_BASE_URL}/saved-filters`);
-  return res.data;
+  return res.data.sort((a, b) => new Date(b.lastUsedAt).getTime() - new Date(a.lastUsedAt).getTime());
 }
 
 export async function fetchSavedFilterById(id: number): Promise<SavedFilter> {

@@ -25,39 +25,4 @@ export function useSavedFilter(id: number) {
     queryFn: () => fetchSavedFilterById(id),
     enabled: !!id,
   });
-}
-
-export function useCreateSavedFilter() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: (data: CreateSavedFilterRequest) => createSavedFilter(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [SAVED_FILTERS_QUERY_KEY] });
-    },
-  });
-}
-
-export function useUpdateSavedFilter() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateSavedFilterRequest }) =>
-      updateSavedFilter(id, data),
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: [SAVED_FILTERS_QUERY_KEY] });
-      queryClient.invalidateQueries({ queryKey: [SAVED_FILTERS_QUERY_KEY, id] });
-    },
-  });
-}
-
-export function useDeleteSavedFilter() {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: (id: number) => deleteSavedFilter(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [SAVED_FILTERS_QUERY_KEY] });
-    },
-  });
 } 

@@ -22,7 +22,9 @@ export default function getSourceLogo(source?: string): string | undefined {
       return `${S3_URL}/story.webp`;
     case 'oneprojectshop':
       return `${S3_URL}/oneprojectshop.avif`;
-      // Add more sources here as needed
+    case 'chozen':
+      return `${S3_URL}/Chozen.avif`
+    // Add more sources here as needed
     default:
       return undefined;
   }

@@ -145,6 +145,18 @@
   border: none;
   background: transparent;
 }
+
+.heartIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    margin-top: 8px;
+    margin-inline-end: 8px;
+  }
+}
+
 .heartFilled {
   background: transparent;
   border: none;

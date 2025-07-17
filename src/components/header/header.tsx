@@ -151,6 +151,7 @@ const Header = (props: HeaderProps) => {
           {!props.hideGenderSwitch && <span
             className={getClasses([
               styles.iconBtn,
+              styles.heartIcon,
               props.showFavouritesOnly ? styles.heartFilled : undefined
             ])}
             title={props.showFavouritesOnly ? 'Show all products' : 'Show only favourites'}
@@ -160,10 +161,6 @@ const Header = (props: HeaderProps) => {
             aria-pressed={props.showFavouritesOnly}
             role="button"
             tabIndex={0}
-            style={{ 
-              paddingTop: "6px",
-              paddingInlineEnd: "6px"
-            }}
           >
             <svg width="32" height="32" viewBox="0 0 24 24" fill={props.showFavouritesOnly ? 'var(--bs-red-5)' : 'none'} stroke={props.showFavouritesOnly ? 'var(--bs-red-5)' : '#fff'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20.8 4.6c-1.5-1.4-3.9-1.4-5.4 0l-.7.7-.7-.7c-1.5-1.4-3.9-1.4-5.4 0-1.6 1.5-1.6 3.9 0 5.4l6.1 6.1c.2.2.5.2.7 0l6.1-6.1c1.6-1.5 1.6-3.9 0-5.4z"/>
@@ -182,10 +179,6 @@ const Header = (props: HeaderProps) => {
             aria-pressed={props.showPriceChangeOnly}
             role="button"
             tabIndex={0}
-            style={{ 
-              paddingTop: "6px",
-              paddingInlineEnd: "6px"
-            }}
           >
             {/* Trend/graph icon */}
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={props.showPriceChangeOnly ? 'var(--bs-red-5)' : '#fff'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

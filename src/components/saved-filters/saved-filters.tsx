@@ -102,6 +102,7 @@ const SavedFilters = observer(() => {
           gender: selected.gender,
           isFavourite: selected.isFavourite,
           withPriceChange: selected.withPriceChange,
+          // @ts-ignore
           source: selected.source,
           isOnSale: selected.isOnSale,
         },
@@ -177,6 +178,7 @@ const SavedFilters = observer(() => {
             gender: selected.gender,
             isFavourite: selected.isFavourite,
             withPriceChange: selected.withPriceChange,
+            // @ts-ignore
             source: selected.source,
             isOnSale: selected.isOnSale,
           },
@@ -203,6 +205,7 @@ const SavedFilters = observer(() => {
       gender: selected.gender,
       isFavourite: selected.isFavourite,
       withPriceChange: selected.withPriceChange,
+      // @ts-ignore
       source: selected.source,
       isOnSale: selected.isOnSale,
     };

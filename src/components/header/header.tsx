@@ -77,6 +77,21 @@ const Header = (props: HeaderProps) => {
         >
           MEN
         </span>
+        <span className={styles.genderDivider} />
+        <span
+          className={getClasses([
+            styles.genderOption,
+            'text-headline-6',
+            'color-white',
+            filtersStore.selected.gender === 'unisex' && styles.genderOptionActive,
+          ])}
+          onClick={() => {
+            filtersStore.setGender('unisex');
+            if (props.onGenderSwitch) props.onGenderSwitch('unisex');
+          }}
+        >
+          UNISEX
+        </span>
       </div>
     )
   }

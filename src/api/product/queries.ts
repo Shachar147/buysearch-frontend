@@ -17,7 +17,7 @@ export function useInfiniteProducts(filters: ProductFilters = {}, limit = 20) {
       },
       limit,
     ],
-    queryFn: ({ pageParam = 0 }) => fetchProducts(pageParam, limit, filters),
+    queryFn: ({ pageParam = 0 }) => fetchProducts(pageParam as number, limit, filters),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
       if (lastPage.hasNextPage) {

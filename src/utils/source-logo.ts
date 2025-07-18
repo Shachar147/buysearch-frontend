@@ -24,6 +24,14 @@ export default function getSourceLogo(source?: string): string | undefined {
       return `${S3_URL}/oneprojectshop.avif`;
     case 'chozen':
       return `${S3_URL}/Chozen.avif`
+    case 'nike':
+      return `${S3_URL}/nike.png`
+    case 'jdsports':
+      return `${S3_URL}/jd.svg`
+    case 'gant':
+      return `${S3_URL}/gant.png`;
+      case 'renuar':
+        return `${S3_URL}/renuar.png`;
     // Add more sources here as needed
     default:
       return undefined;

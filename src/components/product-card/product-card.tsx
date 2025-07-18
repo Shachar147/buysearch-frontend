@@ -53,6 +53,7 @@ const ProductCard = observer(({
   const addToFavouriteMutation = useAddToFavourite();
   const removeFromFavouriteMutation = useRemoveFromFavourite();
 
+  // @ts-ignore
   const fav = favourites ? favourites.some((f: any) => f.productId === productId || f === productId) : false;
 
   const handleHeartClick = async (e: React.MouseEvent) => {

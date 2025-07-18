@@ -115,6 +115,7 @@ const Header = (props: HeaderProps) => {
     }, [filtersStore.selected.search]);
     // Use the React Query hook for parsing the search query
     const { data: parsedFilters } = useParsedSearchQuery(debouncedSearch, {
+      // @ts-ignore
       cacheTime: 1000 * 60 * 10, // 10 minutes
       staleTime: 1000 * 60 * 5,  // 5 minutes
     });

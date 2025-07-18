@@ -6,6 +6,7 @@ export function useFavourites() {
     queryKey: ['favourites'],
     queryFn: getFavourites,
     staleTime: 1000 * 60 * 5, // 5 minutes, adjust as needed
+    // @ts-ignore
     cacheTime: 1000 * 60 * 30, // 30 minutes, adjust as needed
     refetchOnWindowFocus: false, // Don't refetch on window focus
   });

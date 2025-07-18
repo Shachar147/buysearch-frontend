@@ -191,7 +191,20 @@ function HomePage() {
         />
         {!isLoading && (!allProducts || allProducts.length === 0) && 
             (
-              <div className={getClasses([styles.empty, 'text-headline-6', 'color-gray-7'])}>No items found.</div>
+              <div className={getClasses([styles.empty, 'text-headline-6', 'color-gray-7', 'flex-column', 'gap-8'])}>
+                No items found.
+                {filtersStore.selected.search && (
+                  <span>
+                  Try{' '}
+                  <span
+                    style={{ color: '#e91e63', textDecoration: 'underline', cursor: 'pointer' }}
+                    onClick={() => filtersStore.setFilter('search', '')}
+                  >
+                    clearing the search box
+                  </span>
+                </span>
+                )}
+              </div>
             )
         }
         {(total > 0) && <div className={styles.loadMoreWrapper}>

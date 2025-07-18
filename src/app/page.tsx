@@ -11,7 +11,7 @@ import ScrollUpButton from '../components/scroll-up-button';
 import filtersStore, { filtersToQueryString, queryStringToFilters } from '../stores/filters-store';
 import { toJS, reaction } from 'mobx';
 import { useInfiniteProducts } from '../api/product/queries';
-import { fetchBulkPriceHistory } from '../services/product-api-service';
+import { fetchBulkPriceHistory, ProductFilters } from '../services/product-api-service';
 
 function HomePage() {
   const [showScrollUp, setShowScrollUp] = useState(false);
@@ -42,9 +42,11 @@ function HomePage() {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
-  } = useInfiniteProducts(selectedFilters, limit);
+  } = useInfiniteProducts(selectedFilters as ProductFilters, limit);
 
+  // @ts-ignore
   const allProducts = data?.pages.flatMap((page) => page.data) ?? [];
+  // @ts-ignore
   const total = data?.pages[0]?.total ?? 0;
   const [priceHistoryMap, setPriceHistoryMap] = useState<Record<number, { price: number; date: string }[]>>({});
   const [lastProductIds, setLastProductIds] = useState<number[]>([]);

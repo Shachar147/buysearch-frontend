@@ -47,15 +47,15 @@ const SavedFilters = observer(() => {
     function handleClickOutside(event: MouseEvent) {
       if (popoverRef.current && !popoverRef.current.contains(event.target as Node) && iconBtnRef.current && !iconBtnRef.current.contains(event.target as Node)) {
         setIsPopoverOpen(false);
-        setEditId(null);
-        setEditFiltersId(null);
+        // setEditId(null);
+        // setEditFiltersId(null);
       }
     }
     function handleEscape(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setIsPopoverOpen(false);
-        setEditId(null);
-        setEditFiltersId(null);
+        // setEditId(null);
+        // setEditFiltersId(null);
       }
     }
     if (isPopoverOpen) {
@@ -158,6 +158,7 @@ const SavedFilters = observer(() => {
     setEditFiltersId(filter.id);
     setEditId(null);
     setEditName(filter.name);
+    setIsPopoverOpen(false);
   };
 
   const handleSaveEditedFilters = async (filter: any) => {
@@ -329,7 +330,7 @@ const SavedFilters = observer(() => {
         </button>
         {editFiltersId && (
           <div className={getClasses(['flex-row', 'align-items-center', 'gap-8', styles.editingBanner])}>
-            <span>Editing filterset <b>{savedFilters.find(f => f.id === editFiltersId)?.name}</b></span>
+            <span>Editing filterset: <b>{savedFilters.find(f => f.id === editFiltersId)?.name}</b></span>
             <button
               className={getClasses([styles.saveButton, styles.smallButton, 'bg-blue-5', 'color-white'])}
               onClick={() => handleSaveEditedFilters(savedFilters.find(f => f.id === editFiltersId))}

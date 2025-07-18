@@ -17,6 +17,7 @@ const sortOptions = [
   { label: 'Relevance', value: 'Relevance' },
   { label: 'Price: Low to High', value: 'Price: Low to High' },
   { label: 'Price: High to Low', value: 'Price: High to Low' },
+  { label: 'Sale: Highest Percent', value: 'Sale: Highest Percent' },
   { label: 'Created: Newest First', value: 'Created: Newest First' },
   { label: 'Created: Oldest First', value: 'Created: Oldest First' },
   { label: 'Updated: Newest First', value: 'Updated: Newest First' },
@@ -68,7 +69,12 @@ const FilterBar = observer(() => {
           <CustomSelect
             options={sortOptions}
             selected={[selected.sort || 'Relevance']}
-            onChange={vals => setFilter('sort', vals[0])}
+            onChange={vals => {
+              setFilter('sort', vals[0]);
+              if (vals[0] === 'Sale: Highest Percent') {
+                setFilter('isOnSale', 'Yes');
+              }
+            }}
             defaultLabel="Relevance"
           />
         </div>

@@ -1,3 +1,5 @@
+"use client";
+
 import React from 'react';
 import { observer } from 'mobx-react-lite';
 import styles from './filter-bar.module.css';
@@ -51,6 +53,12 @@ const FilterBar = observer(() => {
   const to = typeof selected.priceRange === 'object' && 'to' in selected.priceRange && typeof selected.priceRange.to === 'number' ? selected.priceRange.to : max;
   const sliderValue: [number, number] = [from, to];
 
+  function handleGenderSwitch(gender: string) {
+    setFilter('gender', gender);
+    // If you want to call a prop like onGenderSwitch, add it here if passed
+    // if (props.onGenderSwitch) props.onGenderSwitch(gender);
+  }
+
   // Source options
   const sourceOptions = [{ label: 'All', value: 'All' }, ...sources.map((s: any) => ({ label: s.name, value: s.name }))];
   // Is On Sale options
@@ -60,10 +68,53 @@ const FilterBar = observer(() => {
     { label: 'No', value: 'No' },
   ];
 
+  function renderSearchInput(){
+    return (
+      <div className={getClasses([styles.filterBarRow, styles.mobileFilters])}>
+        <div className={styles.filterItem} style={{ width: '100%' }}>
+        <label className={getClasses([styles.label, 'text-caption'])}>Search</label>
+          <input
+            className={styles.headerSearchInput}
+            type="text"
+            placeholder="Search for items and brands"
+            aria-label="Search"
+            value={selected.search}
+            onChange={e => setFilter('search', e.target.value)}
+            style={{ width: '100%' }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  function renderGenderSelect(){
+    return (
+      <div className={getClasses([styles.filterBarRow, styles.mobileFilters])}>
+          <div className={styles.filterItem} style={{ width: '100%' }}>
+            <label className={getClasses([styles.label, 'text-caption'])}>Gender</label>
+            <CustomSelect
+                options={[
+                  { label: 'Women', value: 'women' },
+                  { label: 'Men', value: 'men' },
+                  { label: 'Unisex', value: 'unisex' },
+                ]}
+                selected={[selected.gender || 'women']}
+                onChange={vals => handleGenderSwitch(vals[0])}
+                defaultLabel="Gender"
+                disableAlphabetSorting
+                disableClear
+              />
+          </div>
+        </div>
+    );
+  }
+
   return (
     <div className={getClasses([styles.filterBar])}>
       <div className={styles.filterBarRow}>
         {/* First row: existing filters */}
+        {renderSearchInput()}
+        {renderGenderSelect()}
         <div className={styles.filterItem}>
           <label className={getClasses([styles.label, 'text-caption'])}>Sort</label>
           <CustomSelect

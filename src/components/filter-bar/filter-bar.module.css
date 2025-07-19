@@ -116,3 +116,22 @@
   width: 100%;
   gap: 16px;
 } 
+
+.headerSearchInput {
+  max-width: CALC(100% - 20px);
+  border: 1px solid var(--bs-gray-4);
+  border-radius: 6px;
+  background: var(--bs-gray-0);
+  padding-block: 10px;
+  padding-inline: 10px;
+}
+
+.mobileFilters {
+  display: none !important;
+}
+
+@media (max-width: 600px) {
+  .mobileFilters {
+    display: flex !important;
+  }
+}

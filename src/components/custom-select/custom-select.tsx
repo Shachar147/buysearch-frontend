@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useRef, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import styles from './custom-select.module.css';
@@ -19,9 +21,10 @@ interface CustomSelectProps {
   itemType?: string;
   renderCustomContent?: (() => React.ReactNode) | undefined;
   disableAlphabetSorting?: boolean;
+  disableClear?: boolean;
 }
 
-const CustomSelect = observer(function CustomSelect({ options, itemType, selected, onChange, placeholder = 'Select...', defaultLabel = 'All', multiselect = false, renderCustomContent, disableAlphabetSorting = false }: CustomSelectProps) {
+const CustomSelect = observer(function CustomSelect({ options, itemType, selected, onChange, placeholder = 'Select...', defaultLabel = 'All', multiselect = false, renderCustomContent, disableAlphabetSorting = false, disableClear = false }: CustomSelectProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
   const ref = useRef<HTMLDivElement>(null);
@@ -133,7 +136,7 @@ const CustomSelect = observer(function CustomSelect({ options, itemType, selecte
         }}
       >
         {displayLabel}
-        {isActive ? (
+        {isActive && !disableClear ? (
           <span
             className={getClasses([styles.clearIcon, 'text-body'])}
             onClick={e => {

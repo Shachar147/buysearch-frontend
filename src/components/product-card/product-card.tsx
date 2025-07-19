@@ -191,8 +191,7 @@ const ProductCard = observer(({
       </div>
       {timeValue && (
         <div
-          className={getClasses(['text-caption', 'color-gray-5'])}
-          style={{ position: 'absolute', bottom: 8, right: 12, cursor: 'help' }}
+          className={getClasses(['text-caption', 'color-gray-5', styles.updatedAtRow])}
           title={formatDateTime(timeValue)}
         >
           {`Updated ${getTimeAgo(timeValue)}`}

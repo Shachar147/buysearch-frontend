@@ -213,4 +213,13 @@
 .heartFilled svg path {
   fill: var(--bs-red-5);
   stroke: var(--bs-red-5);
+}
+
+.updatedAtRow {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+  width: 100%;
+  margin-bottom: -12px;
+  margin-left: 5px;
 } 

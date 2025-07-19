@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import filtersStore from '../../stores/filters-store';
@@ -23,7 +25,6 @@ interface HeaderProps {
 const Header = (props: HeaderProps) => {
 
   const [loggedIn, setLoggedIn] = useState(false);
-  const [showFavourites, setShowFavourites] = useState(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -34,12 +35,6 @@ const Header = (props: HeaderProps) => {
     Cookies.remove('accessToken');
     queryClient.invalidateQueries({ queryKey: ['saved-filters'] });
     window.location.reload();
-  }
-
-  function handleToggleFavourites() {
-    const newVal = !showFavourites;
-    setShowFavourites(newVal);
-    if (props.onToggleFavourites) props.onToggleFavourites(newVal);
   }
 
   function renderGenderSwitch(){

@@ -172,4 +172,7 @@
   .headerSearch {
     display: none !important;
   }
+  .genderSwitch {
+    display: none !important;
+  }
 }

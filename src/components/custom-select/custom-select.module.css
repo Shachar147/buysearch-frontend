@@ -114,3 +114,22 @@
   padding: 16px 8px 8px 8px;
   padding-top: 0;
 } 
+
+@media (max-width: 600px) {
+  .searchInput{
+    font-size: 16px !important;
+  }
+  .options{
+    font-size: 16px !important;
+  }
+  .customSelect{
+    font-size: 16px !important;
+  }
+  .selected{
+    font-size: 16px !important;
+  }
+  .checkboxLabel{
+    font-size: 16px !important;
+  }
+
+} 

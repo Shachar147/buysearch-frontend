@@ -131,6 +131,11 @@
   display: none !important;
 }
 
+.headerSearchInputActive {
+  background: var(--bs-pink-1) !important;
+  border-color: var(--bs-red-6) !important;
+}
+
 @media (max-width: 600px) {
   .mobileFilters {
     display: flex !important;

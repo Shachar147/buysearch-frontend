@@ -14,6 +14,7 @@ import { useAllBrands } from '../../api/brand/queries';
 import { useAllColors } from '../../api/color/queries';
 import { useAllCategories } from '../../api/category/queries';
 import { useAllSources } from '../../api/source/queries';
+import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 
 const sortOptions = [
   { label: 'Relevance', value: 'Relevance' },
@@ -52,6 +53,22 @@ const FilterBar = observer(() => {
   const from = typeof selected.priceRange === 'object' && 'from' in selected.priceRange && typeof selected.priceRange.from === 'number' ? selected.priceRange.from : min;
   const to = typeof selected.priceRange === 'object' && 'to' in selected.priceRange && typeof selected.priceRange.to === 'number' ? selected.priceRange.to : max;
   const sliderValue: [number, number] = [from, to];
+  const [mobileFiltersOpen, setMobileFiltersOpen] = React.useState(false);
+  // Helper to detect mobile
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 600;
+
+  // Count applied filters (excluding search)
+  const appliedFilters = [
+    // selected.gender && selected.gender !== 'All',
+    selected.sort && selected.sort !== 'Updated: Newest First',
+    selected.brand && Array.isArray(selected.brand) ? selected.brand.some(b => b !== 'All') : selected.brand && selected.brand !== 'All',
+    selected.category && Array.isArray(selected.category) ? selected.category.some(c => c !== 'All') : selected.category && selected.category !== 'All',
+    selected.color && Array.isArray(selected.color) ? selected.color.some(c => c !== 'All') : selected.color && selected.color !== 'All',
+    selected.priceRange && typeof selected.priceRange === 'object' && 'value' in selected.priceRange && selected.priceRange.value === 'Custom',
+    selected.source && Array.isArray(selected.source) ? selected.source.some(s => s !== 'All') : selected.source && selected.source !== 'All',
+    // @ts-ignore
+    typeof selected.isOnSale !== 'undefined' && selected.isOnSale !== 'All' && typeof selected.isOnSale !== 'boolean',
+  ].filter(Boolean).length;
 
   function handleGenderSwitch(gender: string) {
     setFilter('gender', gender);
@@ -69,12 +86,13 @@ const FilterBar = observer(() => {
   ];
 
   function renderSearchInput(){
+    const isMobileSearchActive = isMobile && selected.search && selected.search.trim().length > 0;
     return (
-      <div className={getClasses([styles.filterBarRow, styles.mobileFilters])}>
+      <div className={getClasses([styles.filterBarRow, styles.mobileFilters])} style={{ position: 'relative' }}>
         <div className={styles.filterItem} style={{ width: '100%' }}>
         <label className={getClasses([styles.label, 'text-caption'])}>Search</label>
           <input
-            className={styles.headerSearchInput}
+            className={getClasses([styles.headerSearchInput, isMobileSearchActive && styles.headerSearchInputActive])}
             type="text"
             placeholder="Search for items and brands"
             aria-label="Search"
@@ -82,6 +100,28 @@ const FilterBar = observer(() => {
             onChange={e => setFilter('search', e.target.value)}
             style={{ width: '100%' }}
           />
+          {isMobileSearchActive && (
+            <button
+              type="button"
+              aria-label="Clear search"
+              onClick={() => setFilter('search', '')}
+              style={{
+                position: 'absolute',
+                right: 16,
+                top: 42,
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                color: '#d72660',
+                fontSize: 20,
+                cursor: 'pointer',
+                padding: 0,
+                zIndex: 2
+              }}
+            >
+              ×
+            </button>
+          )}
         </div>
       </div>
     );
@@ -109,13 +149,10 @@ const FilterBar = observer(() => {
     );
   }
 
-  return (
-    <div className={getClasses([styles.filterBar])}>
-      <div className={styles.filterBarRow}>
-        {/* First row: existing filters */}
-        {renderSearchInput()}
-        {renderGenderSelect()}
-        <div className={styles.filterItem}>
+
+  function renderSortSelect(){
+    return (
+      <div className={styles.filterItem}>
           <label className={getClasses([styles.label, 'text-caption'])}>Sort</label>
           <CustomSelect
             options={sortOptions}
@@ -129,7 +166,12 @@ const FilterBar = observer(() => {
             defaultLabel="Updated: Newest First"
           />
         </div>
-        <div className={styles.filterItem}>
+    );
+  }
+
+  function renderBrandsSelect(){
+    return (
+      <div className={styles.filterItem}>
           <label className={getClasses([styles.label, 'text-caption'])}>Brand</label>
           <CustomSelect
             options={[{ label: 'All', value: 'All' }, ...brands.map(toOption)]}
@@ -139,8 +181,13 @@ const FilterBar = observer(() => {
             multiselect
             itemType="brands"
           />
-        </div>
-        <div className={styles.filterItem}>
+      </div>
+    )
+  }
+
+  function renderCategoriesSelect(){
+    return (
+      <div className={styles.filterItem}>
           <label className={getClasses([styles.label, 'text-caption'])}>Category</label>
           <CustomSelect
             options={[{ label: 'All', value: 'All' }, ...categories.map(toOption)]}
@@ -151,7 +198,12 @@ const FilterBar = observer(() => {
             itemType="categories"
           />
         </div>
-        <div className={styles.filterItem}>
+    );
+  }
+
+  function renderColorsSelect(){
+    return (
+      <div className={styles.filterItem}>
           <label className={getClasses([styles.label, 'text-caption'])}>Color</label>
           <CustomSelect
             options={[{ label: 'All', value: 'All' }, ...colors.map(toOption)].map((o) => ({ value: ucfirst(o.value), label: ucfirst(o.label) }))}
@@ -162,7 +214,12 @@ const FilterBar = observer(() => {
             itemType="colors"
           />
         </div>
-        <div className={styles.filterItem}>
+    );
+  }
+
+  function renderPriceSelect(){
+    return (
+      <div className={styles.filterItem}>
           <label className={getClasses([styles.label, 'text-caption'])}>Price Range</label>
           <CustomSelect
             options={priceRangeOptions.map(opt => typeof opt === 'object' ? {
@@ -192,7 +249,7 @@ const FilterBar = observer(() => {
                     }
                   }}
                   allowCross={false}
-                  trackStyle={[{ backgroundColor: 'var(--bs-red-5)', height: 6, paddingInline: '20px' }]}
+                  trackStyle={[{ backgroundColor: 'var(--bs-red-5)', height: 6, paddingInline: '20px' }]} 
                   handleStyle={[
                     { borderColor: 'var(--bs-red-5)', backgroundColor: 'var(--bs-white)', boxShadow: '0 0 0 2px var(--bs-red-1)', height: 22, width: 22 },
                     { borderColor: 'var(--bs-red-5)', backgroundColor: 'var(--bs-white)', boxShadow: '0 0 0 2px var(--bs-red-1)', height: 22, width: 22 }
@@ -209,10 +266,12 @@ const FilterBar = observer(() => {
             )}
           />
         </div>
-      </div>
-      {/* Second row: Source and Is On Sale, inside the same filterBar */}
-      <div className={styles.filterBarRow}>
-        <div className={styles.filterItem}>
+    );
+  }
+
+  function renderSourceSelect(){
+    return (
+      <div className={styles.filterItem}>
           <label className={getClasses([styles.label, 'text-caption'])}>Source</label>
           <CustomSelect
             options={sourceOptions.map((o) => ({ ...o, label: ucfirstFirstOnly(o.label)}))}
@@ -222,7 +281,12 @@ const FilterBar = observer(() => {
             multiselect
           />
         </div>
-        <div className={styles.filterItem}>
+    );
+  }
+
+  function renderSaleSelect(){
+    return (
+      <div className={styles.filterItem}>
           <label className={getClasses([styles.label, 'text-caption'])}>Is On Sale</label>
           <CustomSelect
             options={isOnSaleOptions}
@@ -233,7 +297,41 @@ const FilterBar = observer(() => {
             defaultLabel="All"
           />
         </div>
+    );
+  }
+
+  const showExtended = !isMobile || mobileFiltersOpen;
+
+  // Render full filter bar for desktop or when mobileFiltersOpen is true
+  return (
+    <div className={getClasses([styles.filterBar])}>
+      <div className={styles.filterBarRow} style={isMobile ? { alignItems: 'center', justifyContent: 'center' } : {}}>
+        {renderSearchInput()}
+        {isMobile && <div className={getClasses(['flex-row', 'gap-4', 'align-items-center'])}>
+          {appliedFilters > 0 && (
+            <span style={{ color: '#d72660', fontSize: 13, fontWeight: 500, marginTop: 2 }}>{appliedFilters + 1} filter{appliedFilters > 1 ? 's' : ''} applied</span>
+          )}
+          <button
+            className={styles.chevronBtn}
+            onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
+            aria-label="Hide filters"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, width: 32, height: 32,     color: appliedFilters > 0 ? '#d72660' : undefined }}
+          >
+            {mobileFiltersOpen ? <FaChevronUp /> : <FaChevronDown />}
+          </button>
+        </div>}
+        {showExtended && renderGenderSelect()}
+        {showExtended && renderSortSelect()}
+        {showExtended && renderBrandsSelect()}
+        {showExtended && renderCategoriesSelect()}
+        {showExtended && renderColorsSelect()}
+        {showExtended && renderPriceSelect()}
       </div>
+      {/* Second row: Source and Is On Sale, inside the same filterBar */}
+      {showExtended && <div className={styles.filterBarRow}>
+        {renderSourceSelect()}
+        {renderSaleSelect()}
+      </div>}
     </div>
   );
 });

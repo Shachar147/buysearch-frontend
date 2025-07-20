@@ -386,4 +386,8 @@
   .filterDate {
     display: none;
   }
+
+  .popoverWrapper {
+    justify-content: space-between;
+  }
 }

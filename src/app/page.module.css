@@ -1,6 +1,7 @@
 .root {
   background: #f7f7f7;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .main {
@@ -93,3 +94,9 @@
   width: 100%;
   text-align: center;
 } 
+
+@media (max-width: 600px) {
+  .empty {
+    min-height: unset;
+  }
+}

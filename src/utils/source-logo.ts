@@ -38,6 +38,10 @@ export default function getSourceLogo(source?: string): string | undefined {
       return `${S3_URL}/stockx.avif`;
     case 'tommy hilfiger':
       return `${S3_URL}/tommy.svg`;
+    case 'alo yoga':
+      return `${S3_URL}/alog.png`;
+    case 'ralph lauren':
+      return `${S3_URL}/ralph-lauren.png`;
     // Add more sources here as needed
     default:
       return undefined;

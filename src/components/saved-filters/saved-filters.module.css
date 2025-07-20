@@ -374,3 +374,16 @@
   display: flex;
   flex-direction: column;
 } 
+
+
+@media (max-width: 600px) {
+  .filterItem {
+    flex-direction: column;
+    align-items: start;
+    gap: 8px;
+  }
+
+  .filterDate {
+    display: none;
+  }
+}

@@ -74,7 +74,7 @@ export async function fetchProducts(offset = 0, limit = 20, filters: ProductFilt
 
   if (filters.gender) params.append('gender', filters.gender);
   else params.append('gender', 'men'); // todo: add to a const of defaults
-  if (filters.sort && filters.sort !== 'Relevance') params.append('sort', filters.sort);
+  if (filters.sort && filters.sort !== 'Updated: Newest First') params.append('sort', filters.sort);
   if (filters.offset !== undefined) params.append('offset', String(filters.offset));
   if (filters.limit !== undefined) params.append('limit', String(filters.limit));
   if (filters.isFavourite) params.append('isFavourite', 'true');

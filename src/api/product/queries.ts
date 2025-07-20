@@ -25,7 +25,7 @@ export function useInfiniteProducts(filters: ProductFilters = {}, limit = 20) {
       }
       return undefined;
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes, adjust as needed
+    staleTime: 1000 * 60, // 5 minutes, adjust as needed
     // @ts-ignore
     cacheTime: 1000 * 60 * 30, // 30 minutes, adjust as needed
     refetchOnWindowFocus: false, // Don't refetch on window focus

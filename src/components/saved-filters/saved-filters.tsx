@@ -80,7 +80,7 @@ const SavedFilters = observer(() => {
       (Array.isArray(selected.category) ? selected.category.some((c: string) => c !== 'All') : selected.category !== 'All') ||
       (Array.isArray(selected.color) ? selected.color.some((c: string) => c !== 'All') : selected.color !== 'All') ||
       (selected.source && Array.isArray(selected.source) && selected.source.some((s: string) => s !== 'All')) ||
-      selected.sort !== 'Relevance' ||
+      selected.sort !== 'Updated: Newest First' ||
       selected.isFavourite ||
       selected.withPriceChange ||
       selected.isOnSale !== undefined ||
@@ -115,7 +115,7 @@ const SavedFilters = observer(() => {
 
   const handleLoadFilter = (savedFilter: any) => {
     const { filters } = savedFilter;
-    filtersStore.setFilter('sort', filters.sort || 'Relevance');
+    filtersStore.setFilter('sort', filters.sort || 'Updated: Newest First');
     filtersStore.setFilter('brand', filters.brand || ['All']);
     filtersStore.setFilter('category', filters.category || ['All']);
     filtersStore.setFilter('color', filters.color || ['All']);

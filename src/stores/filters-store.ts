@@ -120,7 +120,7 @@ export class FiltersStore {
   // todo: move these to a const file and re-use whenever needed
   selected: Filters = {
     search: '',
-    sort: 'Relevance',
+    sort: 'Updated: Newest First',
     brand: ['All'],
     category: ['All'],
     color: ['All'],

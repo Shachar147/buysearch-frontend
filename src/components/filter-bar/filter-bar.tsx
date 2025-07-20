@@ -119,14 +119,14 @@ const FilterBar = observer(() => {
           <label className={getClasses([styles.label, 'text-caption'])}>Sort</label>
           <CustomSelect
             options={sortOptions}
-            selected={[selected.sort || 'Relevance']}
+            selected={[selected.sort || 'Updated: Newest First']}
             onChange={vals => {
               setFilter('sort', vals[0]);
               if (vals[0] === 'Sale: Highest Percent') {
                 setFilter('isOnSale', 'Yes');
               }
             }}
-            defaultLabel="Relevance"
+            defaultLabel="Updated: Newest First"
           />
         </div>
         <div className={styles.filterItem}>

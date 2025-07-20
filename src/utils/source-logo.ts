@@ -40,7 +40,7 @@ export default function getSourceLogo(source?: string): string | undefined {
       return `${S3_URL}/tommy.svg`;
     case 'alo yoga':
       return `${S3_URL}/alo.png`;
-    case 'ralph lauren':
+    case 'polo ralph lauren':
       return `${S3_URL}/ralph-lauren.png`;
     // Add more sources here as needed
     default:

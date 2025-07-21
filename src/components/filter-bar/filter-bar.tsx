@@ -123,7 +123,7 @@ const FilterBar = observer(() => {
                 transform: 'translateY(-50%)',
                 background: 'none',
                 border: 'none',
-                color: '#d72660',
+                color: 'var(--bs-blue-6)',
                 fontSize: 20,
                 cursor: 'pointer',
                 padding: 0,
@@ -320,13 +320,13 @@ const FilterBar = observer(() => {
         {renderSearchInput()}
         {isMobile && <div className={getClasses(['flex-row', 'gap-4', 'align-items-center'])}>
           {appliedFilters > 0 && (
-            <span style={{ color: '#d72660', fontSize: 13, fontWeight: 500, marginTop: 2 }}>{appliedFilters + 1} filter{appliedFilters > 1 ? 's' : ''} applied</span>
+            <span style={{ color: 'var(--bs-blue-5)', fontSize: 13, fontWeight: 500, marginTop: 2 }}>{appliedFilters + 1} filter{appliedFilters > 1 ? 's' : ''} applied</span>
           )}
           <button
             className={styles.chevronBtn}
             onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
             aria-label="Hide filters"
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, width: 32, height: 32,     color: appliedFilters > 0 ? '#d72660' : undefined }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, width: 32, height: 32,     color: appliedFilters > 0 ? 'var(--bs-blue-5)' : undefined }}
           >
             {mobileFiltersOpen ? <FaChevronUp /> : <FaChevronDown />}
           </button>

@@ -149,7 +149,7 @@ const CustomSelect = observer(function CustomSelect({ options, itemType, selecte
               setOpen(false);
             }}
             title="Clear filter"
-            style={{ cursor: 'pointer', marginLeft: 8, fontWeight: 700, color: '#d72660', fontSize: 18 }}
+            style={{ cursor: 'pointer', marginLeft: 8, fontWeight: 700, color: 'var(--bs-blue-6)', fontSize: 18 }}
           >
             ×
           </span>

@@ -324,7 +324,7 @@ const SavedFilters = observer(() => {
     <>
       <div className={getClasses([styles.popoverWrapper, 'flex', 'items-center', 'gap-2'])}>
         <button
-          className={getClasses([styles.iconButton, 'bg-red-6', 'color-white'])}
+          className={getClasses([styles.iconButton, 'color-white'])}
           ref={iconBtnRef}
           onClick={() => setIsPopoverOpen((v) => !v)}
           aria-label="Show saved filters"

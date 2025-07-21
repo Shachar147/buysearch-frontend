@@ -15,6 +15,14 @@
   --bs-blue-2: #91caff;
   --bs-blue-1: #e6f4ff;
 
+  /* Turquoise palette */
+  --bs-turquoise-6: #089e9c;
+  --bs-turquoise-5: #13c2c2;
+  --bs-turquoise-4: #36cfc9;
+  --bs-turquoise-3: #5cdbd3;
+  --bs-turquoise-2: #87e8de;
+  --bs-turquoise-1: #e6fffb;
+
   /* Orange palette */
   --bs-orange-6: #d46b08;
   --bs-orange-5: #fa8c16;
@@ -104,6 +112,12 @@
 .color-blue-3 { color: var(--bs-blue-3); }
 .color-blue-2 { color: var(--bs-blue-2); }
 .color-blue-1 { color: var(--bs-blue-1); }
+.color-turquoise-6 { color: var(--bs-turquoise-6); }
+.color-turquoise-5 { color: var(--bs-turquoise-5); }
+.color-turquoise-4 { color: var(--bs-turquoise-4); }
+.color-turquoise-3 { color: var(--bs-turquoise-3); }
+.color-turquoise-2 { color: var(--bs-turquoise-2); }
+.color-turquoise-1 { color: var(--bs-turquoise-1); }
 .color-black-6 { color: var(--bs-black-6); }
 .color-black-5 { color: var(--bs-black-5); }
 .color-black-4 { color: var(--bs-black-4); }

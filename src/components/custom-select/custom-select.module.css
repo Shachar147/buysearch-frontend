@@ -101,13 +101,13 @@
   background: var(--bs-gray-1);
 }
 .active {
-  background: var(--bs-pink-1) !important;
-  color: var(--bs-red-6);
+  background: var(--bs-blue-1) !important;
+  color: var(--bs-blue-6);
   font-weight: 700;
 }
 .activeSelect {
-  background: var(--bs-pink-1) !important;
-  border-color: var(--bs-red-6) !important;
+  background: var(--bs-blue-1) !important;
+  border-color: var(--bs-blue-6) !important;
 }
 
 .customContentContainer {

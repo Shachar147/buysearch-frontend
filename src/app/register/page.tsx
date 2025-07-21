@@ -5,7 +5,6 @@ import { useRegister } from '../../api/auth/mutations';
 import styles from '../login/login.module.css';
 import Header from '../../components/header/header';
 import { useRouter } from 'next/navigation';
-import SourceLogoRow from '../../components/SourceLogoRow';
 
 function RegisterPage() {
   const [username, setUsername] = useState('');
@@ -50,7 +49,6 @@ function RegisterPage() {
   return (
     <>
       <Header hideGenderSwitch hideSearch />
-      <SourceLogoRow />
       <div className={styles.centerBox}>
         <form className={styles.form} onSubmit={handleSubmit}>
           <h2 className={styles.title}>Register</h2>

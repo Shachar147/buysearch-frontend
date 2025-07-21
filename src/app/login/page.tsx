@@ -6,7 +6,6 @@ import styles from './login.module.css';
 import Header from '../../components/header/header';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
-import SourceLogoRow from '../../components/SourceLogoRow';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -46,7 +45,6 @@ export default function LoginPage() {
   return (
     <>
       <Header hideGenderSwitch hideSearch />
-      <SourceLogoRow />
       <div className={styles.centerBox}>
         <form className={styles.form} onSubmit={handleSubmit}>
           <h2 className={styles.title}>Sign In</h2>

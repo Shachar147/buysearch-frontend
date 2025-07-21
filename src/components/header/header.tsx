@@ -25,11 +25,16 @@ interface HeaderProps {
 const Header = (props: HeaderProps) => {
 
   const [loggedIn, setLoggedIn] = useState(false);
+  const [localSearch, setLocalSearch] = useState(filtersStore.selected.search);
   const queryClient = useQueryClient();
 
   useEffect(() => {
     setLoggedIn(isLoggedIn());
   }, []);
+
+  useEffect(() => {
+    setLocalSearch(filtersStore.selected.search);
+  }, [filtersStore.selected.search]);
 
   function handleLogout() {
     Cookies.remove('accessToken');
@@ -130,15 +135,21 @@ const Header = (props: HeaderProps) => {
             type="text"
             placeholder="Search for items and brands"
             aria-label="Search"
-            value={filtersStore.selected.search}
-            onChange={e => filtersStore.setFilter('search', e.target.value)}
+            value={localSearch}
+            onChange={e => {
+              setLocalSearch(e.target.value);
+              filtersStore.setFilter('search', e.target.value)
+            }}
             style={{ paddingRight: hasSearch ? 44 : 18 }}
           />
           {hasSearch && (
             <button
               type="button"
               className={styles.clearSearchIcon}
-              onClick={() => filtersStore.setFilter('search', '')}
+              onClick={() => {
+                setLocalSearch('');
+                filtersStore.setFilter('search', '')
+              }}
               title="Clear search"
               aria-label="Clear search"
             >

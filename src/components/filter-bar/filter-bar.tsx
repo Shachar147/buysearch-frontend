@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import styles from './filter-bar.module.css';
 import getClasses from '../../utils/get-classes';
@@ -41,6 +41,7 @@ function ucfirstFirstOnly(str: string) {
 
 const FilterBar = observer(() => {
   const { selected, setFilter } = filtersStore;
+  const [localSearch, setLocalSearch] = useState(filtersStore.selected.search);
   const { data: brands = [] } = useAllBrands();
   const { data: colors = [] } = useAllColors();
   const { data: menCategories = [] } = useAllCategories('men');
@@ -56,6 +57,10 @@ const FilterBar = observer(() => {
   const [mobileFiltersOpen, setMobileFiltersOpen] = React.useState(false);
   // Helper to detect mobile
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 600;
+
+  useEffect(() => {
+    setLocalSearch(filtersStore.selected.search);
+  }, [filtersStore.selected.search]);
 
   // Count applied filters (excluding search)
   const appliedFilters = [
@@ -96,15 +101,21 @@ const FilterBar = observer(() => {
             type="text"
             placeholder="Search for items and brands"
             aria-label="Search"
-            value={selected.search}
-            onChange={e => setFilter('search', e.target.value)}
+            value={localSearch}
+            onChange={e => {
+              setLocalSearch(e.target.value);
+              setFilter('search', e.target.value)
+            }}
             style={{ width: '100%' }}
           />
           {isMobileSearchActive && (
             <button
               type="button"
               aria-label="Clear search"
-              onClick={() => setFilter('search', '')}
+              onClick={() => {
+                setLocalSearch('');
+                setFilter('search', '')
+              }}
               style={{
                 position: 'absolute',
                 right: 16,

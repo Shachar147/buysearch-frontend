@@ -254,7 +254,7 @@ export class FiltersStore {
 
   setFilter = (key: keyof Filters, value: any) => {
     if (key === 'search') {
-      this.selected.search = value;
+      // this.selected.search = value;
       this.debouncedSearch(value);
     } else {
       if (['category', 'color', 'brand', 'source'].includes(key)) {

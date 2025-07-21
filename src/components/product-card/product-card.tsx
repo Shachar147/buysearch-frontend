@@ -38,7 +38,10 @@ const ProductCard = observer(({
   categories = [],
 }: ProductCardProps) => {
   const firstImage = images[0] || image;
-  const secondImage = images[1] || images[0] || image;
+  let secondImage = images[1] || images[0] || image;
+  if (secondImage.length < 10) {
+    secondImage = firstImage;
+  }
   const handleClick = () => {
     if (url) {
       window.open(url, '_blank', 'noopener,noreferrer');

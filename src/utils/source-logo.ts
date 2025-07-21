@@ -44,6 +44,8 @@ export default function getSourceLogo(source?: string): string | undefined {
       return `${S3_URL}/ralph-lauren.png`;
     case 'styleforrent':
       return `${S3_URL}/style-for-rent.webp`;
+      case 'revolve':
+        return `${S3_URL}/revolve.png`;
     // Add more sources here as needed
     default:
       return undefined;

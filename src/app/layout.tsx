@@ -4,6 +4,7 @@ import AuthGuard from '../components/auth-guard';
 import ReactQueryProvider from '../components/react-query-provider';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import Footer from '../components/footer';
+import AdminGuard from '../components/admin-guard';
 
 
 export const metadata = {
@@ -17,7 +18,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <ReactQueryProvider>
           <AuthGuard>{children}</AuthGuard>
-          <Footer />
+          <AdminGuard><Footer /></AdminGuard>
           <ReactQueryDevtools initialIsOpen={false} />
         </ReactQueryProvider>
       </body>

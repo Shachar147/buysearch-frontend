@@ -175,6 +175,7 @@ function HomePage() {
         </div>}
         <ProductGrid
           products={allProducts.map((p) => ({
+            id: p.id,
             image: p.images && p.images[0] ? p.images[0] : '',
             title: p.title,
             brand: p.brand?.name || '',

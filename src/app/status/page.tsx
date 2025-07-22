@@ -42,7 +42,8 @@ const StatusPage = () => {
     const utcDate = new Date(lastUpdate);
     const offsetMinutes = new Date().getTimezoneOffset();
     const offsetMillis = -offsetMinutes * 60 * 1000;
-    const doubleOffsetDate = new Date(utcDate.getTime() + offsetMillis);
+    const isLocal = window.location.href.includes("localhost2");
+    const doubleOffsetDate = new Date(utcDate.getTime() + (isLocal ? offsetMillis : 0));
     return doubleOffsetDate.toLocaleString("en-IL", {
       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     });
@@ -77,7 +78,8 @@ const StatusPage = () => {
     const offsetMinutes = new Date().getTimezoneOffset();
     const offsetMillis = -offsetMinutes * 60 * 1000;
 
-    const then = new Date(dateStr).getTime() + offsetMillis;
+    const isLocal = window.location.href.includes("localhost2");
+    const then = new Date(dateStr).getTime() + (isLocal ? offsetMillis : 0);
     const diff = Math.max(0, now - then) / 1000;
     if (diff < 60) return `${Math.floor(diff)}s ago`;
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
@@ -119,7 +121,10 @@ const StatusPage = () => {
             return diff;
         }
         if (sortState.key === 'eta') return getEta(item.history[0]);
-        if (sortState.key === 'ratePerMinute') return item.ratePerMinute ? Number(item.ratePerMinute) : -1;
+        if (sortState.key === 'ratePerMinute') {
+            console.log(item.scraper, item.history[0].ratePerMinute);
+            return item.history[0].ratePerMinute ? Number(item.history[0].ratePerMinute) : -1
+        }
         if (sortState.key === 'scannedItems') return (item.history[0]?.createdItems ?? 0) + (item.history[0]?.updatedItems ?? 0);
         return '';
       };
@@ -202,7 +207,7 @@ const StatusPage = () => {
             <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("scraper")}>Scraper {sortState.key === 'scraper' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
             <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("status")}>{statusHeader} {sortState.key === 'status' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
             <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("startTime")}>Run Time {sortState.key === 'startTime' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
-            <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("eta")}>ETA {sortState.key === 'eta' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
+            {statusHeader.includes("Current") && <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("eta")}>ETA {sortState.key === 'eta' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>}
             <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("updatedAt")}>Last Update {sortState.key === 'updatedAt' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
             <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("scannedItems")}>Scanned Items {sortState.key === 'scannedItems' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
             <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("ratePerMinute")}>{scanRateHeader} (items/min) {sortState.key === 'ratePerMinute' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
@@ -235,9 +240,9 @@ const StatusPage = () => {
                   <td style={{ padding: 8 }}>
                     {last?.status === 'in_progress' ? formatRunTime(last.startTime, null) : last?.startTime ? formatRunTime(last.startTime, last.endTime) : '-'}
                   </td>
-                  <td>
+                  {statusHeader.includes("Current") && <td>
                     {Number(getEta(last)).toFixed(2)}
-                  </td>
+                  </td>}
                   <td style={{ padding: 8 }}>
                     {last?.updatedAt ? `${formatTime(last.updatedAt)} (${formatTimeAgo(last.updatedAt)})` : "-"}
                   </td>
@@ -301,7 +306,7 @@ const StatusPage = () => {
         </tbody>
       </table>
     );
-    
+
     return (
         <>
         <h2 style={{ marginTop: 32 }}>{title}</h2>

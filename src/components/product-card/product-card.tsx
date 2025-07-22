@@ -155,10 +155,24 @@ const ProductCard = observer(({
       <div className={styles['flip-container']}>
         <div className={styles.flipper}>
           <div className={styles.front}>
-            <img src={firstImage || DEFAULT_IMAGE_URL} alt={title} className={getClasses([styles.image, 'border-radius-8'])} onClick={handleClick} />
+            <img 
+            onError={(e) => {
+              const target = e.currentTarget as HTMLImageElement;
+              if (target.src !== DEFAULT_IMAGE_URL) {
+                target.src = DEFAULT_IMAGE_URL;
+              }
+            }}
+            src={firstImage || DEFAULT_IMAGE_URL} alt={title} className={getClasses([styles.image, 'border-radius-8'])} onClick={handleClick} />
           </div>
           <div className={styles.back}>
-            <img src={secondImage || DEFAULT_IMAGE_URL} alt={title + ' alt'} className={getClasses([styles.image, 'border-radius-8'])} onClick={handleClick} />
+            <img 
+            onError={(e) => {
+              const target = e.currentTarget as HTMLImageElement;
+              if (target.src !== DEFAULT_IMAGE_URL) {
+                target.src = DEFAULT_IMAGE_URL;
+              }
+            }}
+            src={secondImage || DEFAULT_IMAGE_URL} alt={title + ' alt'} className={getClasses([styles.image, 'border-radius-8'])} onClick={handleClick} />
           </div>
         </div>
       </div>

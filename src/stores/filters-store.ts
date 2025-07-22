@@ -1,6 +1,7 @@
 import { makeObservable, observable, action, reaction, toJS, computed } from 'mobx';
 import { ParsedFilters } from '../services/search-api-service';
 import _ from 'lodash';
+import { DEFAULT_GENDER, DEFAULT_SORT_BY } from '../utils/consts';
 
 // Add a type for price range options
 export interface PriceRangeOption {
@@ -120,12 +121,12 @@ export class FiltersStore {
   // todo: move these to a const file and re-use whenever needed
   selected: Filters = {
     search: '',
-    sort: 'Updated: Newest First',
+    sort: DEFAULT_SORT_BY,
     brand: ['All'],
     category: ['All'],
     color: ['All'],
     priceRange: { label: 'All' },
-    gender: 'men',
+    gender: DEFAULT_GENDER,
     isFavourite: false,
     withPriceChange: false,
     source: ['All'],

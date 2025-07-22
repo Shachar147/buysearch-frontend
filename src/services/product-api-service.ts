@@ -1,4 +1,5 @@
 import { API_BASE_URL } from '../utils/config';
+import { DEFAULT_GENDER, DEFAULT_SORT_BY } from '../utils/consts';
 import api from './axios-instance';
 
 export interface ProductApi {
@@ -72,9 +73,8 @@ export async function fetchProducts(offset = 0, limit = 20, filters: ProductFilt
     params.append('search', filters.search);
   }
 
-  if (filters.gender) params.append('gender', filters.gender);
-  else params.append('gender', 'men'); // todo: add to a const of defaults
-  if (filters.sort && filters.sort !== 'Updated: Newest First') params.append('sort', filters.sort);
+  params.append('gender', filters.gender || DEFAULT_GENDER);
+  if (filters.sort && filters.sort !== DEFAULT_SORT_BY) params.append('sort', filters.sort);
   if (filters.offset !== undefined) params.append('offset', String(filters.offset));
   if (filters.limit !== undefined) params.append('limit', String(filters.limit));
   if (filters.isFavourite) params.append('isFavourite', 'true');

@@ -11,6 +11,7 @@ import { useAddToFavourite, useRemoveFromFavourite } from '../../api/favourites/
 import ProductPriceTrend from '../product-price-trend';
 
 export interface ProductCardProps {
+  id: number;
   image: string;
   title: string;
   brand: string;
@@ -34,7 +35,7 @@ export interface ProductCardProps {
 const DEFAULT_IMAGE_URL = "https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg";
 
 const ProductCard = observer(({
-  image, title, brand, price, oldPrice, currency, colors, url, images = [], source, isSellingFast = false, hasMoreColours = false, updatedAt, createdAt, productId, isFavourite, priceHistory: externalPriceHistory,
+  id, image, title, brand, price, oldPrice, currency, colors, url, images = [], source, isSellingFast = false, hasMoreColours = false, updatedAt, createdAt, productId, isFavourite, priceHistory: externalPriceHistory,
   categories = [],
 }: ProductCardProps) => {
   const firstImage = images[0] || image;
@@ -117,11 +118,11 @@ const ProductCard = observer(({
   return (
     <div
       className={styles.card}
-      style={{ cursor: url ? 'pointer' : 'default' }}
-      onClick={handleClick}
+      // style={{ cursor: url ? 'pointer' : 'default' }}
       tabIndex={url ? 0 : -1}
       role={url ? 'link' : undefined}
       aria-label={url ? `Open ${title}` : undefined}
+      data-test-id={id}
     >
       {/* Source logo */}
       {logoUrl && (
@@ -154,14 +155,14 @@ const ProductCard = observer(({
       <div className={styles['flip-container']}>
         <div className={styles.flipper}>
           <div className={styles.front}>
-            <img src={firstImage || DEFAULT_IMAGE_URL} alt={title} className={getClasses([styles.image, 'border-radius-8'])} />
+            <img src={firstImage || DEFAULT_IMAGE_URL} alt={title} className={getClasses([styles.image, 'border-radius-8'])} onClick={handleClick} />
           </div>
           <div className={styles.back}>
-            <img src={secondImage || DEFAULT_IMAGE_URL} alt={title + ' alt'} className={getClasses([styles.image, 'border-radius-8'])} />
+            <img src={secondImage || DEFAULT_IMAGE_URL} alt={title + ' alt'} className={getClasses([styles.image, 'border-radius-8'])} onClick={handleClick} />
           </div>
         </div>
       </div>
-      <div className={getClasses([styles.title, 'text-headline-4', 'color-black-6'])}>{title}</div>
+      <div className={getClasses([styles.title, 'text-headline-4', 'color-black-6'])} onClick={handleClick}>{title}</div>
       <div className={getClasses([styles.brand, 'text-body', 'color-gray-6'])}>{brand}</div>
       <div className={getClasses([styles.priceRow])}>
         {discountPercent !== null && (

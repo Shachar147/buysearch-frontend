@@ -102,7 +102,7 @@
   justify-content: center;
 }
 .clearSearchIcon:hover {
-  color: var(--bs-red-6);
+  color: var(--bs-blue-5);
 }
 
 .logoutButton {

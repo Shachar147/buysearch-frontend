@@ -23,6 +23,7 @@ const ProductPriceTrend: React.FC<{ history: PriceHistoryPoint[] }> = ({ history
   const iconRef = useRef<HTMLSpanElement>(null);
 
   if (!history || history.length < 1) return null;
+  
   const max = Math.max(...history.map(h => h.price));
   const min = Math.min(...history.map(h => h.price));
   const w = 40, h = 14;
@@ -43,7 +44,10 @@ const ProductPriceTrend: React.FC<{ history: PriceHistoryPoint[] }> = ({ history
   if (history.length <= 1) return null;
 
   return (
-    <span className={styles.trendWrapper}>
+    <span className={styles.trendWrapper} onClick={(e) => {
+      e.stopPropagation();
+      e.preventDefault();
+    }}>
       <span
         ref={iconRef}
         className={getClasses(['text-body', 'color-gray-7'])}

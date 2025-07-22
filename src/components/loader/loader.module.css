@@ -1,0 +1,14 @@
+.message {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+    margin: 24px;
+    color: #888;
+  
+    img {
+      width: 80px;
+    }
+  }

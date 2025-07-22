@@ -16,6 +16,7 @@ const ProductGrid = observer(({ products, priceHistoryMap }: ProductGridProps) =
       {products.map((p) => (
         <ProductCard
           key={p.productId}
+          id={p.productId}
           {...p}
           priceHistory={priceHistoryMap[p.productId]}
         />

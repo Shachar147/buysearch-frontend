@@ -12,6 +12,7 @@ import getClasses from '../../utils/get-classes';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSliders, faPen, faTrash, faPlus, faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { DEFAULT_GENDER, DEFAULT_SORT_BY } from '../../utils/consts';
+import { Loader } from '../loader/loader';
 
 function areFiltersEqual(a, b) {
   return JSON.stringify(a) === JSON.stringify(b);
@@ -233,8 +234,8 @@ const SavedFilters = observer(() => {
           </button>
         )}
       </div>
-      {isLoading ? (
-        <div className={getClasses([styles.loading])}>Loading...</div>
+      {isLoading ? (<Loader/>
+        // <div className={getClasses([styles.loading])}>Loading...</div>
       ) : savedFilters.length === 0 ? (
         <div className={getClasses([styles.empty])}>No saved filters yet.</div>
       ) : (

@@ -12,6 +12,7 @@ import filtersStore, { filtersToQueryString, queryStringToFilters } from '../sto
 import { toJS, reaction } from 'mobx';
 import { useInfiniteProducts } from '../api/product/queries';
 import { fetchBulkPriceHistory, ProductFilters } from '../services/product-api-service';
+import { Loader } from '../components/loader/loader';
 
 function HomePage() {
   const [showScrollUp, setShowScrollUp] = useState(false);
@@ -223,7 +224,7 @@ function HomePage() {
             </button>
           )}
         </div>}
-        {isLoading && <div className={styles.message}>Loading...</div>}
+        {isLoading && <Loader/>}
         {total > 0 && !hasNextPage && <div className={styles.message}>No more products.</div>}
         {showScrollUp && (
           <ScrollUpButton show={showScrollUp} />

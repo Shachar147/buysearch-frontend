@@ -13,6 +13,7 @@ interface ScrapingHistory {
   updatedAt: string;
   totalItems: number;
   progress: number;
+  ratePerMinute: number | null;
 }
 
 interface ScraperSummary {
@@ -23,7 +24,7 @@ interface ScraperSummary {
 }
 
 type SortDirection = 'asc' | 'desc' | null;
-type SortKey = 'scraper' | 'status' | 'updatedAt' | 'ratePerMinute';
+type SortKey = 'scraper' | 'status' | 'updatedAt' | 'ratePerMinute' | 'scannedItems' | 'startTime';
 
 const StatusPage = () => {
   const { data: summaries = [], isLoading, error } = useScrapingHistorySummaryQuery();
@@ -44,6 +45,38 @@ const StatusPage = () => {
     return doubleOffsetDate.toLocaleString("en-IL", {
       timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     });
+  }
+
+  // Add helper to format run time
+  function formatRunTime(startTime: string, endTime: string | null) {
+    if (!startTime) return '-';
+    const start = new Date(startTime).getTime();
+    const end = endTime ? new Date(endTime).getTime() : Date.now();
+    let diff = Math.max(0, end - start) / 1000; // seconds
+    const h = Math.floor(diff / 3600);
+    diff -= h * 3600;
+    const m = Math.floor(diff / 60);
+    const s = Math.floor(diff - m * 60);
+    let str = '';
+    if (h > 0) str += `${h}h `;
+    if (m > 0 || h > 0) str += `${m}m `;
+    str += `${s}s`;
+    return str.trim();
+  }
+  // Add helper to format time ago
+  function formatTimeAgo(dateStr: string) {
+    if (!dateStr) return '';
+    const now = Date.now();
+
+    const offsetMinutes = new Date().getTimezoneOffset();
+    const offsetMillis = -offsetMinutes * 60 * 1000;
+
+    const then = new Date(dateStr).getTime() + offsetMillis;
+    const diff = Math.max(0, now - then) / 1000;
+    if (diff < 60) return `${Math.floor(diff)}s ago`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+    return `${Math.floor(diff / 86400)}d ago`;
   }
 
   const getStatusColor = (status: string) => {
@@ -67,9 +100,20 @@ const StatusPage = () => {
     return [...items].sort((a, b) => {
       const getValue = (item: ScraperSummary): any => {
         if (sortState.key === 'scraper') return item.scraper.toLowerCase();
-        if (sortState.key === 'status') return item.history[0]?.status ?? '';
-        if (sortState.key === 'updatedAt') return item.history[0]?.updatedAt ?? '';
-        if (sortState.key === 'ratePerMinute') return item.ratePerMinute ?? -1;
+        if (sortState.key === 'status') {
+            return `${item.history[0]?.status?.replace('_', ' ') ?? ''}${item.history[0]?.progress}`;
+        };
+        if (sortState.key === 'updatedAt') return new Date(item.history[0]?.updatedAt ?? '').getTime();
+        if (sortState.key === 'startTime') {
+
+            if (!item.history[0]?.startTime) return '-';
+            const start = new Date(item.history[0]?.startTime).getTime();
+            const end = item.history[0]?.endTime ? new Date(item.history[0]?.endTime).getTime() : Date.now();
+            let diff = Math.max(0, end - start) / 1000; // seconds
+            return diff;
+        }
+        if (sortState.key === 'ratePerMinute') return item.ratePerMinute ? Number(item.ratePerMinute) : -1;
+        if (sortState.key === 'scannedItems') return (item.history[0]?.createdItems ?? 0) + (item.history[0]?.updatedItems ?? 0);
         return '';
       };
 
@@ -132,43 +176,26 @@ const StatusPage = () => {
   const inProgressSummaries = summaries.filter((s) => s.history[0]?.status === "in_progress");
   const otherSummaries = summaries.filter((s) => s.history[0]?.status !== "in_progress");
 
-  const renderTable = (items: ScraperSummary[], title: string, statusHeader: string) => (
+  const renderTable = (items: ScraperSummary[], title: string, statusHeader: string, scanRateHeader: string) => (
     <>
       <h2 style={{ marginTop: 32 }}>{title}</h2>
       <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 12 }}>
         <thead>
           <tr style={{ background: "#f5f5f5" }}>
             <th style={{ textAlign: "left", padding: 8 }}>#</th>
-            <th
-              style={{ textAlign: "left", padding: 8, cursor: "pointer" }}
-              onClick={() => handleSort("scraper")}
-            >
-              Scraper {sortState.key === 'scraper' && (sortState.direction === 'asc' ? '↑' : '↓')}
-            </th>
-            <th
-              style={{ textAlign: "left", padding: 8, cursor: "pointer" }}
-              onClick={() => handleSort("status")}
-            >
-              {statusHeader} {sortState.key === 'status' && (sortState.direction === 'asc' ? '↑' : '↓')}
-            </th>
-            <th
-              style={{ textAlign: "left", padding: 8, cursor: "pointer" }}
-              onClick={() => handleSort("updatedAt")}
-            >
-              Last Update {sortState.key === 'updatedAt' && (sortState.direction === 'asc' ? '↑' : '↓')}
-            </th>
-            <th
-              style={{ textAlign: "left", padding: 8, cursor: "pointer" }}
-              onClick={() => handleSort("ratePerMinute")}
-            >
-              Last Scan Rate (items/min) {sortState.key === 'ratePerMinute' && (sortState.direction === 'asc' ? '↑' : '↓')}
-            </th>
+            <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("scraper")}>Scraper {sortState.key === 'scraper' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
+            <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("status")}>{statusHeader} {sortState.key === 'status' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
+            <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("startTime")}>Run Time {sortState.key === 'startTime' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
+            <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("updatedAt")}>Last Update {sortState.key === 'updatedAt' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
+            <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("scannedItems")}>Scanned Items {sortState.key === 'scannedItems' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
+            <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("ratePerMinute")}>{scanRateHeader} (items/min) {sortState.key === 'ratePerMinute' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
             <th style={{ padding: 8 }}></th>
           </tr>
         </thead>
         <tbody>
           {items.map((s, index) => {
             const last = s.history[0];
+            const scannedItems = (last?.createdItems ?? 0) + (last?.updatedItems ?? 0);
             return (
               <React.Fragment key={s.scraper}>
                 <tr style={{ borderBottom: "1px solid #eee" }}>
@@ -186,13 +213,17 @@ const StatusPage = () => {
                     </span>
                   </td>
                   <td style={{ padding: 8, color: getStatusColor(last?.status) }}>
-                    {last?.status === 'in_progress' ? `${last?.status} (${last.progress}%)` : last?.status || "-"}
+                    {last?.status === 'in_progress' ? `${last?.status?.replace('_', ' ')} (${last.progress}%)` : last?.status || "-"}
                   </td>
                   <td style={{ padding: 8 }}>
-                    {last?.updatedAt ? formatTime(last.updatedAt) : "-"}
+                    {last?.status === 'in_progress' ? formatRunTime(last.startTime, null) : last?.startTime ? formatRunTime(last.startTime, last.endTime) : '-'}
                   </td>
                   <td style={{ padding: 8 }}>
-                    {s.ratePerMinute ? s.ratePerMinute.toFixed(2) : "-"}
+                    {last?.updatedAt ? `${formatTime(last.updatedAt)} (${formatTimeAgo(last.updatedAt)})` : "-"}
+                  </td>
+                  <td style={{ padding: 8 }}>{scannedItems.toLocaleString()}</td>
+                  <td style={{ padding: 8 }}>
+                    {last.ratePerMinute ? last.ratePerMinute.toFixed(2) : "-"}
                   </td>
                   <td style={{ padding: 8 }}>
                     <button
@@ -204,7 +235,7 @@ const StatusPage = () => {
                 </tr>
                 {expanded[s.scraper] && (
                   <tr>
-                    <td colSpan={6} style={{ background: "#fafbfc", padding: 0 }}>
+                    <td colSpan={8} style={{ background: "#fafbfc", padding: 0 }}>
                       <table style={{ width: "100%", borderCollapse: "collapse", margin: 0 }}>
                         <thead>
                           <tr style={{ background: "#f0f0f0" }}>
@@ -233,9 +264,9 @@ const StatusPage = () => {
                               <td style={{ padding: 6, color: getStatusColor(h.status) }}>
                                 {h.status}
                               </td>
-                              <td style={{ padding: 6 }}>{h.createdItems}</td>
-                              <td style={{ padding: 6 }}>{h.updatedItems}</td>
-                              <td style={{ padding: 6 }}>{h.totalItems}</td>
+                              <td style={{ padding: 6 }}>{h.createdItems.toLocaleString()}</td>
+                              <td style={{ padding: 6 }}>{h.updatedItems.toLocaleString()}</td>
+                              <td style={{ padding: 6 }}>{h.totalItems.toLocaleString()}</td>
                               <td style={{ padding: 6 }}>{h.progress}%</td>
                             </tr>
                           ))}
@@ -259,8 +290,8 @@ const StatusPage = () => {
     return (
         <div style={{ padding: 32, paddingBottom: 80 }}>
         <h1>Status of Scrapers</h1>
-        {renderTable(applySort(inProgressSummaries), "🟠 In Progress", 'Current Status')}
-        {renderTable(applySort(otherSummaries), "✅ Others", 'Last Status')}
+        {renderTable(applySort(inProgressSummaries), "🟠 In Progress", 'Current Status', 'Current Scan Rate')}
+        {renderTable(applySort(otherSummaries), "✅ Others", 'Last Status', 'Last Scan Rate')}
         </div>
     );
   }

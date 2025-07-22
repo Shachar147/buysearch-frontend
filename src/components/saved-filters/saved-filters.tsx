@@ -11,6 +11,7 @@ import styles from './saved-filters.module.css';
 import getClasses from '../../utils/get-classes';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSliders, faPen, faTrash, faPlus, faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { DEFAULT_GENDER, DEFAULT_SORT_BY } from '../../utils/consts';
 
 function areFiltersEqual(a, b) {
   return JSON.stringify(a) === JSON.stringify(b);
@@ -80,7 +81,7 @@ const SavedFilters = observer(() => {
       (Array.isArray(selected.category) ? selected.category.some((c: string) => c !== 'All') : selected.category !== 'All') ||
       (Array.isArray(selected.color) ? selected.color.some((c: string) => c !== 'All') : selected.color !== 'All') ||
       (selected.source && Array.isArray(selected.source) && selected.source.some((s: string) => s !== 'All')) ||
-      selected.sort !== 'Updated: Newest First' ||
+      selected.sort !== DEFAULT_SORT_BY ||
       selected.isFavourite ||
       selected.withPriceChange ||
       selected.isOnSale !== undefined ||
@@ -115,12 +116,12 @@ const SavedFilters = observer(() => {
 
   const handleLoadFilter = (savedFilter: any) => {
     const { filters } = savedFilter;
-    filtersStore.setFilter('sort', filters.sort || 'Updated: Newest First');
+    filtersStore.setFilter('sort', filters.sort || DEFAULT_SORT_BY);
     filtersStore.setFilter('brand', filters.brand || ['All']);
     filtersStore.setFilter('category', filters.category || ['All']);
     filtersStore.setFilter('color', filters.color || ['All']);
     filtersStore.setFilter('priceRange', filters.priceRange || { label: 'All' });
-    filtersStore.setFilter('gender', filters.gender || 'men');
+    filtersStore.setFilter('gender', filters.gender || DEFAULT_GENDER);
     filtersStore.setFilter('isFavourite', filters.isFavourite || false);
     filtersStore.setFilter('withPriceChange', filters.withPriceChange || false);
     filtersStore.setFilter('source', filters.source || ['All']);

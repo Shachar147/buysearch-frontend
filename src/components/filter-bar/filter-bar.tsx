@@ -15,6 +15,7 @@ import { useAllColors } from '../../api/color/queries';
 import { useAllCategories } from '../../api/category/queries';
 import { useAllSources } from '../../api/source/queries';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { DEFAULT_SORT_BY } from '../../utils/consts';
 
 const sortOptions = [
   { label: 'Relevance', value: 'Relevance' },
@@ -65,7 +66,7 @@ const FilterBar = observer(() => {
   // Count applied filters (excluding search)
   const appliedFilters = [
     // selected.gender && selected.gender !== 'All',
-    selected.sort && selected.sort !== 'Updated: Newest First',
+    selected.sort && selected.sort !== DEFAULT_SORT_BY,
     selected.brand && Array.isArray(selected.brand) ? selected.brand.some(b => b !== 'All') : selected.brand && selected.brand !== 'All',
     selected.category && Array.isArray(selected.category) ? selected.category.some(c => c !== 'All') : selected.category && selected.category !== 'All',
     selected.color && Array.isArray(selected.color) ? selected.color.some(c => c !== 'All') : selected.color && selected.color !== 'All',
@@ -167,7 +168,7 @@ const FilterBar = observer(() => {
           <label className={getClasses([styles.label, 'text-caption'])}>Sort</label>
           <CustomSelect
             options={sortOptions}
-            selected={[selected.sort || 'Updated: Newest First']}
+            selected={[selected.sort || DEFAULT_SORT_BY]}
             onChange={vals => {
               setFilter('sort', vals[0]);
               if (vals[0] === 'Sale: Highest Percent') {

@@ -86,14 +86,14 @@
 }
 
 .sliderTrack {
-  background-color: var(--bs-red-5);
+  background-color: var(--bs-blue-5);
   height: 6px;
 }
 
 .sliderHandle {
-  border-color: var(--bs-red-5);
+  border-color: var(--bs-blue-5);
   background-color: var(--bs-white);
-  box-shadow: 0 0 0 2px var(--bs-red-1);
+  box-shadow: 0 0 0 2px var(--bs-blue-1);
   height: 22px;
   width: 22px;
 }

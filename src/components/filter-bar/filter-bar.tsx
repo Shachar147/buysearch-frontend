@@ -255,15 +255,16 @@ const FilterBar = observer(() => {
                   step={step}
                   value={sliderValue}
                   onChange={(val) => {
+                    // todo: add debounce
                     if (Array.isArray(val) && val.length === 2) {
                       setFilter('priceRange', { label: `Custom: ${val[0]} - ${val[1]} ILS`, from: val[0], to: val[1], value: 'Custom' });
                     }
                   }}
                   allowCross={false}
-                  trackStyle={[{ backgroundColor: 'var(--bs-red-5)', height: 6, paddingInline: '20px' }]} 
+                  trackStyle={[{ backgroundColor: 'var(--bs-blue-5)', height: 6, paddingInline: '20px' }]} 
                   handleStyle={[
-                    { borderColor: 'var(--bs-red-5)', backgroundColor: 'var(--bs-white)', boxShadow: '0 0 0 2px var(--bs-red-1)', height: 22, width: 22 },
-                    { borderColor: 'var(--bs-red-5)', backgroundColor: 'var(--bs-white)', boxShadow: '0 0 0 2px var(--bs-red-1)', height: 22, width: 22 }
+                    { borderColor: 'var(--bs-blue-5)', backgroundColor: 'var(--bs-white)', boxShadow: '0 0 0 2px var(--bs-blue-1)', height: 22, width: 22 },
+                    { borderColor: 'var(--bs-blue-5)', backgroundColor: 'var(--bs-white)', boxShadow: '0 0 0 2px var(--bs-blue-1)', height: 22, width: 22 }
                   ]}
                   railStyle={{ backgroundColor: 'var(--bs-gray-2)', height: 6,  width: 'CALC(100% - 20px)' }}
                   className={styles.slider}

@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useScrapingHistorySummaryQuery } from "../../api/scraping-history/queries";
+import Header from "../../components/header/header";
 
 interface ScrapingHistory {
   id: number;
@@ -21,28 +22,25 @@ interface ScraperSummary {
   ratePerMinute: number | null;
 }
 
+type SortDirection = 'asc' | 'desc' | null;
+type SortKey = 'scraper' | 'status' | 'updatedAt' | 'ratePerMinute';
+
 const StatusPage = () => {
   const { data: summaries = [], isLoading, error } = useScrapingHistorySummaryQuery();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-
-  if (isLoading) return <div style={{ padding: 32 }}>Loading...</div>;
-  if (error) return <div style={{ padding: 32, color: "red" }}>Error loading status</div>;
+  const [sortState, setSortState] = useState<{ key: SortKey | null; direction: SortDirection }>({
+    key: null,
+    direction: null,
+  });
 
   function formatTime(lastUpdate: string) {
-    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    // console.log(timeZone); // e.g., "Asia/Jerusalem"
-
     const utcDate = new Date(lastUpdate);
-
-    const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    // const localTime = utcDate.toLocaleString("en-IL", { timeZone: userTimeZone });
-    // console.log(localTime); // e.g., "22/07/2025, 12:50:12"
-
-    const offsetMinutes = new Date().getTimezoneOffset(); // negative for Israel (-180)
-    const offsetMillis = -offsetMinutes * 60 * 1000; // convert to positive
-
+    const offsetMinutes = new Date().getTimezoneOffset();
+    const offsetMillis = -offsetMinutes * 60 * 1000;
     const doubleOffsetDate = new Date(utcDate.getTime() + offsetMillis);
-    return doubleOffsetDate.toLocaleString("en-IL", { timeZone: userTimeZone });
+    return doubleOffsetDate.toLocaleString("en-IL", {
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    });
   }
 
   const getStatusColor = (status: string) => {
@@ -50,6 +48,35 @@ const StatusPage = () => {
     if (status === "finished") return "var(--bs-green-5)";
     if (status === "in_progress") return "var(--bs-orange-5)";
     return undefined;
+  };
+
+  const handleSort = (key: SortKey) => {
+    setSortState((prev) => {
+      if (prev.key !== key) return { key, direction: 'asc' };
+      if (prev.direction === 'asc') return { key, direction: 'desc' };
+      return { key: null, direction: null };
+    });
+  };
+
+  const applySort = (items: ScraperSummary[]) => {
+    if (!sortState.key || !sortState.direction) return items;
+
+    return [...items].sort((a, b) => {
+      const getValue = (item: ScraperSummary): any => {
+        if (sortState.key === 'scraper') return item.scraper.toLowerCase();
+        if (sortState.key === 'status') return item.history[0]?.status ?? '';
+        if (sortState.key === 'updatedAt') return item.history[0]?.updatedAt ?? '';
+        if (sortState.key === 'ratePerMinute') return item.ratePerMinute ?? -1;
+        return '';
+      };
+
+      const aVal = getValue(a);
+      const bVal = getValue(b);
+
+      if (aVal < bVal) return sortState.direction === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortState.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
   };
 
   const inProgressSummaries = summaries.filter((s) => s.history[0]?.status === "in_progress");
@@ -62,11 +89,31 @@ const StatusPage = () => {
         <thead>
           <tr style={{ background: "#f5f5f5" }}>
             <th style={{ textAlign: "left", padding: 8 }}>#</th>
-            <th style={{ textAlign: "left", padding: 8 }}>Scraper</th>
-            <th style={{ textAlign: "left", padding: 8 }}>Last Status</th>
-            <th style={{ textAlign: "left", padding: 8 }}>Last Update</th>
-            <th style={{ textAlign: "left", padding: 8 }}>Last Scan Rate (items/min)</th>
-            <th style={{ textAlign: "left", padding: 8 }}></th>
+            <th
+              style={{ textAlign: "left", padding: 8, cursor: "pointer" }}
+              onClick={() => handleSort("scraper")}
+            >
+              Scraper {sortState.key === 'scraper' && (sortState.direction === 'asc' ? '↑' : '↓')}
+            </th>
+            <th
+              style={{ textAlign: "left", padding: 8, cursor: "pointer" }}
+              onClick={() => handleSort("status")}
+            >
+              Last Status {sortState.key === 'status' && (sortState.direction === 'asc' ? '↑' : '↓')}
+            </th>
+            <th
+              style={{ textAlign: "left", padding: 8, cursor: "pointer" }}
+              onClick={() => handleSort("updatedAt")}
+            >
+              Last Update {sortState.key === 'updatedAt' && (sortState.direction === 'asc' ? '↑' : '↓')}
+            </th>
+            <th
+              style={{ textAlign: "left", padding: 8, cursor: "pointer" }}
+              onClick={() => handleSort("ratePerMinute")}
+            >
+              Last Scan Rate (items/min) {sortState.key === 'ratePerMinute' && (sortState.direction === 'asc' ? '↑' : '↓')}
+            </th>
+            <th style={{ padding: 8 }}></th>
           </tr>
         </thead>
         <tbody>
@@ -111,7 +158,7 @@ const StatusPage = () => {
                 </tr>
                 {expanded[s.scraper] && (
                   <tr>
-                    <td colSpan={5} style={{ background: "#fafbfc", padding: 0 }}>
+                    <td colSpan={6} style={{ background: "#fafbfc", padding: 0 }}>
                       <table style={{ width: "100%", borderCollapse: "collapse", margin: 0 }}>
                         <thead>
                           <tr style={{ background: "#f0f0f0" }}>
@@ -129,17 +176,13 @@ const StatusPage = () => {
                           {s.history.map((h) => (
                             <tr key={h.id} style={{ borderBottom: "1px solid #eee" }}>
                               <td style={{ padding: 6 }}>
-                                {h.startTime
-                                  ? formatTime(h.startTime)
-                                  : "-"}
+                                {h.startTime ? formatTime(h.startTime) : "-"}
                               </td>
                               <td style={{ padding: 6 }}>
-                                {h.endTime
-                                  ? formatTime(h.endTime)
-                                  : "-"}
+                                {h.endTime ? formatTime(h.endTime) : "-"}
                               </td>
                               <td style={{ padding: 6 }}>
-                                {h?.updatedAt ? formatTime(h.updatedAt) : "-"}
+                                {h.updatedAt ? formatTime(h.updatedAt) : "-"}
                               </td>
                               <td style={{ padding: 6, color: getStatusColor(h.status) }}>
                                 {h.status}
@@ -163,13 +206,25 @@ const StatusPage = () => {
     </>
   );
 
+  function renderContent(){
+    if (isLoading) return <div style={{ padding: 32 }}>Loading...</div>;
+    if (error) return <div style={{ padding: 32, color: "red" }}>Error loading status</div>;
+
+    return (
+        <div style={{ padding: 32, paddingBottom: 80 }}>
+        <h1>Status of Scrapers</h1>
+        {renderTable(applySort(inProgressSummaries), "🟠 In Progress")}
+        {renderTable(applySort(otherSummaries), "✅ Others")}
+        </div>
+    );
+  }
+
   return (
-    <div style={{ padding: 32, paddingBottom: 80 }}>
-      <h1>Status of Scrapers</h1>
-      {renderTable(inProgressSummaries, "🟠 In Progress")}
-      {renderTable(otherSummaries, "✅ Others")}
-    </div>
-  );
+    <>
+        <Header hideGenderSwitch hideSearch />
+        {renderContent()}
+    </>
+  )
 };
 
 export default StatusPage;

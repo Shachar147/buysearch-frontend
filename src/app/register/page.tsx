@@ -51,7 +51,7 @@ function RegisterPage() {
       <Header hideGenderSwitch hideSearch />
       <div className={styles.centerBox}>
         <form className={styles.form} onSubmit={handleSubmit}>
-          <h2 className={styles.title}>Register</h2>
+          <h2 className={styles.title}>Sign up</h2>
           <input
             className={styles.input}
             type="text"
@@ -79,7 +79,7 @@ function RegisterPage() {
           />
           {error && <div className={styles.error}>{error}</div>}
           <button className={styles.button} type="submit" disabled={loading}>
-            {loading ? 'Registering...' : 'Register'}
+            {loading ? 'Signing up...' : 'Sign up'}
           </button>
           <div className={styles.switchText}>
             Already have an account? <a href="/login">Sign In</a>

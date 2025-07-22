@@ -70,7 +70,7 @@ export default function LoginPage() {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
           <div className={styles.switchText}>
-            Don't have an account? <a href="/register">Register</a>
+            Don't have an account? <a href="/register">Sign up</a>
           </div>
         </form>
       </div>

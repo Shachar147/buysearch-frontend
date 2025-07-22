@@ -28,10 +28,13 @@ type SortKey = 'scraper' | 'status' | 'updatedAt' | 'ratePerMinute';
 const StatusPage = () => {
   const { data: summaries = [], isLoading, error } = useScrapingHistorySummaryQuery();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  // Default main sort: updatedAt desc
   const [sortState, setSortState] = useState<{ key: SortKey | null; direction: SortDirection }>({
-    key: null,
-    direction: null,
+    key: 'updatedAt',
+    direction: 'desc',
   });
+  // Add per-scraper sub-table sort state, default to updatedAt desc on first expand
+  const [subSortState, setSubSortState] = useState<Record<string, { key: string | null; direction: SortDirection }>>({});
 
   function formatTime(lastUpdate: string) {
     const utcDate = new Date(lastUpdate);
@@ -79,10 +82,57 @@ const StatusPage = () => {
     });
   };
 
+  // Sub-table sort handler
+  const handleSubSort = (scraper: string, key: string) => {
+    setSubSortState((prev) => {
+      const prevState = prev[scraper] || { key: null, direction: null };
+      if (prevState.key !== key) return { ...prev, [scraper]: { key, direction: 'asc' } };
+      if (prevState.direction === 'asc') return { ...prev, [scraper]: { key, direction: 'desc' } };
+      return { ...prev, [scraper]: { key: null, direction: null } };
+    });
+  };
+
+  // Sub-table sort function
+  const applySubSort = (scraper: string, items: ScrapingHistory[]) => {
+    const state = subSortState[scraper];
+    if (!state || !state.key || !state.direction) return items;
+    return [...items].sort((a, b) => {
+      let aVal: any = a[state.key as keyof ScrapingHistory];
+      let bVal: any = b[state.key as keyof ScrapingHistory];
+      // For date fields, compare as dates
+      if (["startTime", "endTime", "updatedAt"].includes(state.key)) {
+        aVal = aVal ? new Date(aVal).getTime() : 0;
+        bVal = bVal ? new Date(bVal).getTime() : 0;
+      }
+      // For status, compare as string
+      if (state.key === "status") {
+        aVal = aVal || "";
+        bVal = bVal || "";
+      }
+      // For numbers, ensure number type
+      if (["createdItems", "updatedItems", "totalItems", "progress"].includes(state.key)) {
+        aVal = Number(aVal) || 0;
+        bVal = Number(bVal) || 0;
+      }
+      if (aVal < bVal) return state.direction === 'asc' ? -1 : 1;
+      if (aVal > bVal) return state.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+  };
+
+  // When expanding a scraper, set its subSortState to updatedAt desc if not already set
+  const handleExpand = (scraper: string) => {
+    setExpanded((e) => ({ ...e, [scraper]: !e[scraper] }));
+    setSubSortState((prev) => {
+      if (prev[scraper]) return prev;
+      return { ...prev, [scraper]: { key: 'updatedAt', direction: 'desc' } };
+    });
+  };
+
   const inProgressSummaries = summaries.filter((s) => s.history[0]?.status === "in_progress");
   const otherSummaries = summaries.filter((s) => s.history[0]?.status !== "in_progress");
 
-  const renderTable = (items: ScraperSummary[], title: string) => (
+  const renderTable = (items: ScraperSummary[], title: string, statusHeader: string) => (
     <>
       <h2 style={{ marginTop: 32 }}>{title}</h2>
       <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 12 }}>
@@ -99,7 +149,7 @@ const StatusPage = () => {
               style={{ textAlign: "left", padding: 8, cursor: "pointer" }}
               onClick={() => handleSort("status")}
             >
-              Last Status {sortState.key === 'status' && (sortState.direction === 'asc' ? '↑' : '↓')}
+              {statusHeader} {sortState.key === 'status' && (sortState.direction === 'asc' ? '↑' : '↓')}
             </th>
             <th
               style={{ textAlign: "left", padding: 8, cursor: "pointer" }}
@@ -130,15 +180,13 @@ const StatusPage = () => {
                         color: "#1976d2",
                         textDecoration: "underline",
                       }}
-                      onClick={() =>
-                        setExpanded((e) => ({ ...e, [s.scraper]: !e[s.scraper] }))
-                      }
+                      onClick={() => handleExpand(s.scraper)}
                     >
                       {s.scraper}
                     </span>
                   </td>
                   <td style={{ padding: 8, color: getStatusColor(last?.status) }}>
-                    {last?.status || "-"}
+                    {last?.status === 'in_progress' ? `${last?.status} (${last.progress}%)` : last?.status || "-"}
                   </td>
                   <td style={{ padding: 8 }}>
                     {last?.updatedAt ? formatTime(last.updatedAt) : "-"}
@@ -148,9 +196,7 @@ const StatusPage = () => {
                   </td>
                   <td style={{ padding: 8 }}>
                     <button
-                      onClick={() =>
-                        setExpanded((e) => ({ ...e, [s.scraper]: !e[s.scraper] }))
-                      }
+                      onClick={() => handleExpand(s.scraper)}
                     >
                       {expanded[s.scraper] ? "Hide" : "Show"} History
                     </button>
@@ -162,18 +208,18 @@ const StatusPage = () => {
                       <table style={{ width: "100%", borderCollapse: "collapse", margin: 0 }}>
                         <thead>
                           <tr style={{ background: "#f0f0f0" }}>
-                            <th style={{ textAlign: "left", padding: 6 }}>Start</th>
-                            <th style={{ textAlign: "left", padding: 6 }}>End</th>
-                            <th style={{ textAlign: "left", padding: 6 }}>Last Update</th>
-                            <th style={{ textAlign: "left", padding: 6 }}>Status</th>
-                            <th style={{ textAlign: "left", padding: 6 }}>Created</th>
-                            <th style={{ textAlign: "left", padding: 6 }}>Updated</th>
-                            <th style={{ textAlign: "left", padding: 6 }}>Total</th>
-                            <th style={{ textAlign: "left", padding: 6 }}>Progress</th>
+                            <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "startTime")}>Start {subSortState[s.scraper]?.key === 'startTime' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
+                            <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "endTime")}>End {subSortState[s.scraper]?.key === 'endTime' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
+                            <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "updatedAt")}>Last Update {subSortState[s.scraper]?.key === 'updatedAt' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
+                            <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "status")}>Status {subSortState[s.scraper]?.key === 'status' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
+                            <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "createdItems")}>Created {subSortState[s.scraper]?.key === 'createdItems' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
+                            <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "updatedItems")}>Updated {subSortState[s.scraper]?.key === 'updatedItems' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
+                            <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "totalItems")}>Total {subSortState[s.scraper]?.key === 'totalItems' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
+                            <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "progress")}>Progress {subSortState[s.scraper]?.key === 'progress' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {s.history.map((h) => (
+                          {applySubSort(s.scraper, s.history).map((h) => (
                             <tr key={h.id} style={{ borderBottom: "1px solid #eee" }}>
                               <td style={{ padding: 6 }}>
                                 {h.startTime ? formatTime(h.startTime) : "-"}
@@ -213,8 +259,8 @@ const StatusPage = () => {
     return (
         <div style={{ padding: 32, paddingBottom: 80 }}>
         <h1>Status of Scrapers</h1>
-        {renderTable(applySort(inProgressSummaries), "🟠 In Progress")}
-        {renderTable(applySort(otherSummaries), "✅ Others")}
+        {renderTable(applySort(inProgressSummaries), "🟠 In Progress", 'Current Status')}
+        {renderTable(applySort(otherSummaries), "✅ Others", 'Last Status')}
         </div>
     );
   }

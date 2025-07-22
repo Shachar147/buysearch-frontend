@@ -193,10 +193,9 @@ const StatusPage = () => {
     return remainingPercents * secondsForOnePercent;
   }
 
-  const renderTable = (items: ScraperSummary[], title: string, statusHeader: string, scanRateHeader: string) => (
-    <>
-      <h2 style={{ marginTop: 32 }}>{title}</h2>
-      <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 12 }}>
+  const renderTable = (items: ScraperSummary[], title: string, statusHeader: string, scanRateHeader: string) => {
+    const table = items.length == 0 ? <span>None</span> : (
+        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 12 }}>
         <thead>
           <tr style={{ background: "#f5f5f5" }}>
             <th style={{ textAlign: "left", padding: 8 }}>#</th>
@@ -301,8 +300,16 @@ const StatusPage = () => {
           })}
         </tbody>
       </table>
-    </>
-  );
+    );
+    
+    return (
+        <>
+        <h2 style={{ marginTop: 32 }}>{title}</h2>
+        
+        {table}
+        </>
+    );
+    }
 
   function renderContent(){
     if (isLoading) return <div style={{ padding: 32 }}>Loading...</div>;

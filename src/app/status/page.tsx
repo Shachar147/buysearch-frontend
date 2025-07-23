@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useScrapingHistorySummaryQuery } from "../../api/scraping-history/queries";
-import { useAllUsersQuery, useSourceStatsQuery, useCategoryStatsQuery, useBrandStatsQuery } from '../../api/auth/queries';
+import { useAllUsersQuery, useSourceStatsQuery, useCategoryStatsQuery, useBrandStatsQuery, useTotalProductsQuery } from '../../api/auth/queries';
 import Header from "../../components/header/header";
 import AdminGuard from "../../components/admin-guard";
 import { Loader } from "../../components/loader/loader";
@@ -35,6 +35,7 @@ const StatusPage = () => {
   const { data: sourceStats = [], isLoading: sourcesLoading } = useSourceStatsQuery();
   const { data: categoryStats = [], isLoading: categoriesLoading } = useCategoryStatsQuery();
   const { data: brandStats = [], isLoading: brandsLoading } = useBrandStatsQuery();
+  const { data: totalProductsData, isLoading: totalProductsLoading } = useTotalProductsQuery();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   // Default main sort: updatedAt desc
   const [sortState, setSortState] = useState<{ key: SortKey | null; direction: SortDirection }>({
@@ -572,6 +573,9 @@ const StatusPage = () => {
     return (
         <AdminGuard>
             <div style={{ padding: 32, paddingBottom: 80 }}>
+                <div style={{ fontSize: 16, fontWeight: 500, marginBottom: 24 }}>
+                  {totalProductsLoading ? 'Loading product count...' : `Total products: ${Number(totalProductsData?.total).toLocaleString() ?? 0}`}
+                </div>
                 {renderScrapersSection()}
                 {renderUsersTable()}
                 {renderSourceStatsTable()}

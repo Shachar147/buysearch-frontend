@@ -48,6 +48,8 @@ export default function getSourceLogo(source?: string): string | undefined {
       return `${S3_URL}/revolve.png`;
     case 'primark':
       return `${S3_URL}/primark.png`;
+    case 'adidas':
+      return `${S3_URL}/adidas-2.png`;
     // Add more sources here as needed
     default:
       return undefined;

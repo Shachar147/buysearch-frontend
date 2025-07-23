@@ -37,4 +37,9 @@ export async function getCategoryStats() {
 export async function getBrandStats() {
   const res = await api.get(`${API_BASE_URL}/auth/stats/brands`, { withCredentials: true });
   return res.data;
+}
+
+export async function getTotalProducts() {
+  const res = await api.get(`${API_BASE_URL}/auth/stats/total-products`, { withCredentials: true });
+  return res.data;
 } 

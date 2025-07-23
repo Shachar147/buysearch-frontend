@@ -54,6 +54,8 @@ export default function getSourceLogo(source?: string): string | undefined {
       return `${S3_URL}/lululemon.png`;
     case 'golf & co':
       return `${S3_URL}/golf-co.png`;
+    case 'bananhot':
+      return `${S3_URL}/bananhot.png`;
     // Add more sources here as needed
     default:
       return undefined;

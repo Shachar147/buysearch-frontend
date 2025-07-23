@@ -355,6 +355,7 @@ const StatusPage = () => {
               <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('createdAt')}>Joined {userSort.key === 'createdAt' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
               <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('lastLoginAt')}>Last Login {userSort.key === 'lastLoginAt' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
               <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('totalSearches')}>Total Searches {userSort.key === 'totalSearches' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
+              <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('favouritesCount')}>Favourites {userSort.key === 'favouritesCount' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
             </tr>
           </thead>
           <tbody>
@@ -364,6 +365,7 @@ const StatusPage = () => {
                 <td style={{ padding: 8 }}>{u.createdAt ? formatTime(u.createdAt) : '-'}</td>
                 <td style={{ padding: 8 }}>{u.lastLoginAt ? formatTime(u.lastLoginAt) : '-'}</td>
                 <td style={{ padding: 8 }}>{u.totalSearches}</td>
+                <td style={{ padding: 8 }}>{u.favouritesCount}</td>
               </tr>
             ))}
           </tbody>

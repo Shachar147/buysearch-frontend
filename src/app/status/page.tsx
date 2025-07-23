@@ -101,16 +101,21 @@ const StatusPage = () => {
   function formatRunTime(startTime: string, endTime: string | null) {
     if (!startTime) return '-';
     let diff = getRunTime(startTime, endTime);
-    const h = Math.floor(diff / 3600);
-    diff -= h * 3600;
-    const m = Math.floor(diff / 60);
-    const s = Math.floor(diff - m * 60);
+    return formatSeconds(diff);
+  }
+
+  function formatSeconds(seconds: number) {
+    const h = Math.floor(seconds / 3600);
+    seconds -= h * 3600;
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds - m * 60);
     let str = '';
     if (h > 0) str += `${h}h `;
     if (m > 0 || h > 0) str += `${m}m `;
     str += `${s}s`;
     return str.trim();
   }
+
   // Add helper to format time ago
   function formatTimeAgo(dateStr: string) {
     if (!dateStr) return '';
@@ -190,12 +195,21 @@ const StatusPage = () => {
   };
 
   // Sub-table sort function
-  const applySubSort = (scraper: string, items: ScrapingHistory[]) => {
+  const applySubSort = (scraper: string, items: any[]) => {
     const state = subSortState[scraper];
     if (!state || !state.key || !state.direction) return items;
     return [...items].sort((a, b) => {
-      let aVal: any = a[state.key as keyof ScrapingHistory];
-      let bVal: any = b[state.key as keyof ScrapingHistory];
+      let aVal: any = a[state.key];
+      let bVal: any = b[state.key];
+      // Custom sort for runTime and scanRate
+      if (state.key === 'runTime') {
+        aVal = a._runTimeMs ?? 0;
+        bVal = b._runTimeMs ?? 0;
+      }
+      if (state.key === 'scanRate') {
+        aVal = a._scanRateNum ?? 0;
+        bVal = b._scanRateNum ?? 0;
+      }
       // For date fields, compare as dates
       if (["startTime", "endTime", "updatedAt"].includes(state.key)) {
         aVal = aVal ? new Date(aVal).getTime() : 0;
@@ -312,7 +326,7 @@ const StatusPage = () => {
                     {last?.status === 'in_progress' ? formatRunTime(last.startTime, null) : last?.startTime ? formatRunTime(last.startTime, last.endTime) : '-'}
                   </td>
                   {statusHeader.includes("Current") && <td>
-                    {Number(getEta(last)).toFixed(2)}
+                    {formatSeconds(Number(getEta(last)))}
                   </td>}
                   <td style={{ padding: 8 }}>
                     {last?.updatedAt ? `${formatTime(last.updatedAt)} (${formatTimeAgo(last.updatedAt)})` : "-"}
@@ -337,35 +351,66 @@ const StatusPage = () => {
                           <tr style={{ background: "#f0f0f0" }}>
                             <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "startTime")}>Start {subSortState[s.scraper]?.key === 'startTime' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
                             <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "endTime")}>End {subSortState[s.scraper]?.key === 'endTime' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
+                            <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "runTime")}>Run Time {subSortState[s.scraper]?.key === 'runTime' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
                             <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "updatedAt")}>Last Update {subSortState[s.scraper]?.key === 'updatedAt' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
                             <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "status")}>Status {subSortState[s.scraper]?.key === 'status' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
                             <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "createdItems")}>Created {subSortState[s.scraper]?.key === 'createdItems' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
                             <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "updatedItems")}>Updated {subSortState[s.scraper]?.key === 'updatedItems' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
                             <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "totalItems")}>Total {subSortState[s.scraper]?.key === 'totalItems' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
                             <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "progress")}>Progress {subSortState[s.scraper]?.key === 'progress' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
+                            <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "scanRate")}>Scan Rate (items/min) {subSortState[s.scraper]?.key === 'scanRate' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {applySubSort(s.scraper, s.history).map((h) => (
-                            <tr key={h.id} style={{ borderBottom: "1px solid #eee" }}>
-                              <td style={{ padding: 6 }}>
-                                {h.startTime ? formatTime(h.startTime) : "-"}
-                              </td>
-                              <td style={{ padding: 6 }}>
-                                {h.endTime ? formatTime(h.endTime) : "-"}
-                              </td>
-                              <td style={{ padding: 6 }}>
-                                {h.updatedAt ? formatTime(h.updatedAt) : "-"}
-                              </td>
-                              <td style={{ padding: 6, color: getStatusColor(h.status) }}>
-                                {h.status}
-                              </td>
-                              <td style={{ padding: 6 }}>{h.createdItems.toLocaleString()}</td>
-                              <td style={{ padding: 6 }}>{h.updatedItems.toLocaleString()}</td>
-                              <td style={{ padding: 6 }}>{h.totalItems.toLocaleString()}</td>
-                              <td style={{ padding: 6 }}>{h.progress}%</td>
-                            </tr>
-                          ))}
+                          {(() => {
+                            // Compute augmented rows for sorting and rendering
+                            const augmentedHistory = s.history.map((h) => {
+                              let scanRate = '-';
+                              let runTime = '-';
+                              let runTimeMs = null;
+                              let scanRateNum = null;
+                              if (h.startTime && (h.endTime || h.status === 'finished')) {
+                                const start = new Date(h.startTime).getTime();
+                                const end = h.endTime ? new Date(h.endTime).getTime() : Date.now();
+                                runTimeMs = end - start;
+                                const elapsedMinutes = runTimeMs / 60000;
+                                const elapsedSeconds = Math.floor(runTimeMs / 1000);
+                                const items = (h.createdItems || 0) + (h.updatedItems || 0);
+                                if (elapsedMinutes > 0) {
+                                  scanRateNum = items / elapsedMinutes;
+                                  scanRate = scanRateNum.toFixed(2);
+                                }
+                                // Format run time as Xm Ys
+                                const mins = Math.floor(elapsedSeconds / 60);
+                                const secs = elapsedSeconds % 60;
+                                runTime = `${mins > 0 ? mins + 'm ' : ''}${secs}s`;
+                              }
+                              return { ...h, _runTimeMs: runTimeMs, _scanRateNum: scanRateNum, _runTimeStr: runTime, _scanRateStr: scanRate };
+                            });
+                            // Use augmentedHistory for sorting and rendering
+                            return applySubSort(s.scraper, augmentedHistory).map((h) => (
+                              <tr key={h.id} style={{ borderBottom: "1px solid #eee" }}>
+                                <td style={{ padding: 6 }}>
+                                  {h.startTime ? formatTime(h.startTime) : "-"}
+                                </td>
+                                <td style={{ padding: 6 }}>
+                                  {h.endTime ? formatTime(h.endTime) : "-"}
+                                </td>
+                                <td style={{ padding: 6 }}>{h._runTimeStr}</td>
+                                <td style={{ padding: 6 }}>
+                                  {h.updatedAt ? formatTime(h.updatedAt) : "-"}
+                                </td>
+                                <td style={{ padding: 6, color: getStatusColor(h.status) }}>
+                                  {h.status}
+                                </td>
+                                <td style={{ padding: 6 }}>{h.createdItems.toLocaleString()}</td>
+                                <td style={{ padding: 6 }}>{h.updatedItems.toLocaleString()}</td>
+                                <td style={{ padding: 6 }}>{h.totalItems.toLocaleString()}</td>
+                                <td style={{ padding: 6 }}>{h.progress}%</td>
+                                <td style={{ padding: 6 }}>{h._scanRateStr}</td>
+                              </tr>
+                            ));
+                          })()}
                         </tbody>
                       </table>
                     </td>

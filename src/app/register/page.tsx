@@ -32,12 +32,24 @@ function RegisterPage() {
             router.push('/login');
           } else if (res.error === 'userAlreadyExist') {
             setError('Username already exists');
+          } else if (res.error === 'usernameTooShort') {
+            setError('Username must be at least 4 characters');
+          } else if (res.error === 'passwordTooShort') {
+            setError('Password must be at least 8 characters');
           } else {
             setError(res.error || 'Registration failed');
           }
         },
-        onError: () => {
-          setError('Registration failed');
+        onError: (err: any) => {
+          if (err?.response?.data?.error === 'userAlreadyExist') {
+            setError('Username already exists');
+          } else if (err?.response?.data?.error === 'usernameTooShort') {
+            setError('Username must be at least 4 characters');
+          } else if (err?.response?.data?.error === 'passwordTooShort') {
+            setError('Password must be at least 8 characters');
+          } else {
+            setError('Registration failed');
+          }
         },
         onSettled: () => {
           setLoading(false);

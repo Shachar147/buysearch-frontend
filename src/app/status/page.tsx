@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useScrapingHistorySummaryQuery } from "../../api/scraping-history/queries";
+import { useAllUsersQuery } from '../../api/auth/queries';
 import Header from "../../components/header/header";
 import AdminGuard from "../../components/admin-guard";
 
@@ -29,6 +30,7 @@ type SortKey = 'scraper' | 'status' | 'updatedAt' | 'ratePerMinute' | 'scannedIt
 
 const StatusPage = () => {
   const { data: summaries = [], isLoading, error } = useScrapingHistorySummaryQuery();
+  const { data: users = [], isLoading: usersLoading, error: usersError } = useAllUsersQuery();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   // Default main sort: updatedAt desc
   const [sortState, setSortState] = useState<{ key: SortKey | null; direction: SortDirection }>({
@@ -37,6 +39,30 @@ const StatusPage = () => {
   });
   // Add per-scraper sub-table sort state, default to updatedAt desc on first expand
   const [subSortState, setSubSortState] = useState<Record<string, { key: string | null; direction: SortDirection }>>({});
+  // Users table sort state
+  const [userSort, setUserSort] = useState<{ key: string, direction: SortDirection }>({ key: 'lastLoginAt', direction: 'desc' });
+
+  const handleUserSort = (key: string) => {
+    setUserSort((prev) => {
+      if (prev.key !== key) return { key, direction: 'asc' };
+      if (prev.direction === 'asc') return { key, direction: 'desc' };
+      return { key: 'createdAt', direction: 'desc' };
+    });
+  };
+
+  const sortedUsers = [...(users || [])].sort((a, b) => {
+    let aVal = a[userSort.key];
+    let bVal = b[userSort.key];
+    if (userSort.key.includes('At')) {
+      aVal = aVal ? new Date(aVal).getTime() : 0;
+      bVal = bVal ? new Date(bVal).getTime() : 0;
+    }
+    if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+    if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+    if (aVal < bVal) return userSort.direction === 'asc' ? -1 : 1;
+    if (aVal > bVal) return userSort.direction === 'asc' ? 1 : -1;
+    return 0;
+  });
 
   function formatTime(lastUpdate: string) {
     const utcDate = new Date(lastUpdate);
@@ -316,6 +342,36 @@ const StatusPage = () => {
     );
     }
 
+  function renderUsersTable() {
+    if (usersLoading) return <div style={{ padding: 32 }}>Loading users...</div>;
+    if (usersError) return <div style={{ padding: 32, color: 'red' }}>Error loading users</div>;
+    return (
+      <>
+        <h2 style={{ marginTop: 32 }}>Users</h2>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
+          <thead>
+            <tr style={{ background: '#f5f5f5' }}>
+              <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('username')}>Username {userSort.key === 'username' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
+              <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('createdAt')}>Joined {userSort.key === 'createdAt' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
+              <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('lastLoginAt')}>Last Login {userSort.key === 'lastLoginAt' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
+              <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('totalSearches')}>Total Searches {userSort.key === 'totalSearches' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedUsers.map((u: any) => (
+              <tr key={u.id} style={{ borderBottom: '1px solid #eee' }}>
+                <td style={{ padding: 8 }}>{u.username}</td>
+                <td style={{ padding: 8 }}>{u.createdAt ? formatTime(u.createdAt) : '-'}</td>
+                <td style={{ padding: 8 }}>{u.lastLoginAt ? formatTime(u.lastLoginAt) : '-'}</td>
+                <td style={{ padding: 8 }}>{u.totalSearches}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </>
+    );
+  }
+
   function renderContent(){
     if (isLoading) return <div style={{ padding: 32 }}>Loading...</div>;
     if (error) return <div style={{ padding: 32, color: "red" }}>Error loading status</div>;
@@ -326,6 +382,7 @@ const StatusPage = () => {
                 <h1>Status of Scrapers</h1>
                 {renderTable(applySort(inProgressSummaries), "🟠 In Progress", 'Current Status', 'Current Scan Rate')}
                 {renderTable(applySort(otherSummaries), "✅ Others", 'Last Status', 'Last Scan Rate')}
+                {renderUsersTable()}
             </div>
         </AdminGuard>
     );

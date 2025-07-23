@@ -1,9 +1,10 @@
 "use client";
 import React, { useState } from "react";
 import { useScrapingHistorySummaryQuery } from "../../api/scraping-history/queries";
-import { useAllUsersQuery } from '../../api/auth/queries';
+import { useAllUsersQuery, useSourceStatsQuery, useCategoryStatsQuery, useBrandStatsQuery } from '../../api/auth/queries';
 import Header from "../../components/header/header";
 import AdminGuard from "../../components/admin-guard";
+import { Loader } from "../../components/loader/loader";
 
 interface ScrapingHistory {
   id: number;
@@ -31,6 +32,9 @@ type SortKey = 'scraper' | 'status' | 'updatedAt' | 'ratePerMinute' | 'scannedIt
 const StatusPage = () => {
   const { data: summaries = [], isLoading, error } = useScrapingHistorySummaryQuery();
   const { data: users = [], isLoading: usersLoading, error: usersError } = useAllUsersQuery();
+  const { data: sourceStats = [], isLoading: sourcesLoading } = useSourceStatsQuery();
+  const { data: categoryStats = [], isLoading: categoriesLoading } = useCategoryStatsQuery();
+  const { data: brandStats = [], isLoading: brandsLoading } = useBrandStatsQuery();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   // Default main sort: updatedAt desc
   const [sortState, setSortState] = useState<{ key: SortKey | null; direction: SortDirection }>({
@@ -41,6 +45,16 @@ const StatusPage = () => {
   const [subSortState, setSubSortState] = useState<Record<string, { key: string | null; direction: SortDirection }>>({});
   // Users table sort state
   const [userSort, setUserSort] = useState<{ key: string, direction: SortDirection }>({ key: 'lastLoginAt', direction: 'desc' });
+  // Sorting state for new tables
+  const [sourceSort, setSourceSort] = useState<{ key: string, direction: SortDirection }>({ key: 'total', direction: 'desc' });
+  const [categorySort, setCategorySort] = useState<{ key: string, direction: SortDirection }>({ key: 'total', direction: 'desc' });
+  const [brandSort, setBrandSort] = useState<{ key: string, direction: SortDirection }>({ key: 'total', direction: 'desc' });
+  // Collapsible state for each section
+  const [showSources, setShowSources] = useState(true);
+  const [showCategories, setShowCategories] = useState(true);
+  const [showBrands, setShowBrands] = useState(true);
+  const [showScrapers, setShowScrapers] = useState(true);
+  const [showUsers, setShowUsers] = useState(true);
 
   const handleUserSort = (key: string) => {
     setUserSort((prev) => {
@@ -224,6 +238,36 @@ const StatusPage = () => {
     return remainingPercents * secondsForOnePercent;
   }
 
+  const handleTableSort = (sortState: any, setSortState: any, key: string) => {
+    setSortState((prev: any) => {
+      if (prev.key !== key) return { key, direction: 'asc' };
+      if (prev.direction === 'asc') return { key, direction: 'desc' };
+      return { key, direction: 'asc' };
+    });
+  };
+
+  function sortRows(rows: any[], sort: { key: string, direction: SortDirection }) {
+    return [...(rows || [])].sort((a, b) => {
+      let aVal = a[sort.key];
+      let bVal = b[sort.key];
+      // Numeric sort for numeric columns
+      if (sort.key == "total") {
+        aVal = Number(a.men) + Number(a.women) + Number(a.unisex);
+        bVal = Number(b.men) + Number(b.women) + Number(b.unisex);
+      }
+      if (["id", "total", "men", "women", "unisex"].includes(sort.key)) {
+        aVal = Number(aVal);
+        bVal = Number(bVal);
+      } else if (typeof aVal === 'string') {
+        aVal = aVal.toLowerCase();
+        bVal = bVal.toLowerCase();
+      }
+      if (aVal < bVal) return sort.direction === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sort.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
   const renderTable = (items: ScraperSummary[], title: string, statusHeader: string, scanRateHeader: string) => {
     const table = items.length == 0 ? <span>None</span> : (
         <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 12 }}>
@@ -342,49 +386,197 @@ const StatusPage = () => {
     );
     }
 
+  function renderSourceStatsTable() {
+    if (sourcesLoading) return <div>Loading sources...</div>;
+    const rows = sortRows(sourceStats, sourceSort).slice(0, 20);
+    return (
+      <>
+        <h2 style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => setShowSources(s => !s)}>
+          Sources {showSources ? '▼' : '▶'}
+        </h2>
+        {showSources && (
+          <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
+              <thead>
+                <tr style={{ background: '#f5f5f5' }}>
+                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(sourceSort, setSourceSort, 'id')}>ID {sourceSort.key === 'id' && (sourceSort.direction === 'asc' ? '↑' : '↓')}</th>
+                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(sourceSort, setSourceSort, 'name')}>Name {sourceSort.key === 'name' && (sourceSort.direction === 'asc' ? '↑' : '↓')}</th>
+                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(sourceSort, setSourceSort, 'total')}>Total {sourceSort.key === 'total' && (sourceSort.direction === 'asc' ? '↑' : '↓')}</th>
+                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(sourceSort, setSourceSort, 'men')}>Men {sourceSort.key === 'men' && (sourceSort.direction === 'asc' ? '↑' : '↓')}</th>
+                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(sourceSort, setSourceSort, 'women')}>Women {sourceSort.key === 'women' && (sourceSort.direction === 'asc' ? '↑' : '↓')}</th>
+                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(sourceSort, setSourceSort, 'unisex')}>Unisex {sourceSort.key === 'unisex' && (sourceSort.direction === 'asc' ? '↑' : '↓')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row: any) => {
+                  const total = Number(row.men) + Number(row.women) + Number(row.unisex);
+                  return (
+                    <tr key={row.id} style={{ borderBottom: '1px solid #eee' }}>
+                      <td style={{ padding: 8 }}>{row.id}</td>
+                      <td style={{ padding: 8 }}>{row.name}</td>
+                      <td style={{ padding: 8 }}>{total.toLocaleString()}</td>
+                      <td style={{ padding: 8 }}>{Number(row.men).toLocaleString()}</td>
+                      <td style={{ padding: 8 }}>{Number(row.women).toLocaleString()}</td>
+                      <td style={{ padding: 8 }}>{Number(row.unisex).toLocaleString()}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </>
+    );
+  }
+
+  function renderCategoryStatsTable() {
+    if (categoriesLoading) return <div>Loading categories...</div>;
+    const rows = sortRows(categoryStats, categorySort).slice(0, 20);
+    return (
+      <>
+        <h2 style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => setShowCategories(s => !s)}>
+          Categories {showCategories ? '▼' : '▶'}
+        </h2>
+        {showCategories && (
+          <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
+              <thead>
+                <tr style={{ background: '#f5f5f5' }}>
+                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(categorySort, setCategorySort, 'name')}>Name {categorySort.key === 'name' && (categorySort.direction === 'asc' ? '↑' : '↓')}</th>
+                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(categorySort, setCategorySort, 'total')}>Total {categorySort.key === 'total' && (categorySort.direction === 'asc' ? '↑' : '↓')}</th>
+                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(categorySort, setCategorySort, 'men')}>Men {categorySort.key === 'men' && (categorySort.direction === 'asc' ? '↑' : '↓')}</th>
+                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(categorySort, setCategorySort, 'women')}>Women {categorySort.key === 'women' && (categorySort.direction === 'asc' ? '↑' : '↓')}</th>
+                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(categorySort, setCategorySort, 'unisex')}>Unisex {categorySort.key === 'unisex' && (categorySort.direction === 'asc' ? '↑' : '↓')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row: any) => {
+                  const total = Number(row.men) + Number(row.women) + Number(row.unisex);
+                  return (
+                    <tr key={row.name} style={{ borderBottom: '1px solid #eee' }}>
+                      <td style={{ padding: 8 }}>{row.name}</td>
+                      <td style={{ padding: 8 }}>{total}</td>
+                      <td style={{ padding: 8 }}>{row.men}</td>
+                      <td style={{ padding: 8 }}>{row.women}</td>
+                      <td style={{ padding: 8 }}>{row.unisex}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </>
+    );
+  }
+
+  function renderBrandStatsTable() {
+    if (brandsLoading) return <div>Loading brands...</div>;
+    const rows = sortRows(brandStats, brandSort).slice(0, 20);
+    return (
+      <>
+        <h2 style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => setShowBrands(s => !s)}>
+          Brands {showBrands ? '▼' : '▶'}
+        </h2>
+        {showBrands && (
+          <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
+              <thead>
+                <tr style={{ background: '#f5f5f5' }}>
+                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(brandSort, setBrandSort, 'name')}>Name {brandSort.key === 'name' && (brandSort.direction === 'asc' ? '↑' : '↓')}</th>
+                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(brandSort, setBrandSort, 'total')}>Total {brandSort.key === 'total' && (brandSort.direction === 'asc' ? '↑' : '↓')}</th>
+                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(brandSort, setBrandSort, 'men')}>Men {brandSort.key === 'men' && (brandSort.direction === 'asc' ? '↑' : '↓')}</th>
+                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(brandSort, setBrandSort, 'women')}>Women {brandSort.key === 'women' && (brandSort.direction === 'asc' ? '↑' : '↓')}</th>
+                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(brandSort, setBrandSort, 'unisex')}>Unisex {brandSort.key === 'unisex' && (brandSort.direction === 'asc' ? '↑' : '↓')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row: any) => {
+                  const total = Number(row.men) + Number(row.women) + Number(row.unisex);
+                  return (
+                    <tr key={row.name} style={{ borderBottom: '1px solid #eee' }}>
+                      <td style={{ padding: 8 }}>{row.name}</td>
+                      <td style={{ padding: 8 }}>{total}</td>
+                      <td style={{ padding: 8 }}>{row.men}</td>
+                      <td style={{ padding: 8 }}>{row.women}</td>
+                      <td style={{ padding: 8 }}>{row.unisex}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </>
+    );
+  }
+
   function renderUsersTable() {
     if (usersLoading) return <div style={{ padding: 32 }}>Loading users...</div>;
     if (usersError) return <div style={{ padding: 32, color: 'red' }}>Error loading users</div>;
     return (
       <>
-        <h2 style={{ marginTop: 32 }}>Users</h2>
-        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
-          <thead>
-            <tr style={{ background: '#f5f5f5' }}>
-              <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('username')}>Username {userSort.key === 'username' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
-              <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('createdAt')}>Joined {userSort.key === 'createdAt' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
-              <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('lastLoginAt')}>Last Login {userSort.key === 'lastLoginAt' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
-              <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('totalSearches')}>Total Searches {userSort.key === 'totalSearches' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
-              <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('favouritesCount')}>Favourites {userSort.key === 'favouritesCount' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedUsers.map((u: any) => (
-              <tr key={u.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: 8 }}>{u.username}</td>
-                <td style={{ padding: 8 }}>{u.createdAt ? formatTime(u.createdAt) : '-'}</td>
-                <td style={{ padding: 8 }}>{u.lastLoginAt ? formatTime(u.lastLoginAt) : '-'}</td>
-                <td style={{ padding: 8 }}>{u.totalSearches}</td>
-                <td style={{ padding: 8 }}>{u.favouritesCount}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <h2 style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => setShowUsers(s => !s)}>
+          Users {showUsers ? '▼' : '▶'}
+        </h2>
+        {showUsers && (
+          <div>
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
+              <thead>
+                <tr style={{ background: '#f5f5f5' }}>
+                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('username')}>Username {userSort.key === 'username' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
+                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('createdAt')}>Joined {userSort.key === 'createdAt' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
+                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('lastLoginAt')}>Last Login {userSort.key === 'lastLoginAt' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
+                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('totalSearches')}>Total Searches {userSort.key === 'totalSearches' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
+                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('favouritesCount')}>Favourites {userSort.key === 'favouritesCount' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedUsers.map((u: any) => (
+                  <tr key={u.id} style={{ borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: 8 }}>{u.username}</td>
+                    <td style={{ padding: 8 }}>{u.createdAt ? formatTime(u.createdAt) : '-'}</td>
+                    <td style={{ padding: 8 }}>{u.lastLoginAt ? formatTime(u.lastLoginAt) : '-'}</td>
+                    <td style={{ padding: 8 }}>{u.totalSearches}</td>
+                    <td style={{ padding: 8 }}>{u.favouritesCount}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </>
+    );
+  }
+
+  function renderScrapersSection() {
+    return (
+      <>
+        <h2 style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => setShowScrapers(s => !s)}>
+          Status of Scrapers {showScrapers ? '▼' : '▶'}
+        </h2>
+        {showScrapers && (
+          <>
+            {renderTable(applySort(inProgressSummaries), "🟠 In Progress", 'Current Status', 'Current Scan Rate')}
+            {renderTable(applySort(otherSummaries), "✅ Others", 'Last Status', 'Last Scan Rate')}
+          </>
+        )}
       </>
     );
   }
 
   function renderContent(){
-    if (isLoading) return <div style={{ padding: 32 }}>Loading...</div>;
+    if (isLoading) return <Loader />
     if (error) return <div style={{ padding: 32, color: "red" }}>Error loading status</div>;
 
     return (
         <AdminGuard>
             <div style={{ padding: 32, paddingBottom: 80 }}>
-                <h1>Status of Scrapers</h1>
-                {renderTable(applySort(inProgressSummaries), "🟠 In Progress", 'Current Status', 'Current Scan Rate')}
-                {renderTable(applySort(otherSummaries), "✅ Others", 'Last Status', 'Last Scan Rate')}
+                {renderScrapersSection()}
                 {renderUsersTable()}
+                {renderSourceStatsTable()}
+                {renderCategoryStatsTable()}
+                {renderBrandStatsTable()}
             </div>
         </AdminGuard>
     );

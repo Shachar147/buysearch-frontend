@@ -92,7 +92,7 @@ const StatusPage = () => {
 
   function getRunTime(startTime: string, endTime: string | null) {
     const start = new Date(startTime).getTime();
-    const end = endTime ? new Date(endTime).getTime() : Date.now();
+    const end = endTime ? new Date(endTime).getTime() : new Date().getTime();
     let diff = Math.max(0, end - start) / 1000; // seconds
     return diff;
   }

@@ -213,7 +213,8 @@ function HomePage() {
         }
         {(total > 0) && <div className={styles.loadMoreWrapper}>
           <div className={getClasses([styles.productCount, 'text-headline-6', 'color-black-4'])}>
-            {`You've viewed ${viewed.toLocaleString()} of ${total.toLocaleString()} products`}
+            {/* {`You've viewed ${viewed.toLocaleString()} of ${total.toLocaleString()} products`} */}
+            {`Viewing ${viewed.toLocaleString()} of ${total.toLocaleString()}`}
           </div>
           {hasNextPage && (
             <button
@@ -221,7 +222,8 @@ function HomePage() {
               onClick={() => fetchNextPage()}
               disabled={isFetchingNextPage}
             >
-              {isFetchingNextPage ? 'Loading...' : 'LOAD MORE'}
+              {/* {isFetchingNextPage ? 'Loading...' : 'LOAD MORE'} */}
+              {isFetchingNextPage ? 'LOADING...' : 'VIEW MORE PRODUCTS'}
             </button>
           )}
         </div>}

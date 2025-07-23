@@ -39,20 +39,25 @@
 
 .loadMoreBtn {
   color: var(--bs-black-6);
-  width: 100%;
-  padding: 22px 0;
+  width: 312px;
+  padding: 16px;
   border: 2px solid var(--bs-gray-4);
   border-radius: 2px;
   background: var(--bs-white);
   letter-spacing: 1px;
   cursor: pointer;
   margin-bottom: 32px;
-  transition: background 0.15s, border 0.15s;
+  transition: background 0.2s ease-in-out, border 0.2s ease-in-out;
+
+  font-family:"Calibre","Helvetica","Helvetica Neue","Roboto",sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-size: 14px;
 }
 
 .loadMoreBtn:hover {
-  background: #f3f3f3;
-  border-color: #bbb;
+  background: var(--bs-black-6);
+  border-color: var(--bs-black-6);
+  color: var(--bs-white);
 }
 
 .scrollUpBtn {

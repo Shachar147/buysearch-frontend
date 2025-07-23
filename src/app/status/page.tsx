@@ -389,7 +389,7 @@ const StatusPage = () => {
 
   function renderSourceStatsTable() {
     if (sourcesLoading) return <div>Loading sources...</div>;
-    const rows = sortRows(sourceStats, sourceSort).slice(0, 20);
+    const rows = sortRows(sourceStats, sourceSort).slice(0, 50);
     return (
       <>
         <h2 style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => setShowSources(s => !s)}>
@@ -432,7 +432,7 @@ const StatusPage = () => {
 
   function renderCategoryStatsTable() {
     if (categoriesLoading) return <div>Loading categories...</div>;
-    const rows = sortRows(categoryStats, categorySort).slice(0, 20);
+    const rows = sortRows(categoryStats, categorySort).slice(0, 50);
     return (
       <>
         <h2 style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => setShowCategories(s => !s)}>
@@ -473,7 +473,7 @@ const StatusPage = () => {
 
   function renderBrandStatsTable() {
     if (brandsLoading) return <div>Loading brands...</div>;
-    const rows = sortRows(brandStats, brandSort).slice(0, 20);
+    const rows = sortRows(brandStats, brandSort).slice(0, 50);
     return (
       <>
         <h2 style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => setShowBrands(s => !s)}>

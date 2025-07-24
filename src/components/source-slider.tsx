@@ -45,7 +45,7 @@ export default function SourceSlider() {
   return (
     <div style={{ width: '100%', margin: '32px 0' }}>
       <div style={{ width:'100%', display: 'flex', justifyContent: 'center', textAlign: 'center'}}>
-        <h4 style={{ backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16, marginBottom: 0,width: 'max-content' }}>Sources we stock:</h4>
+        <h4 style={{ backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16, marginBottom: 0,width: 'max-content' }}>Search once, buy everywhere!</h4>
       </div>
       <div style={{ overflow: 'hidden', width: '100%', background: '#f8f9fa', borderRadius: 12, backgroundColor: 'white', }}>
         <div

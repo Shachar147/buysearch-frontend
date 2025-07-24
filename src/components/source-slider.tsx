@@ -12,7 +12,7 @@ const SLIDE_SPEED = 60; // px per second
 
 export default function SourceSlider() {
   const trackRef = useRef<HTMLDivElement>(null);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number>(0);
 
   // Duplicate logos for seamless infinite scroll
   const logos = [...SOURCES, ...SOURCES];

@@ -17,6 +17,7 @@ interface ScrapingHistory {
   totalItems: number;
   progress: number;
   ratePerMinute: number | null;
+  type: 'auto' | 'manual';
 }
 
 interface ScraperSummary {
@@ -27,7 +28,7 @@ interface ScraperSummary {
 }
 
 type SortDirection = 'asc' | 'desc' | null;
-type SortKey = 'scraper' | 'status' | 'updatedAt' | 'ratePerMinute' | 'scannedItems' | 'startTime' | 'eta';
+type SortKey = 'scraper' | 'status' | 'updatedAt' | 'ratePerMinute' | 'scannedItems' | 'startTime' | 'eta' | 'type';
 
 const StatusPage = () => {
   const { data: summaries = [], isLoading, error } = useScrapingHistorySummaryQuery();
@@ -172,6 +173,7 @@ const StatusPage = () => {
             return item.history[0].ratePerMinute ? Number(item.history[0].ratePerMinute) : -1
         }
         if (sortState.key === 'scannedItems') return (item.history[0]?.createdItems ?? 0) + (item.history[0]?.updatedItems ?? 0);
+        if (sortState.key === 'type') return item.history[0]?.type || '';
         return '';
       };
 
@@ -224,6 +226,11 @@ const StatusPage = () => {
       if (["createdItems", "updatedItems", "totalItems", "progress"].includes(state.key)) {
         aVal = Number(aVal) || 0;
         bVal = Number(bVal) || 0;
+      }
+      // For type, compare as string
+      if (state.key === 'type') {
+        aVal = aVal || '';
+        bVal = bVal || '';
       }
       if (aVal < bVal) return state.direction === 'asc' ? -1 : 1;
       if (aVal > bVal) return state.direction === 'asc' ? 1 : -1;
@@ -283,7 +290,7 @@ const StatusPage = () => {
     });
   }
 
-  const renderTable = (items: ScraperSummary[], title: string, statusHeader: string, scanRateHeader: string) => {
+  const renderTable = (items: ScraperSummary[], title: string, statusHeader: string, scanRateHeader: string, typeHeader: string) => {
     const table = items.length == 0 ? <span>None</span> : (
         <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 12 }}>
         <thead>
@@ -296,6 +303,7 @@ const StatusPage = () => {
             <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("updatedAt")}>Last Update {sortState.key === 'updatedAt' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
             <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("scannedItems")}>Scanned Items {sortState.key === 'scannedItems' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
             <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("ratePerMinute")}>{scanRateHeader} (items/min) {sortState.key === 'ratePerMinute' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
+            <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("type")}>{typeHeader} {sortState.key === 'type' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
             <th style={{ padding: 8 }}></th>
           </tr>
         </thead>
@@ -336,6 +344,9 @@ const StatusPage = () => {
                     {last.ratePerMinute ? last.ratePerMinute.toFixed(2) : "-"}
                   </td>
                   <td style={{ padding: 8 }}>
+                    {last.type === 'auto' ? 'Auto' : 'Manual'}
+                  </td>
+                  <td style={{ padding: 8 }}>
                     <button
                       onClick={() => handleExpand(s.scraper)}
                     >
@@ -345,7 +356,7 @@ const StatusPage = () => {
                 </tr>
                 {expanded[s.scraper] && (
                   <tr>
-                    <td colSpan={8} style={{ background: "#fafbfc", padding: 0 }}>
+                    <td colSpan={10} style={{ background: "#fafbfc", padding: 0 }}>
                       <table style={{ width: "100%", borderCollapse: "collapse", margin: 0 }}>
                         <thead>
                           <tr style={{ background: "#f0f0f0" }}>
@@ -359,6 +370,7 @@ const StatusPage = () => {
                             <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "totalItems")}>Total {subSortState[s.scraper]?.key === 'totalItems' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
                             <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "progress")}>Progress {subSortState[s.scraper]?.key === 'progress' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
                             <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "scanRate")}>Scan Rate (items/min) {subSortState[s.scraper]?.key === 'scanRate' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
+                            <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "type")}>Type {subSortState[s.scraper]?.key === 'type' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -408,6 +420,7 @@ const StatusPage = () => {
                                 <td style={{ padding: 6 }}>{h.totalItems.toLocaleString()}</td>
                                 <td style={{ padding: 6 }}>{h.progress}%</td>
                                 <td style={{ padding: 6 }}>{h._scanRateStr}</td>
+                                <td style={{ padding: 6 }}>{h.type === 'auto' ? 'Auto' : 'Manual'}</td>
                               </tr>
                             ));
                           })()}
@@ -603,8 +616,8 @@ const StatusPage = () => {
         </h2>
         {showScrapers && (
           <>
-            {renderTable(applySort(inProgressSummaries), "🟠 In Progress", 'Current Status', 'Current Scan Rate')}
-            {renderTable(applySort(otherSummaries), "✅ Others", 'Last Status', 'Last Scan Rate')}
+            {renderTable(applySort(inProgressSummaries), "🟠 In Progress", 'Current Status', 'Current Scan Rate', 'Type')}
+            {renderTable(applySort(otherSummaries), "✅ Others", 'Last Status', 'Last Scan Rate', 'Last Scan Type')}
           </>
         )}
       </>

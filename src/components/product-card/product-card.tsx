@@ -185,11 +185,11 @@ const ProductCard = observer(({
         <div className={getClasses([styles.price, 'text-body', 'color-black-6'])}>
           {oldPrice && Number(oldPrice) > Number(price ?? 0) ? (
             <>
-              <span className={getClasses([styles.oldPrice, 'text-body', 'color-gray-5'])}>{oldPrice} {currency}</span>
-              <span className={getClasses([styles.salePrice, 'text-body', 'color-red-5'])}>{price} {currency}</span>
+              <span className={getClasses([styles.oldPrice, 'text-body', 'color-gray-5'])}>{oldPrice.toLocaleString()} {currency}</span>
+              <span className={getClasses([styles.salePrice, 'text-body', 'color-red-5'])}>{price.toLocaleString()} {currency}</span>
             </>
           ) : (
-            <span>{price !== null ? `${price} ${currency}` : 'N/A'}</span>
+            <span>{price !== null ? `${price.toLocaleString()} ${currency}` : 'N/A'}</span>
           )}
           {/* Price trend sparkline and tooltip */}
           <ProductPriceTrend history={priceHistory} />

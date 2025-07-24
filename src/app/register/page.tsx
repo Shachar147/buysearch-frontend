@@ -16,7 +16,9 @@ function RegisterPage() {
   const router = useRouter();
   const registerMutation = useRegister();
 
-  window.location.href = '/login';
+  if (window){
+    window.location.href = '/login';
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

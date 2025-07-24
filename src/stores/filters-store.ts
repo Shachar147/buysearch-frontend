@@ -112,10 +112,13 @@ export class FiltersStore {
   brands: any[] = [];
   menCategories: any[] = [];
   womenCategories: any[] = [];
+  unisexCategories: any[] = [];
   colors: any[] = [];
+
   get categories() {
-    return this.selected.gender?.toLowerCase() === 'men' ? this.menCategories : this.womenCategories;
+    return this.selected.gender?.toLowerCase() === 'men' ? this.menCategories : this.selected.gender?.toLowerCase() === 'women' ? this.womenCategories : this.unisexCategories;
   }
+
   // No loading state needed for server data
 
   // todo: move these to a const file and re-use whenever needed
@@ -138,12 +141,14 @@ export class FiltersStore {
       brands: observable,
       menCategories: observable,
       womenCategories: observable,
+      unisexCategories: observable,
       categories: computed,
       colors: observable,
       selected: observable,
       setBrands: action,
       setMenCategories: action,
       setWomenCategories: action,
+      setUnisexCategories: action,
       setColors: action,
       setFilter: action,
     });
@@ -164,6 +169,9 @@ export class FiltersStore {
   }
   setWomenCategories = (categories: any[]) => {
     this.womenCategories = categories;
+  }
+  setUnisexCategories = (categories: any[]) => {
+    this.unisexCategories = categories;
   }
   setColors = (colors: any[]) => {
     this.colors = colors;

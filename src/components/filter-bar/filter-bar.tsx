@@ -47,8 +47,9 @@ const FilterBar = observer(() => {
   const { data: colors = [] } = useAllColors();
   const { data: menCategories = [] } = useAllCategories('men');
   const { data: womenCategories = [] } = useAllCategories('women');
+  const { data: unisexCategories = [] } = useAllCategories('unisex');
   const { data: sources = [] } = useAllSources();
-  const categories = selected.gender?.toLowerCase() === 'men' ? menCategories : womenCategories;
+  const categories = selected.gender?.toLowerCase() === 'men' ? menCategories : selected.gender?.toLowerCase() === 'women' ? womenCategories : unisexCategories;
   const min = 0;
   const max = 2000;
   const step = 10;

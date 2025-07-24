@@ -285,7 +285,7 @@ export default function AuthPage() {
                   // marginLeft: 8,
                   cursor: 'pointer',
                   boxShadow: tab === 'signup' ? '0 2px 12px rgba(0,0,0,0.08)' : undefined,
-                  transition: 'all 0.18s',
+                  transition: 'all 0.18s', 
                   outline: 'none',
                 }}
               >

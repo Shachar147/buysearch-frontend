@@ -44,10 +44,10 @@ export default function SourceSlider() {
 
   return (
     <div style={{ width: '100%', margin: '32px 0' }}>
-      <h3 style={{ textAlign: 'center' }}>
-        Sources we stock:
-      </h3>
-      <div style={{ overflow: 'hidden', width: '100%', background: '#f8f9fa', borderRadius: 12 }}>
+      <div style={{ width:'100%', display: 'flex', justifyContent: 'center', textAlign: 'center'}}>
+        <h4 style={{ backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16, marginBottom: 0,width: 'max-content' }}>Sources we stock:</h4>
+      </div>
+      <div style={{ overflow: 'hidden', width: '100%', background: '#f8f9fa', borderRadius: 12, backgroundColor: 'white', }}>
         <div
           ref={trackRef}
           style={{
@@ -55,6 +55,7 @@ export default function SourceSlider() {
             alignItems: 'center',
             height: 75,
             willChange: 'transform',
+            backgroundColor: 'white',
           }}
         >
           {logos.map((source, idx) => {
@@ -62,7 +63,10 @@ export default function SourceSlider() {
             if (!logo) return null;
             return (
               <div key={source + idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 75, minWidth: 140, padding: '0 32px' }}>
-                <img src={logo} alt={source} style={{ height: 75, maxWidth: 120, objectFit: 'contain', filter: 'grayscale(0.2)' }} />
+                <img src={logo} alt={source} style={{ height: 75, maxWidth: 120, objectFit: 'contain', filter: 'grayscale(0.2)',
+                          mixBlendMode: 'multiply', // This is the key line
+                          backgroundColor: 'white',
+                 }} />
               </div>
             );
           })}

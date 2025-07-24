@@ -5,6 +5,7 @@ import ReactQueryProvider from '../components/react-query-provider';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import Footer from '../components/footer';
 import AdminGuard from '../components/admin-guard';
+import SourceSlider from '../components/source-slider';
 
 
 export const metadata = {

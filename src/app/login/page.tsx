@@ -54,7 +54,7 @@ function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
         placeholder="Type your Username..."
         value={username}
         onChange={e => setUsername(e.target.value)}
-        autoFocus
+        // autoFocus
         required
       />
       <label style={{ fontWeight: 500, fontSize: 14, marginBottom: 2, marginTop: 0 }}>Password</label>
@@ -141,7 +141,7 @@ function RegisterForm({ onSuccess }: { onSuccess?: () => void }) {
         placeholder="Type your Username..."
         value={username}
         onChange={e => setUsername(e.target.value)}
-        autoFocus
+        // autoFocus
         required
       />
       <label style={{ fontWeight: 500, fontSize: 14, marginBottom: 2, marginTop: 0 }}>Password</label>

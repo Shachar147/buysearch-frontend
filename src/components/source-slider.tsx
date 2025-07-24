@@ -47,7 +47,7 @@ export default function SourceSlider() {
       <div style={{ width:'100%', display: 'flex', justifyContent: 'center', textAlign: 'center'}}>
         <h4 style={{ backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16, marginBottom: 0,width: 'max-content' }}>Search once, buy everywhere!</h4>
       </div>
-      <div style={{ overflow: 'hidden', width: '100%', background: '#f8f9fa', borderRadius: 12, backgroundColor: 'white', paddingBottom: 32 }}>
+      <div style={{ overflow: 'hidden', width: '100%', background: '#f8f9fa', borderRadius: 12, backgroundColor: 'white', paddingBottom: 16, paddingTop: 16 }}>
         <div
           ref={trackRef}
           style={{

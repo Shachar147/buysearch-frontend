@@ -197,7 +197,11 @@ const ProductCard = observer(({
       </div>
       {categoryNames && (
         <div className={getClasses([styles.categories, 'text-body', 'color-black-4'])}>
-          {`Categories: ${categoryNames}`}
+          {categoryNames.split(',').map((cat, idx) => (
+            <span key={idx} className={styles.categoryTag}>
+              {cat.trim()}
+            </span>
+          ))}
         </div>
       )}
       <div className={getClasses([styles.colors, 'text-body', 'color-black-4'])}>

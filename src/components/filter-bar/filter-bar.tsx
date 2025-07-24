@@ -45,11 +45,8 @@ const FilterBar = observer(() => {
   const [localSearch, setLocalSearch] = useState(filtersStore.selected.search);
   const { data: brands = [] } = useAllBrands();
   const { data: colors = [] } = useAllColors();
-  const { data: menCategories = [] } = useAllCategories('men');
-  const { data: womenCategories = [] } = useAllCategories('women');
-  const { data: unisexCategories = [] } = useAllCategories('unisex');
   const { data: sources = [] } = useAllSources();
-  const categories = selected.gender?.toLowerCase() === 'men' ? menCategories : selected.gender?.toLowerCase() === 'women' ? womenCategories : unisexCategories;
+  const { data: categories = [] } = useAllCategories(selected.gender?.toLowerCase());
   const min = 0;
   const max = 2000;
   const step = 10;

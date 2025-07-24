@@ -319,7 +319,7 @@ const FilterBar = observer(() => {
       <div className={styles.filterBarRow} style={isMobile ? { alignItems: 'center', justifyContent: 'center' } : {}}>
         {renderSearchInput()}
         {isMobile && appliedFilters > 0 && (
-            <span style={{ color: 'var(--bs-blue-5)', fontSize: 13, fontWeight: 500, marginTop: 2 }}>{appliedFilters + 1} filter{appliedFilters > 0 ? 's' : ''} applied</span>
+            <span style={{ color: 'var(--bs-blue-5)', cursor: 'pointer', fontSize: 13, fontWeight: 500, marginTop: 2 }} onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}>{appliedFilters + 1} filter{appliedFilters > 0 ? 's' : ''} applied</span>
           )}
         {showExtended && renderGenderSelect()}
         {showExtended && renderSortSelect()}

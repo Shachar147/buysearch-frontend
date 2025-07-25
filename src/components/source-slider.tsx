@@ -2,17 +2,16 @@
 
 import React, { useEffect, useRef } from 'react';
 import getSourceLogo from '../utils/source-logo';
-
-// List of all sources (update as needed)
-const SOURCES = [
-  'asos', 'terminalx', 'factory54', 'itaybrands', 'zara', 'story', 'oneprojectshop', 'chozen', 'nike', 'jdsports', 'gant', 'renuar', 'castro', 'stockx', 'tommy hilfiger', 'alo yoga', 'polo ralph lauren', 'styleforrent', 'revolve', 'primark', 'adidas', 'lululemon', 'golf & co', 'bananhot', 'foxhome', 'zarahome'
-];
+import { useAllSources } from '../api/source/queries';
 
 const SLIDE_SPEED = 60; // px per second
 
 export default function SourceSlider() {
   const trackRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>(0);
+
+  const { data: sources } = useAllSources();
+  const SOURCES = sources?.map((source) => source.name) || [];
 
   // Duplicate logos for seamless infinite scroll
   const logos = [...SOURCES, ...SOURCES];

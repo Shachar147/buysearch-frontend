@@ -14,10 +14,18 @@ import { useInfiniteProducts } from '../api/product/queries';
 import { fetchBulkPriceHistory, ProductFilters } from '../services/product-api-service';
 import { Loader } from '../components/loader/loader';
 import SourceSlider from '../components/source-slider';
+import Search from '../components/search/search';
 
 function HomePage() {
   const [showScrollUp, setShowScrollUp] = useState(false);
   const [showPriceChangeOnly, setShowPriceChangeOnly] = useState(false);
+  const [localSearch, setLocalSearch] = useState(filtersStore.selected.search);
+
+  useEffect(() => {
+    setLocalSearch(filtersStore.selected.search);
+  }, [filtersStore.selected.search]);
+
+
   // Memoize selectedFilters to prevent infinite loops
   const selectedFilters = useMemo(() => ({
     ...filtersStore.selected,
@@ -117,27 +125,6 @@ function HomePage() {
     return () => disposer();
   }, [showPriceChangeOnly]);
 
-  // Handler for toggling favourites (heart icon)
-  const handleToggleFavourites = (val: boolean) => {
-    filtersStore.selected.isFavourite = val;
-    // Update hash immediately
-    if (typeof window !== 'undefined') {
-      const query = filtersToQueryString({ ...filtersStore.selected, withPriceChange: showPriceChangeOnly });
-      window.location.hash = query ? '?' + query : '';
-    }
-  };
-
-  // Handler for toggling price change filter (trend icon)
-  const handleTogglePriceChange = (val: boolean) => {
-    setShowPriceChangeOnly(val);
-    filtersStore.selected.withPriceChange = val;
-    // Update hash immediately
-    if (typeof window !== 'undefined') {
-      const query = filtersToQueryString({ ...filtersStore.selected, withPriceChange: val });
-      window.location.hash = query ? '?' + query : '';
-    }
-  };
-
   // Handler for gender switch
   const handleGenderSwitch = (gender: string) => {
     filtersStore.setGender(gender);
@@ -166,6 +153,9 @@ function HomePage() {
 
   return (
     <div className={styles.root}>
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000 }}>
+        <Header />
+      </div>
       {/* Banner with tabs at the bottom */}
       <div style={{
         width: '100%',
@@ -188,26 +178,7 @@ function HomePage() {
           background: 'rgba(0,0,0,0.35)',
           zIndex: 1,
         }} />
-        <h1 style={{
-          color: 'white',
-          fontSize: 48,
-          fontWeight: 700,
-          margin: 0,
-          textShadow: '0 2px 8px rgba(0,0,0,0.2)',
-          zIndex: 2,
-        }}>
-          Buysearch
-        </h1>
-        <div style={{
-          color: 'white',
-          marginTop: 16,
-          fontSize: 20,
-          fontWeight: 400,
-          textShadow: '0 2px 8px rgba(0,0,0,0.2)',
-          zIndex: 2,
-        }}>
-          Search once, buy everywhere!
-        </div>
+        <Search value={localSearch} onChange={setLocalSearch} />
         {/* Tabs at the bottom of the banner */}
         <div
           style={{

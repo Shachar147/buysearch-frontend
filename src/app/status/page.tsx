@@ -646,7 +646,7 @@ const StatusPage = () => {
 
   return (
     <>
-        <Header hideGenderSwitch hideSearch />
+        <Header hideGenderSwitch />
         {renderContent()}
     </>
   )

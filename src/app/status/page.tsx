@@ -251,7 +251,7 @@ const StatusPage = () => {
   const otherSummaries = summaries.filter((s) => s.history[0]?.status !== "in_progress");
 
   function getEta(item: ScrapingHistory) {
-    if (!item.progress) {
+    if (!item.progress || item.progress === 0) {
         return "-";
     }
 

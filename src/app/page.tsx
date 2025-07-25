@@ -13,6 +13,7 @@ import { toJS, reaction } from 'mobx';
 import { useInfiniteProducts } from '../api/product/queries';
 import { fetchBulkPriceHistory, ProductFilters } from '../services/product-api-service';
 import { Loader } from '../components/loader/loader';
+import SourceSlider from '../components/source-slider';
 
 function HomePage() {
   const [showScrollUp, setShowScrollUp] = useState(false);
@@ -157,15 +158,106 @@ function HomePage() {
 
   const viewed = allProducts.length;
 
+  const genderTabs = [
+    { label: 'Women', value: 'women' },
+    { label: 'Men', value: 'men' },
+    { label: 'Unisex', value: 'unisex' },
+  ];
+
   return (
     <div className={styles.root}>
-      <Header
+      {/* Banner with tabs at the bottom */}
+      <div style={{
+        width: '100%',
+        minHeight: 320,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        marginBottom: 0,
+        background: 'url(https://buysearch.s3.eu-north-1.amazonaws.com/bg-3.jpeg) center/cover',
+      }}>
+        {/* Overlay for better text contrast */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(0,0,0,0.35)',
+          zIndex: 1,
+        }} />
+        <h1 style={{
+          color: 'white',
+          fontSize: 48,
+          fontWeight: 700,
+          margin: 0,
+          textShadow: '0 2px 8px rgba(0,0,0,0.2)',
+          zIndex: 2,
+        }}>
+          Buysearch
+        </h1>
+        <div style={{
+          color: 'white',
+          marginTop: 16,
+          fontSize: 20,
+          fontWeight: 400,
+          textShadow: '0 2px 8px rgba(0,0,0,0.2)',
+          zIndex: 2,
+        }}>
+          Search once, buy everywhere!
+        </div>
+        {/* Tabs at the bottom of the banner */}
+        <div
+          style={{
+            display: 'flex',
+            width: '100%',
+            maxWidth: 400,
+            margin: '0 auto',
+            position: 'absolute',
+            bottom: -1,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 3,
+            background: 'rgba(255,255,255,0.05)',
+            // borderRadius: 16,
+            overflow: 'hidden',
+            // boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+          }}
+        >
+          {genderTabs.map(tab => (
+            <button
+              key={tab.value}
+              onClick={() => handleGenderSwitch(tab.value)}
+              style={{
+                flex: 1,
+                minWidth: 0,
+                background: filtersStore.selected.gender === tab.value ? '#f7f7f7' : 'transparent',
+                color: filtersStore.selected.gender === tab.value ? '#222' : '#fff',
+                border: 'none',
+                borderTopLeftRadius: 12,
+                borderTopRightRadius: 12,
+                padding: '16px 0',
+                fontWeight: filtersStore.selected.gender === tab.value ? 700 : 400,
+                fontSize: 20,
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                outline: 'none',
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {/* <Header
         showFavouritesOnly={filtersStore.selected.isFavourite}
         onToggleFavourites={handleToggleFavourites}
         showPriceChangeOnly={showPriceChangeOnly}
         onTogglePriceChange={handleTogglePriceChange}
-      />
-      <main className={styles.main}>
+      /> */}
+      <main className={styles.main} style={{ marginTop: 24 }}>
         <SavedFilters />
         <FilterBar />
         {total > 0 && <div className={styles.totalResultsWrapper}>
@@ -233,6 +325,8 @@ function HomePage() {
           <ScrollUpButton show={showScrollUp} />
         )}
       </main>
+      {/* Source slider at the bottom */}
+      <SourceSlider />
     </div>
   );
 }

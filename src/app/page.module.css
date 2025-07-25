@@ -46,7 +46,7 @@
   background: var(--bs-white);
   letter-spacing: 1px;
   cursor: pointer;
-  margin-bottom: 32px;
+  /* margin-bottom: 32px; */
   transition: background 0.2s ease-in-out, border 0.2s ease-in-out;
 
   font-family:"Calibre","Helvetica","Helvetica Neue","Roboto",sans-serif;

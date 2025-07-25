@@ -23,10 +23,20 @@ interface HeaderProps {
 const Header = (props: HeaderProps) => {
 
   const [loggedIn, setLoggedIn] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
     setLoggedIn(isLoggedIn());
+  }, []);
+
+  useEffect(() => {
+    function onScroll() {
+      setScrolled(window.scrollY >= 100);
+    }
+    window.addEventListener('scroll', onScroll);
+    onScroll(); // set initial
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   function handleLogout() {
@@ -90,7 +100,7 @@ const Header = (props: HeaderProps) => {
   }
 
   return (
-    <header className={styles.header}>
+    <header className={getClasses([styles.header, scrolled && styles.scrolled])}>
       <div className={getClasses([styles.logo, 'text-headline-4', 'color-white', 'cursor-pointer'])} onClick={() => window.location.href = loggedIn ? '/' : '/login'}>
       <div className={styles.logoImage} />
       </div>
@@ -112,7 +122,7 @@ const Header = (props: HeaderProps) => {
             role="button"
             tabIndex={0}
           >
-            <svg width="32" height="32" viewBox="0 0 24 24" fill={props.showFavouritesOnly ? 'var(--bs-red-5)' : 'none'} stroke={props.showFavouritesOnly ? 'var(--bs-red-5)' : '#fff'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill={props.showFavouritesOnly ? 'var(--bs-red-5)' : scrolled ? 'var(--bs-black-6)' : 'none'} stroke={props.showFavouritesOnly ? 'var(--bs-red-5)' : scrolled ? 'var(--bs-black-6)' : '#fff'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20.8 4.6c-1.5-1.4-3.9-1.4-5.4 0l-.7.7-.7-.7c-1.5-1.4-3.9-1.4-5.4 0-1.6 1.5-1.6 3.9 0 5.4l6.1 6.1c.2.2.5.2.7 0l6.1-6.1c1.6-1.5 1.6-3.9 0-5.4z"/>
             </svg>
           </span>}
@@ -131,7 +141,7 @@ const Header = (props: HeaderProps) => {
             tabIndex={0}
           >
             {/* Trend/graph icon */}
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={props.showPriceChangeOnly ? 'var(--bs-red-5)' : '#fff'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={props.showPriceChangeOnly ? 'var(--bs-red-5)' : scrolled ? 'var(--bs-black-6)' : '#fff'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="3 17 9 11 13 15 21 7" />
               <circle cx="3" cy="17" r="1.5" />
               <circle cx="9" cy="11" r="1.5" />
@@ -147,7 +157,7 @@ const Header = (props: HeaderProps) => {
             role="button"
             tabIndex={0}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={scrolled ? 'var(--bs-black-6)' : '#fff'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M16 17l5-5-5-5" />
               <path d="M21 12H9" />
               <path d="M12 19v2a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v2" />

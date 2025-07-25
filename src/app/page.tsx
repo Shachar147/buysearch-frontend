@@ -151,10 +151,35 @@ function HomePage() {
     { label: 'Unisex', value: 'unisex' },
   ];
 
+  const handleToggleFavourites = (val: boolean) => {
+    filtersStore.selected.isFavourite = val;
+    // Update hash immediately
+    if (typeof window !== 'undefined') {
+      const query = filtersToQueryString({ ...filtersStore.selected, withPriceChange: showPriceChangeOnly });
+      window.location.hash = query ? '?' + query : '';
+    }
+  };
+
+  // Handler for toggling price change filter (trend icon)
+  const handleTogglePriceChange = (val: boolean) => {
+    setShowPriceChangeOnly(val);
+    filtersStore.selected.withPriceChange = val;
+    // Update hash immediately
+    if (typeof window !== 'undefined') {
+      const query = filtersToQueryString({ ...filtersStore.selected, withPriceChange: val });
+      window.location.hash = query ? '?' + query : '';
+    }
+  };
+
   return (
     <div className={styles.root}>
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000 }}>
-        <Header />
+        <Header
+        showFavouritesOnly={filtersStore.selected.isFavourite}
+        onToggleFavourites={handleToggleFavourites}
+        showPriceChangeOnly={showPriceChangeOnly}
+        onTogglePriceChange={handleTogglePriceChange}
+         />
       </div>
       {/* Banner with tabs at the bottom */}
       <div style={{
@@ -222,12 +247,6 @@ function HomePage() {
           ))}
         </div>
       </div>
-      {/* <Header
-        showFavouritesOnly={filtersStore.selected.isFavourite}
-        onToggleFavourites={handleToggleFavourites}
-        showPriceChangeOnly={showPriceChangeOnly}
-        onTogglePriceChange={handleTogglePriceChange}
-      /> */}
       <main className={styles.main} style={{ marginTop: 24 }}>
         <SavedFilters />
         <FilterBar />

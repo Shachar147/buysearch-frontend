@@ -53,9 +53,9 @@
 }
 
 .saveButton {
-  background: var(--bs-black-6) !important;
+  /* background: var(--bs-black-6) !important; */
   /* border: 1px solid var(--bs-blue-5); */
-  color: white;
+  color: white !important;
   background: transparent;
   width: max-content;
   text-decoration: none !important;
@@ -66,6 +66,17 @@
   font-weight: 500;
   cursor: pointer;
   transition: opacity- 0.2s;
+}
+
+.saveButtonBlack {
+  background: var(--bs-black-6) !important;
+  color: white !important;
+}
+
+.saveButtonWhite {
+  background: var(--bs-blue-5) !important;
+  color: white;
+  padding: 0;
 }
 
 .saveButton:hover:not(:disabled) {

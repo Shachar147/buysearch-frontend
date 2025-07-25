@@ -9,11 +9,9 @@ import filtersStore from '../../stores/filters-store';
 import { isLoggedIn } from '../../utils/auth';
 import styles from './saved-filters.module.css';
 import getClasses from '../../utils/get-classes';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSliders, faPen, faTrash, faPlus, faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { FaDownload, FaPen, FaSlidersH, FaTrash, FaPlus, FaCheck, FaTimes } from 'react-icons/fa';
 import { DEFAULT_GENDER, DEFAULT_SORT_BY } from '../../utils/consts';
 import { Loader } from '../loader/loader';
-import { FaSlidersH } from 'react-icons/fa';
 
 function areFiltersEqual(a, b) {
   return JSON.stringify(a) === JSON.stringify(b);
@@ -48,6 +46,11 @@ const SavedFilters = observer(() => {
   // Close popover on outside click or escape
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
+      console.log('handleClickOutside', event.target);
+      // If the click is inside the popover, do nothing
+      if ((event.target as HTMLElement)?.closest && (event.target as HTMLElement).closest('#saved-filters-popover')) {
+        return;
+      }
       if (popoverRef.current && !popoverRef.current.contains(event.target as Node) && iconBtnRef.current && !iconBtnRef.current.contains(event.target as Node)) {
         setIsPopoverOpen(false);
         // setEditId(null);
@@ -57,6 +60,7 @@ const SavedFilters = observer(() => {
     function handleEscape(event: KeyboardEvent) {
       if (event.key === 'Escape') {
         setIsPopoverOpen(false);
+        setIsModalOpen(false);
         // setEditId(null);
         // setEditFiltersId(null);
       }
@@ -221,17 +225,19 @@ const SavedFilters = observer(() => {
       className={getClasses([styles.popover, 'flex-column', 'gap-4'])}
       ref={popoverRef}
       style={popoverPos ? { top: popoverPos.top, left: popoverPos.left, position: 'absolute', zIndex: 9999 } : {}}
+      id="saved-filters-popover"
+      onClick={(e) => e.stopPropagation()}
     >
       <div className={getClasses([styles.popoverHeader, 'flex', 'items-center', 'gap-4'])}>
         <span className={getClasses([styles.popoverTitle, 'flex-1'])}>Saved Filters</span>
         {hasActiveFilters() && !hasExactFilterset && (
           <button
-            onClick={() => { setIsModalOpen(true); setEditName(''); }}
+            onClick={(e) => { setIsModalOpen(true); setEditName(''); }}
             disabled={createSavedFilter.isPending}
-            className={getClasses([styles.saveButton, styles.saveButtonCircle, 'color-white', 'bg-red-6', styles.smallButton])}
+            className={getClasses([styles.saveButton, styles.saveButtonCircle, styles.saveButtonWhite, 'bg-red-6'])}
             title="Save current filters"
           >
-            <FontAwesomeIcon icon={faPlus} />
+            <FaPlus />
           </button>
         )}
       </div>
@@ -271,11 +277,11 @@ const SavedFilters = observer(() => {
                         }}
                         autoFocus
                       />
-                      <button className={getClasses([styles.saveButton, styles.smallButton, 'bg-blue-5', 'color-white'])} onClick={() => handleEditSave(filter)} disabled={updateSavedFilter.isPending} title="Save">
-                        <FontAwesomeIcon icon={faCheck} />
+                      <button className={getClasses([styles.saveButton])} onClick={() => handleEditSave(filter)} disabled={updateSavedFilter.isPending} title="Save">
+                        <FaCheck />
                       </button>
-                      <button className={getClasses([styles.cancelButton, styles.smallButton])} onClick={() => { setEditId(null); setEditName(''); }} title="Cancel">
-                        <FontAwesomeIcon icon={faXmark} />
+                      <button className={getClasses([styles.cancelButton])} onClick={() => { setEditId(null); setEditName(''); }} title="Cancel">
+                        <FaTimes />
                       </button>
                     </>
                   ) : isEditingFilters ? (
@@ -285,24 +291,26 @@ const SavedFilters = observer(() => {
                         value={editName}
                         onChange={e => setEditName(e.target.value)}
                       />
-                      <button className={getClasses([styles.saveButton, styles.smallButton, 'bg-blue-5', 'color-white'])} onClick={() => handleSaveEditedFilters(filter)} disabled={updateSavedFilter.isPending} title="Save">
-                        <FontAwesomeIcon icon={faCheck} />
+                      <button className={getClasses([styles.saveButton])} onClick={() => handleSaveEditedFilters(filter)} disabled={updateSavedFilter.isPending} title="Save">
+                        <FaCheck />
                       </button>
-                      <button className={getClasses([styles.cancelButton, styles.smallButton])} onClick={() => { setEditFiltersId(null); setEditName(''); }} title="Cancel">
-                        <FontAwesomeIcon icon={faXmark} />
+                      <button className={getClasses([styles.cancelButton])} onClick={() => { setEditFiltersId(null); setEditName(''); }} title="Cancel">
+                        <FaTimes />
                       </button>
                     </>
                   ) : (
                     <>
-                      <button className={getClasses([styles.loadButton, 'bg-blue-5', 'color-white'])} onClick={() => handleLoadFilter(filter)}>Load</button>
-                      <button className={getClasses([styles.editButton, 'border', 'color-purple-6', styles.smallButton])} onClick={() => handleEditFilter(filter)} title="Rename">
-                        <FontAwesomeIcon icon={faPen} />
+                      <button className={getClasses([styles.loadButton])} onClick={() => handleLoadFilter(filter)} title="Load">
+                        <FaDownload />
                       </button>
-                      <button className={getClasses([styles.editButton, 'border', 'color-purple-6', styles.smallButton])} onClick={() => handleEditFilters(filter)} title="Edit Filters">
-                        <FontAwesomeIcon icon={faSliders} />
+                      <button className={getClasses([styles.editButton])} onClick={() => handleEditFilter(filter)} title="Rename">
+                        <FaPen />
                       </button>
-                      <button className={getClasses([styles.deleteButton, 'bg-red-6', 'color-white', styles.smallButton])} onClick={() => handleDeleteFilter(filter.id)} disabled={deleteSavedFilter.isPending}>
-                        <FontAwesomeIcon icon={faTrash} />
+                      <button className={getClasses([styles.editButton])} onClick={() => handleEditFilters(filter)} title="Edit Filters">
+                        <FaSlidersH />
+                      </button>
+                      <button className={getClasses([styles.deleteButton])} onClick={() => handleDeleteFilter(filter.id)} disabled={deleteSavedFilter.isPending} title="Delete">
+                        <FaTrash />
                       </button>
                     </>
                   )}
@@ -346,14 +354,14 @@ const SavedFilters = observer(() => {
               onClick={() => handleSaveEditedFilters(savedFilters.find(f => f.id === editFiltersId))}
               title="Save"
             >
-              <FontAwesomeIcon icon={faCheck} />
+              <FaCheck />
             </button>
             <button
               className={getClasses([styles.cancelButton, styles.smallButton])}
               onClick={() => { setEditFiltersId(null); setEditName(''); }}
               title="Cancel"
             >
-              <FontAwesomeIcon icon={faXmark} />
+              <FaTimes />
             </button>
           </div>
     );
@@ -367,12 +375,12 @@ const SavedFilters = observer(() => {
         </span>
         <div className={styles.saveAsFiltersetActions}>
           <button
-          className={styles.saveButton}
+          className={getClasses([styles.saveButton, styles.saveButtonBlack])}
           onClick={() => { setIsModalOpen(true); setEditName(''); }}
           disabled={createSavedFilter.isPending}
           style={{ textDecoration: 'underline', fontWeight: 500 }}
           >
-            <FontAwesomeIcon icon={faPlus} /> Save as filterset!
+            <FaPlus /> Save as filterset!
           </button>
         </div>
       </div>

@@ -625,7 +625,7 @@ const StatusPage = () => {
   }
 
   function renderContent(){
-    if (isLoading) return <Loader />
+    if (isLoading) return <Loader isGray />
     if (error) return <div style={{ padding: 32, color: "red" }}>Error loading status</div>;
 
     return (
@@ -646,7 +646,7 @@ const StatusPage = () => {
 
   return (
     <>
-        <Header hideGenderSwitch />
+        <Header scrolled />
         {renderContent()}
     </>
   )

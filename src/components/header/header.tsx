@@ -8,6 +8,9 @@ import styles from './header.module.css';
 import { isLoggedIn } from '../../utils/auth';
 import Cookies from 'js-cookie';
 import { useQueryClient } from '@tanstack/react-query';
+import { FaRocket } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
+import AdminGuard from '../admin-guard';
 
 interface HeaderProps {
     hideGenderSwitch?: boolean;
@@ -19,12 +22,14 @@ interface HeaderProps {
     onSearchChange?: (search: string) => void;
     onTogglePriceChange?: (show: boolean) => void;
     showPriceChangeOnly?: boolean;
+    scrolled?: boolean;
 }
 const Header = (props: HeaderProps) => {
 
   const [loggedIn, setLoggedIn] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [scrolled, setScrolled] = useState(props.scrolled);
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   useEffect(() => {
     setLoggedIn(isLoggedIn());
@@ -32,7 +37,7 @@ const Header = (props: HeaderProps) => {
 
   useEffect(() => {
     function onScroll() {
-      setScrolled(window.scrollY >= 100);
+      setScrolled(props.scrolled || window.scrollY >= 100);
     }
     window.addEventListener('scroll', onScroll);
     onScroll(); // set initial
@@ -99,35 +104,31 @@ const Header = (props: HeaderProps) => {
     )
   }
 
-  return (
-    <header className={getClasses([styles.header, scrolled && styles.scrolled])}>
-      <div className={getClasses([styles.logo, 'text-headline-4', 'color-white', 'cursor-pointer'])} onClick={() => window.location.href = loggedIn ? '/' : '/login'}>
-      <div className={styles.logoImage} />
-      </div>
-      {/* {renderGenderSwitch()} */}
-      {loggedIn && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          {/* Heart (favorites) icon */}
-          {!props.hideGenderSwitch && <span
-            className={getClasses([
-              styles.iconBtn,
-              styles.heartIcon,
-              props.showFavouritesOnly ? styles.heartFilled : undefined
-            ])}
-            title={props.showFavouritesOnly ? 'Show all products' : 'Show only favourites'}
-            onClick={() => {
-              if (props.onToggleFavourites) props.onToggleFavourites(!props.showFavouritesOnly);
-            }}
-            aria-pressed={props.showFavouritesOnly}
-            role="button"
-            tabIndex={0}
-          >
-            <svg width="32" height="32" viewBox="0 0 24 24" fill={props.showFavouritesOnly ? 'var(--bs-red-5)' : scrolled ? 'var(--bs-black-6)' : 'none'} stroke={props.showFavouritesOnly ? 'var(--bs-red-5)' : scrolled ? 'var(--bs-black-6)' : '#fff'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20.8 4.6c-1.5-1.4-3.9-1.4-5.4 0l-.7.7-.7-.7c-1.5-1.4-3.9-1.4-5.4 0-1.6 1.5-1.6 3.9 0 5.4l6.1 6.1c.2.2.5.2.7 0l6.1-6.1c1.6-1.5 1.6-3.9 0-5.4z"/>
-            </svg>
-          </span>}
-          {/* Price Change icon */}
-          {!props.hideGenderSwitch && <span
+  function renderHeartIcon(){
+    return ( <span
+        className={getClasses([
+          styles.iconBtn,
+          styles.heartIcon,
+          props.showFavouritesOnly ? styles.heartFilled : undefined
+        ])}
+        title={props.showFavouritesOnly ? 'Show all products' : 'Show only favourites'}
+        onClick={() => {
+          if (props.onToggleFavourites) props.onToggleFavourites(!props.showFavouritesOnly);
+        }}
+        aria-pressed={props.showFavouritesOnly}
+        role="button"
+        tabIndex={0}
+      >
+        <svg width="32" height="32" viewBox="0 0 24 24" fill={props.showFavouritesOnly ? 'var(--bs-red-5)' : scrolled ? 'var(--bs-black-6)' : 'none'} stroke={props.showFavouritesOnly ? 'var(--bs-red-5)' : scrolled ? 'var(--bs-black-6)' : '#fff'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20.8 4.6c-1.5-1.4-3.9-1.4-5.4 0l-.7.7-.7-.7c-1.5-1.4-3.9-1.4-5.4 0-1.6 1.5-1.6 3.9 0 5.4l6.1 6.1c.2.2.5.2.7 0l6.1-6.1c1.6-1.5 1.6-3.9 0-5.4z"/>
+        </svg>
+      </span>
+    );
+  }
+
+  function renderPriceChangeIcon(){
+    return (
+      <span
             className={getClasses([
               styles.iconBtn,
               props.showPriceChangeOnly ? styles.heartFilled : undefined
@@ -148,9 +149,13 @@ const Header = (props: HeaderProps) => {
               <circle cx="13" cy="15" r="1.5" />
               <circle cx="21" cy="7" r="1.5" />
             </svg>
-          </span>}
-          {/* Logout icon */}
-          {!props.hideGenderSwitch && <span
+          </span>   
+    )
+  }
+
+  function renderLogoutIcon(){
+    return (
+      <span
             className={getClasses([styles.iconBtn])}
             title="Logout"
             onClick={handleLogout}
@@ -162,7 +167,36 @@ const Header = (props: HeaderProps) => {
               <path d="M21 12H9" />
               <path d="M12 19v2a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v2" />
             </svg>
-          </span>}
+          </span>   
+    )
+  }
+
+  return (
+    <header className={getClasses([styles.header, scrolled && styles.scrolled])}>
+      <div className={getClasses([styles.logo, 'text-headline-4', 'color-white', 'cursor-pointer'])} onClick={() => window.location.href = loggedIn ? '/' : '/login'}>
+      <div className={styles.logoImage} />
+      </div>
+      {/* {renderGenderSwitch()} */}
+      {loggedIn && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          {/* Status icon */}
+          <AdminGuard><span
+            className={getClasses([styles.iconBtn])}
+            title="Status"
+            onClick={() => router.push('/status')}
+            role="button"
+            tabIndex={0}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <FaRocket style={{ fontSize: 20, color: scrolled ? 'var(--bs-black-6)' : '#fff' }} />
+          </span>
+          </AdminGuard>
+          {/* Heart (favorites) icon */}
+          {renderHeartIcon()}
+          {/* Price Change icon */}
+          {renderPriceChangeIcon()}
+          {/* Logout icon */}
+          {renderLogoutIcon()}
         </div>
       )}
     </header>

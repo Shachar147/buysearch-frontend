@@ -4,7 +4,6 @@
   /* background: var(--bs-black-6); */
   height: 56px;
   padding: 0 32px;
-  box-shadow: var(--bs-shadow-1);
   gap: 16px;
   justify-content: space-between;
   transition: background 0.2s;
@@ -122,6 +121,7 @@
 
 .scrolled {
   background: #fff !important;
+  box-shadow: var(--bs-shadow-1);
 
   .logoImage {
     background-image: url('https://buysearch.s3.eu-north-1.amazonaws.com/buysearch-logo-black.png');
@@ -129,6 +129,10 @@
 
   .iconBtn svg {
     color: var(--bs-black-6);
+  }
+
+  .iconBtn:hover {
+    background: rgba(0, 0, 0, 0.035);
   }
 }
 

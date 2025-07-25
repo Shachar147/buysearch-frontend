@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styles from './loader.module.css';
 
-export const Loader = () => {
+export const Loader = ({ isGray = false }: { isGray?: boolean }) => {
     const [dotCount, setDotCount] = useState(0);
 
     useEffect(() => {
@@ -18,8 +18,7 @@ export const Loader = () => {
 
     return (
         <div className={styles.message}>
-            <img src="https://buysearch.s3.eu-north-1.amazonaws.com/loader.gif" />
-            {/* <img src="https://buysearch.s3.eu-north-1.amazonaws.com/loading.gif" /> */}
+            <img src={isGray ? "https://buysearch.s3.eu-north-1.amazonaws.com/loading.gif" : "https://buysearch.s3.eu-north-1.amazonaws.com/loader.gif"} />
             <span className={styles.loadingText}>
                 Loading{dots}
             </span>

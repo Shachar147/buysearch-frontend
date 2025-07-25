@@ -19,7 +19,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <ReactQueryProvider>
           <AuthGuard>{children}</AuthGuard>
-          <AdminGuard><Footer /></AdminGuard>
           <ReactQueryDevtools initialIsOpen={false} />
         </ReactQueryProvider>
       </body>

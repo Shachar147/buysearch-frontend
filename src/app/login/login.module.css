@@ -18,6 +18,15 @@
   align-items: stretch;
 }
 
+.logo {
+  background-image: url('https://buysearch.s3.eu-north-1.amazonaws.com/buysearch-logo.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 330px;
+  height: 132px;
+}
+
 .title {
   text-align: center;
   margin-bottom: 8px;

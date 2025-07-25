@@ -182,9 +182,9 @@ export default function AuthPage() {
         {/* Banner */}
         <div style={{
           width: '100%',
-          minHeight: 300,
+          minHeight: 550,
           background: 'linear-gradient(120deg, #222 60%, #444 100%)',
-          backgroundImage: 'url(https://buysearch.s3.eu-north-1.amazonaws.com/bg-2.png)',
+          backgroundImage: 'url(https://buysearch.s3.eu-north-1.amazonaws.com/bg-3.jpeg)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           position: 'relative',
@@ -202,7 +202,7 @@ export default function AuthPage() {
             background: 'rgba(0,0,0,0.45)',
             zIndex: 1,
           }} />
-          <div style={{ position: 'relative', zIndex: 2, marginTop: 32 }}>
+          <div style={{ position: 'relative', zIndex: 2, marginTop: -200 }}>
             <div
               style={{
                 display: 'flex',
@@ -213,46 +213,9 @@ export default function AuthPage() {
                 marginBottom: 8,
               }}
             >
-              <div
-                style={{
-                  color: '#fff',
-                  fontWeight: 900,
-                  letterSpacing: 0.5,
-                  // textAlign: 'center',
-                  textShadow: '0 2px 16px rgba(0,0,0,0.18)',
-                  // fontSize: 'clamp(24px, 6vw, 48px)',
-                  fontSize: 48,
-                  lineHeight: 1.1,
-                  whiteSpace: 'nowrap',
-                  width: '100%',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  maxWidth: '100%',
-                }}
-              >
-                BuySearch
-              </div>
-              <div
-                style={{
-                  color: '#fff',
-                  fontWeight: 600,
-                  // fontSize: 'clamp(14px, 3vw, 28px)',
-                  fontSize: 20,
-                  letterSpacing: 0.2,
-                  // textAlign: 'center',
-                  textShadow: '0 2px 16px rgba(0,0,0,0.18)',
-                  marginTop: 8,
-                  whiteSpace: 'nowrap',
-                  width: '100%',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  maxWidth: '100%',
-                }}
-              >
-                Search once, buy everywhere
-              </div>
+              <div className={styles.logo} />
             </div>
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 62 }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 12 }}>
               <button
                 onClick={() => setTab('login')}
                 style={{
@@ -295,9 +258,9 @@ export default function AuthPage() {
           </div>
         </div>
         {/* Card with tabs */}
-        <div style={{ flex: 1, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginTop: -40, zIndex: 3 }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginTop: -282, zIndex: 3 }}>
           <div style={{ background: '#fff', borderRadius: 18, boxShadow: '0 4px 32px rgba(0,0,0,0.05)', padding: '24px 32px', minWidth: 320, maxWidth: 340, width: '100%', margin: '0 8px' }}>
-            {tab === 'login' ? <LoginForm onSuccess={() => setTab('signup')} /> : <RegisterForm onSuccess={() => setTab('login')} />}
+            {tab === 'login' ? <LoginForm /> : <RegisterForm onSuccess={() => setTab('login')} />}
           </div>
         </div>
         <SourceSlider />

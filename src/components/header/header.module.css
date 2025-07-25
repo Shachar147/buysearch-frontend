@@ -15,6 +15,15 @@
   color: var(--bs-gray-1);
 }
 
+.logoImage {
+  background-image: url('https://buysearch.s3.eu-north-1.amazonaws.com/buysearch-logo-minimal.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 140px;
+  height: 80px;
+}
+
 .logo:hover {
   color: var(--bs-white);
   transform: scale(1.05);;

@@ -163,7 +163,7 @@ const Header = (props: HeaderProps) => {
   return (
     <header className={styles.header}>
       <div className={getClasses([styles.logo, 'text-headline-4', 'color-white', 'cursor-pointer'])} onClick={() => window.location.href = loggedIn ? '/' : '/login'}>
-        BUYSEARCH
+      <div className={styles.logoImage} />
       </div>
       {renderGenderSwitch()}
       {renderSearch()}

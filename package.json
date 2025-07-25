@@ -30,6 +30,7 @@
     "@babel/plugin-proposal-decorators": "^7.28.0",
     "@types/node": "24.0.10",
     "@types/react": "19.1.8",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "5.8.3"
   }
 }

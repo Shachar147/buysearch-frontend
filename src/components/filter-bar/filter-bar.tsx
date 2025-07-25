@@ -83,55 +83,55 @@ const FilterBar = observer(() => {
   ].filter(Boolean).length;
 
   // Helper to build filter chips
-  const filterChips: { label: string; onClear: () => void }[] = [];
+  const filterChips: { label: string; onClear: () => void; prefix: string }[] = [];
 
   // Brand
   if (selected.brand && selected.brand !== 'All') {
     if (Array.isArray(selected.brand)) {
       selected.brand.forEach((b: string) => {
-        if (b && b !== 'All') filterChips.push({ label: b, onClear: () => Array.isArray(selected.brand) ? setFilter('brand', selected.brand.filter((x: string) => x !== b)) : setFilter('brand', 'All') });
+        if (b && b !== 'All') filterChips.push({ label: b, onClear: () => Array.isArray(selected.brand) ? setFilter('brand', selected.brand.filter((x: string) => x !== b)) : setFilter('brand', 'All'), prefix: 'brand: ' });
       });
     } else {
-      filterChips.push({ label: selected.brand, onClear: () => setFilter('brand', 'All') });
+      filterChips.push({ label: selected.brand, onClear: () => setFilter('brand', 'All'), prefix: 'brand: ' });
     }
   }
   // Category
   if (selected.category && selected.category !== 'All') {
     if (Array.isArray(selected.category)) {
       selected.category.forEach((c: string) => {
-        if (c && c !== 'All') filterChips.push({ label: c, onClear: () => Array.isArray(selected.category) ? setFilter('category', selected.category.filter((x: string) => x !== c)) : setFilter('category', 'All') });
+          if (c && c !== 'All') filterChips.push({ label: c, onClear: () => Array.isArray(selected.category) ? setFilter('category', selected.category.filter((x: string) => x !== c)) : setFilter('category', 'All'), prefix: 'category: ' });
       });
     } else {
-      filterChips.push({ label: selected.category, onClear: () => setFilter('category', 'All') });
+      filterChips.push({ label: selected.category, onClear: () => setFilter('category', 'All'), prefix: 'category: ' });
     }
   }
   // Color
   if (selected.color && selected.color !== 'All') {
     if (Array.isArray(selected.color)) {
       selected.color.forEach((c: string) => {
-        if (c && c !== 'All') filterChips.push({ label: c, onClear: () => Array.isArray(selected.color) ? setFilter('color', selected.color.filter((x: string) => x !== c)) : setFilter('color', 'All') });
+        if (c && c !== 'All') filterChips.push({ label: c, onClear: () => Array.isArray(selected.color) ? setFilter('color', selected.color.filter((x: string) => x !== c)) : setFilter('color', 'All'), prefix: 'color: ' });
       });
     } else {
-      filterChips.push({ label: selected.color, onClear: () => setFilter('color', 'All') });
+      filterChips.push({ label: selected.color, onClear: () => setFilter('color', 'All'), prefix: 'color: ' });
     }
   }
   // Price Range
   if (selected.priceRange && typeof selected.priceRange === 'object' && 'value' in selected.priceRange && selected.priceRange.value === 'Custom') {
-    filterChips.push({ label: `Custom: ${selected.priceRange.from} - ${selected.priceRange.to} ILS`, onClear: () => setFilter('priceRange', 'All') });
+    filterChips.push({ label: `Custom: ${selected.priceRange.from} - ${selected.priceRange.to} ILS`, onClear: () => setFilter('priceRange', 'All'), prefix: 'price: ' });
   }
   // Source
   if (selected.source && selected.source !== 'All') {
     if (Array.isArray(selected.source)) {
       selected.source.forEach((s: string) => {
-        if (s && s !== 'All') filterChips.push({ label: s, onClear: () => Array.isArray(selected.source) ? setFilter('source', selected.source.filter((x: string) => x !== s)) : setFilter('source', 'All') });
+        if (s && s !== 'All') filterChips.push({ label: s, onClear: () => Array.isArray(selected.source) ? setFilter('source', selected.source.filter((x: string) => x !== s)) : setFilter('source', 'All'), prefix: 'source: ' });
       });
     } else {
-      filterChips.push({ label: selected.source, onClear: () => setFilter('source', 'All') });
+      filterChips.push({ label: selected.source, onClear: () => setFilter('source', 'All'), prefix: 'source: ' });
     }
   }
   // Is On Sale
   if (typeof selected.isOnSale === 'string' && selected.isOnSale !== 'All') {
-    filterChips.push({ label: selected.isOnSale, onClear: () => setFilter('isOnSale', 'All') });
+    filterChips.push({ label: selected.isOnSale, onClear: () => setFilter('isOnSale', 'All'), prefix: 'sale: ' });
   }
 
   // Source options
@@ -314,6 +314,8 @@ const FilterBar = observer(() => {
       <div className={styles.filterChipsWrapper}>
         {filterChips.map((chip, idx) => (
           <span key={chip.label + idx} className={styles.filterChip}>
+            {/* <span style={{marginRight: 6, fontWeight: 400, fontSize: 15}}>{chip.prefix}</span> */}
+            {ucfirst(chip.prefix)}
             {chip.label}
             <button
               onClick={chip.onClear}

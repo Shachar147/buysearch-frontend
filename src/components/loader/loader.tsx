@@ -18,7 +18,8 @@ export const Loader = () => {
 
     return (
         <div className={styles.message}>
-            <img src="https://buysearch.s3.eu-north-1.amazonaws.com/loading.gif" />
+            <img src="https://buysearch.s3.eu-north-1.amazonaws.com/loader.gif" />
+            {/* <img src="https://buysearch.s3.eu-north-1.amazonaws.com/loading.gif" /> */}
             <span className={styles.loadingText}>
                 Loading{dots}
             </span>

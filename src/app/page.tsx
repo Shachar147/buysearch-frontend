@@ -321,9 +321,9 @@ function HomePage() {
         )}
       </main>
       {/* Source slider at the bottom */}
-      {!isMobile && <div style={isLoading ? { position: 'fixed', bottom: 0, width: '100%' } : {}}>
+      {/* {!isMobile && <div style={isLoading ? { position: 'fixed', bottom: 0, width: '100%' } : {}}>
         <SourceSlider />
-      </div>}
+      </div>} */}
     </div>
   );
 }

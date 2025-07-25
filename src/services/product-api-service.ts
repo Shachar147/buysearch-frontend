@@ -72,8 +72,12 @@ export async function fetchProducts(offset = 0, limit = 20, filters: ProductFilt
   // )) {
   //   params.append('search', filters.search);
   // }
-  console.log('filters.search', filters.search);
-  if (filters.search) params.append('search', filters.search);
+  // console.log('filters.search', filters);
+  if (filters.search && (
+    filters.brand == 'All' && filters.category == 'All' && filters.color == 'All' && !filters.priceFrom && !filters.priceRange?.from && !filters.priceTo && !filters.priceRange?.to
+  )){
+    params.append('search', filters.search);
+  } 
 
   params.append('gender', filters.gender || DEFAULT_GENDER);
   if (filters.sort && filters.sort !== DEFAULT_SORT_BY) params.append('sort', filters.sort);

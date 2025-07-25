@@ -13,6 +13,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSliders, faPen, faTrash, faPlus, faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { DEFAULT_GENDER, DEFAULT_SORT_BY } from '../../utils/consts';
 import { Loader } from '../loader/loader';
+import { FaSlidersH } from 'react-icons/fa';
 
 function areFiltersEqual(a, b) {
   return JSON.stringify(a) === JSON.stringify(b);
@@ -322,19 +323,23 @@ const SavedFilters = observer(() => {
     setLastLoadedFilterId(null);
   }, [JSON.stringify(currentFilters)]);
 
-  return (
-    <>
-      <div className={getClasses([styles.popoverWrapper, 'flex', 'items-center', 'gap-2'])}>
-        <button
-          className={getClasses([styles.iconButton, 'color-white'])}
-          ref={iconBtnRef}
-          onClick={() => setIsPopoverOpen((v) => !v)}
-          aria-label="Show saved filters"
-        >
-          Saved Filtersets
-        </button>
-        {editFiltersId && (
-          <div className={getClasses(['flex-row', 'align-items-center', 'gap-8', styles.editingBanner])}>
+  function renderSavedFiltersetsButton(){
+    return (
+      <button
+        className={styles.showFiltersButton}
+        onClick={() => setIsPopoverOpen((v) => !v)}
+        ref={iconBtnRef}
+      >
+        <FaSlidersH style={{ marginInlineEnd: 8, cursor: 'pointer' }} />
+        {<>Saved Filtersets</>}
+        {savedFilters.length > 0 && <span className={styles.filterBadge}>{savedFilters.length}</span>}
+      </button>
+    )
+  }
+
+  function renderEditingActions(){
+    return (
+      <div className={getClasses(['flex-row', 'align-items-center', 'gap-8', styles.editingBanner])}>
             <span>Editing filterset: <b>{savedFilters.find(f => f.id === editFiltersId)?.name}</b></span>
             <button
               className={getClasses([styles.saveButton, styles.smallButton, 'bg-blue-5', 'color-white'])}
@@ -351,17 +356,35 @@ const SavedFilters = observer(() => {
               <FontAwesomeIcon icon={faXmark} />
             </button>
           </div>
-        )}
-        {showSaveAsFilterset && !editFiltersId && (
+    );
+  }
+
+  function renderSaveAsFiltersetButton(){
+    return (
+      <div className={styles.saveAsFiltersetContainer}>
+        <span>
+          Save time by storing and reusing your custom filters!
+        </span>
+        <div className={styles.saveAsFiltersetActions}>
           <button
-            className={getClasses([styles.saveButton, styles.smallButton, 'color-blue-5', 'bg-transparent', styles.linkButton])}
-            onClick={() => { setIsModalOpen(true); setEditName(''); }}
-            disabled={createSavedFilter.isPending}
-            style={{ textDecoration: 'underline', fontWeight: 500 }}
+          className={styles.saveButton}
+          onClick={() => { setIsModalOpen(true); setEditName(''); }}
+          disabled={createSavedFilter.isPending}
+          style={{ textDecoration: 'underline', fontWeight: 500 }}
           >
-            <FontAwesomeIcon icon={faPlus} /> Save as filterset
+            <FontAwesomeIcon icon={faPlus} /> Save as filterset!
           </button>
-        )}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <div className={getClasses([styles.popoverWrapper, 'flex-column', 'gap-8'])}>
+        {renderSavedFiltersetsButton()}
+        {editFiltersId && renderEditingActions()}
+        {showSaveAsFilterset && !editFiltersId && renderSaveAsFiltersetButton()}
         {isPopoverOpen && popoverPos && createPortal(popoverContent, document.body)}
       </div>
       {/* Modal for saving new filter */}

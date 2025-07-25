@@ -33,20 +33,43 @@
   transition: background-color 0.2s;
 }
 
+.saveAsFiltersetContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: var(--bs-gray-1);
+  border: 1px solid var(--bs-gray-4);
+  padding: 8px;
+  padding-top: 16px;
+  padding-inline-start: 16px;
+  border-radius: 6px;
+  color: var(--bs-black-6);
+  font-size: 14px;
+}
+
+.saveAsFiltersetActions {
+  display: flex;
+  justify-content: flex-start;
+}
+
 .saveButton {
-  background: var(--bs-blue-5);
+  background: var(--bs-black-6) !important;
+  /* border: 1px solid var(--bs-blue-5); */
   color: white;
+  background: transparent;
+  width: max-content;
+  text-decoration: none !important;
   border: none;
   padding: 8px 16px;
   border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: opacity- 0.2s;
 }
 
 .saveButton:hover:not(:disabled) {
-  background: var(--bs-red-6);
+  opacity: 0.6;
 }
 
 .saveButton:disabled {
@@ -175,8 +198,8 @@
   background: var(--bs-white);
   border-radius: 12px;
   padding: 24px;
-  min-width: 400px;
-  max-width: 500px;
+  min-width: 300px;
+  max-width: 400px;
   box-shadow: var(--bs-shadow-2);
 }
 
@@ -289,21 +312,28 @@
   margin-bottom: 20px;
 }
 
-.iconButton {
-  background: var(--bs-black-4);
-  color: var(--bs-white);
-  border: none;
-  border-radius: 8px;
-  width: 160px;
+.showFiltersButton {
+  background: var(--bs-white);
+  color: var(--bs-black-4);
+  border: 0;
+  width: max-content;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  font-weight: 600;
-  box-shadow: var(--bs-shadow-3);
+  font-size: 14px;
   cursor: pointer;
   gap: 8px;
+  transition: opacity 0.2s ease-in-out;
+  outline: none;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &:focus, &:active {
+    outline: none;
+  }
 }
 
 .editInput {
@@ -335,45 +365,28 @@
   justify-content: center;
 } 
 
-.smallButton {
-  font-size: 0.95rem;
-  padding-inline: 0.75rem;
-  padding-block: 0.35rem;
-  min-width: 32px;
-  min-height: 32px;
-  height: 32px;
-  width: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .filterRowBg {
   background: var(--bs-gray-1);
 } 
-
-.linkButton {
-  background: transparent !important;
-  color: var(--bs-blue-5) !important;
-  text-decoration: underline;
-  font-weight: 500;
-  box-shadow: none;
-  border: none;
-  cursor: pointer;
-  padding: 0 0.5rem;
-  min-width: unset;
-  min-height: unset;
-  height: auto;
-  width: auto;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
 
 .flex-column {
   display: flex;
   flex-direction: column;
 } 
+
+.filterBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #2d2d2d;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 700;
+  width: 22px;
+  height: 22px;
+  margin-left: 6px;
+}
 
 
 @media (max-width: 600px) {

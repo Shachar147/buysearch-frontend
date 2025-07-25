@@ -1,17 +1,15 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import filtersStore from '../../stores/filters-store';
 import getClasses from '../../utils/get-classes';
 import styles from './header.module.css';
 import { isLoggedIn } from '../../utils/auth';
 import Cookies from 'js-cookie';
-import { useParsedSearchQuery } from '../../api/search/queries';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface HeaderProps {
-    hideSearch?: boolean;
     hideGenderSwitch?: boolean;
     onGenderSwitch?: (gender: string) => void;
     onToggleFavourites?: (show: boolean) => void;
@@ -25,16 +23,11 @@ interface HeaderProps {
 const Header = (props: HeaderProps) => {
 
   const [loggedIn, setLoggedIn] = useState(false);
-  const [localSearch, setLocalSearch] = useState(filtersStore.selected.search);
   const queryClient = useQueryClient();
 
   useEffect(() => {
     setLoggedIn(isLoggedIn());
   }, []);
-
-  useEffect(() => {
-    setLocalSearch(filtersStore.selected.search);
-  }, [filtersStore.selected.search]);
 
   function handleLogout() {
     Cookies.remove('accessToken');
@@ -96,77 +89,12 @@ const Header = (props: HeaderProps) => {
     )
   }
 
-  function renderSearch(){
-    if (props.hideSearch) {
-        return;
-    }
-    const hasSearch = !!filtersStore.selected.search;
-    // Debounce the search value
-    const [debouncedSearch, setDebouncedSearch] = useState(filtersStore.selected.search);
-    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
-    React.useEffect(() => {
-      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
-      debounceTimeout.current = setTimeout(() => {
-        setDebouncedSearch(filtersStore.selected.search);
-      }, 400); // 400ms debounce
-      return () => {
-        if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
-      };
-    }, [filtersStore.selected.search]);
-    // Use the React Query hook for parsing the search query
-    const { data: parsedFilters } = useParsedSearchQuery(debouncedSearch, {
-      // @ts-ignore
-      cacheTime: 1000 * 60 * 10, // 10 minutes
-      staleTime: 1000 * 60 * 5,  // 5 minutes
-    });
-    
-    useEffect(() => {
-      if (parsedFilters) {
-        filtersStore.applyParsedFilters(parsedFilters);
-      }
-    }, [parsedFilters]);
-    return (
-        <div className={styles.headerSearch}>
-          <input
-            className={getClasses([
-              styles.headerSearchInput,
-              hasSearch && styles.activeSearchBar
-            ])}
-            type="text"
-            placeholder="Search for items and brands"
-            aria-label="Search"
-            value={localSearch}
-            onChange={e => {
-              setLocalSearch(e.target.value);
-              filtersStore.setFilter('search', e.target.value)
-            }}
-            style={{ paddingRight: hasSearch ? 44 : 18 }}
-          />
-          {hasSearch && (
-            <button
-              type="button"
-              className={styles.clearSearchIcon}
-              onClick={() => {
-                setLocalSearch('');
-                filtersStore.setFilter('search', '')
-              }}
-              title="Clear search"
-              aria-label="Clear search"
-            >
-              ×
-            </button>
-          )}
-        </div>
-    )
-  }
-
   return (
     <header className={styles.header}>
       <div className={getClasses([styles.logo, 'text-headline-4', 'color-white', 'cursor-pointer'])} onClick={() => window.location.href = loggedIn ? '/' : '/login'}>
       <div className={styles.logoImage} />
       </div>
-      {renderGenderSwitch()}
-      {renderSearch()}
+      {/* {renderGenderSwitch()} */}
       {loggedIn && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           {/* Heart (favorites) icon */}

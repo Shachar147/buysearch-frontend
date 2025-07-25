@@ -240,6 +240,9 @@ function HomePage() {
                 cursor: 'pointer',
                 transition: 'all 0.2s',
                 outline: 'none',
+                textShadow: filtersStore.selected.gender === tab.value
+                  ? '0 2px 8px rgba(0,0,0,0.10)'
+                  : '0 2px 8px rgba(0,0,0,0.45)',
               }}
             >
               {tab.label}

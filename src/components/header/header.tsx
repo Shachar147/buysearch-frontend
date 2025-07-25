@@ -10,7 +10,7 @@ import Cookies from 'js-cookie';
 import { useQueryClient } from '@tanstack/react-query';
 import { FaRocket } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
-import AdminGuard from '../admin-guard';
+import AdminGuard, { isAdmin } from '../admin-guard';
 
 interface HeaderProps {
     hideGenderSwitch?: boolean;
@@ -23,13 +23,17 @@ interface HeaderProps {
     onTogglePriceChange?: (show: boolean) => void;
     showPriceChangeOnly?: boolean;
     scrolled?: boolean;
+    isStatusPage?: boolean;
 }
 const Header = (props: HeaderProps) => {
 
   const [loggedIn, setLoggedIn] = useState(false);
   const [scrolled, setScrolled] = useState(props.scrolled);
+  const isUserAdmin = isAdmin();
   const queryClient = useQueryClient();
   const router = useRouter();
+
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 600;
 
   useEffect(() => {
     setLoggedIn(isLoggedIn());
@@ -105,6 +109,10 @@ const Header = (props: HeaderProps) => {
   }
 
   function renderHeartIcon(){
+    if (props.isStatusPage) {
+      return;
+    }
+
     return ( <span
         className={getClasses([
           styles.iconBtn,
@@ -127,6 +135,10 @@ const Header = (props: HeaderProps) => {
   }
 
   function renderPriceChangeIcon(){
+    if (props.isStatusPage) {
+      return;
+    }
+
     return (
       <span
             className={getClasses([
@@ -171,6 +183,23 @@ const Header = (props: HeaderProps) => {
     )
   }
 
+  function renderAdminIcon(){
+    return (
+      <AdminGuard>
+        <span
+            className={getClasses([styles.iconBtn])}
+            title="Status"
+            onClick={() => router.push(props.isStatusPage ? '/' : '/status')}
+            role="button"
+            tabIndex={0}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <FaRocket style={{ fontSize: 20, color: props.isStatusPage ? 'var(--bs-red-5)' : scrolled ? 'var(--bs-black-6)' : '#fff' }} />
+          </span>
+          </AdminGuard>
+    )
+  }
+
   return (
     <header className={getClasses([styles.header, scrolled && styles.scrolled])}>
       <div className={getClasses([styles.logo, 'text-headline-4', 'color-white', 'cursor-pointer'])} onClick={() => window.location.href = loggedIn ? '/' : '/login'}>
@@ -178,23 +207,13 @@ const Header = (props: HeaderProps) => {
       </div>
       {/* {renderGenderSwitch()} */}
       {loggedIn && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          {/* Status icon */}
-          <AdminGuard><span
-            className={getClasses([styles.iconBtn])}
-            title="Status"
-            onClick={() => router.push('/status')}
-            role="button"
-            tabIndex={0}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          >
-            <FaRocket style={{ fontSize: 20, color: scrolled ? 'var(--bs-black-6)' : '#fff' }} />
-          </span>
-          </AdminGuard>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isUserAdmin && isMobile ? 6 : 16 }}>
           {/* Heart (favorites) icon */}
           {renderHeartIcon()}
           {/* Price Change icon */}
           {renderPriceChangeIcon()}
+          {/* Status icon */}
+          {renderAdminIcon()}
           {/* Logout icon */}
           {renderLogoutIcon()}
         </div>

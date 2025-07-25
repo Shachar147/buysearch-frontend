@@ -644,9 +644,11 @@ const StatusPage = () => {
     );
   }
 
+  
+
   return (
     <>
-        <Header scrolled />
+        <Header scrolled isStatusPage />
         {renderContent()}
     </>
   )

@@ -14,6 +14,12 @@ interface DecodedToken {
   // Add other properties if needed
 }
 
+export function isAdmin(){
+  const token = Cookies.get("accessToken");
+  const decoded = jwtDecode<DecodedToken>(token);
+  return decoded.username === "test";
+}
+
 export default function AdminGuard({ children }: Props) {
   const pathname = usePathname();
   const router = useRouter();

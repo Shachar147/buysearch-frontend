@@ -251,7 +251,6 @@ function HomePage() {
         </div>
       </div>
       <main className={styles.main} style={{ marginTop: 24 }}>
-        <SavedFilters />
         <FilterBar />
         {total > 0 && <div className={styles.totalResultsWrapper}>
           <div className={getClasses([styles.productCount, 'text-headline-6', 'color-black-4'])}>
@@ -319,7 +318,9 @@ function HomePage() {
         )}
       </main>
       {/* Source slider at the bottom */}
-      <SourceSlider />
+      <div style={isLoading ? { position: 'fixed', bottom: 0, width: '100%' } : {}}>
+        <SourceSlider />
+      </div>
     </div>
   );
 }

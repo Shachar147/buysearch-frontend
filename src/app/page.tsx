@@ -21,6 +21,9 @@ function HomePage() {
   const [showPriceChangeOnly, setShowPriceChangeOnly] = useState(false);
   const [localSearch, setLocalSearch] = useState(filtersStore.selected.search);
 
+  // Helper to detect mobile
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 600;
+
   useEffect(() => {
     setLocalSearch(filtersStore.selected.search);
   }, [filtersStore.selected.search]);
@@ -251,7 +254,6 @@ function HomePage() {
         </div>
       </div>
       <main className={styles.main} style={{ marginTop: 24 }}>
-        <SavedFilters />
         <FilterBar />
         {total > 0 && <div className={styles.totalResultsWrapper}>
           <div className={getClasses([styles.productCount, 'text-headline-6', 'color-black-4'])}>
@@ -319,7 +321,9 @@ function HomePage() {
         )}
       </main>
       {/* Source slider at the bottom */}
-      <SourceSlider />
+      {!isMobile && <div style={isLoading ? { position: 'fixed', bottom: 0, width: '100%' } : {}}>
+        <SourceSlider />
+      </div>}
     </div>
   );
 }

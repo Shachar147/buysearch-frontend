@@ -65,3 +65,11 @@ html, body {
 .align-items-center {
   align-items: center;
 }
+
+.width-max-content {
+  width: max-content;
+}
+
+.min-width-max-content {
+  min-width: max-content;
+}

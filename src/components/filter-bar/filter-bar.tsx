@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import styles from './filter-bar.module.css';
 import getClasses from '../../utils/get-classes';
@@ -14,8 +14,9 @@ import { useAllBrands } from '../../api/brand/queries';
 import { useAllColors } from '../../api/color/queries';
 import { useAllCategories } from '../../api/category/queries';
 import { useAllSources } from '../../api/source/queries';
-import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaSlidersH, FaTimes } from 'react-icons/fa';
 import { DEFAULT_SORT_BY } from '../../utils/consts';
+import SavedFilters from '../saved-filters/saved-filters';
 
 const sortOptions = [
   { label: 'Relevance', value: 'Relevance' },
@@ -42,7 +43,6 @@ function ucfirstFirstOnly(str: string) {
 
 const FilterBar = observer(() => {
   const { selected, setFilter } = filtersStore;
-  const [localSearch, setLocalSearch] = useState(filtersStore.selected.search);
   const { data: brands = [] } = useAllBrands();
   const { data: colors = [] } = useAllColors();
   const { data: sources = [] } = useAllSources();
@@ -53,31 +53,85 @@ const FilterBar = observer(() => {
   const from = typeof selected.priceRange === 'object' && 'from' in selected.priceRange && typeof selected.priceRange.from === 'number' ? selected.priceRange.from : min;
   const to = typeof selected.priceRange === 'object' && 'to' in selected.priceRange && typeof selected.priceRange.to === 'number' ? selected.priceRange.to : max;
   const sliderValue: [number, number] = [from, to];
-  const [mobileFiltersOpen, setMobileFiltersOpen] = React.useState(false);
+  const [sideMenuOpen, setSideMenuOpen] = useState(false);
+  const sideMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close side menu on click outside
+  useEffect(() => {
+    if (!sideMenuOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (sideMenuRef.current && !sideMenuRef.current.contains(e.target as Node)) {
+        setSideMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [sideMenuOpen]);
+
   // Helper to detect mobile
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 600;
 
-  useEffect(() => {
-    setLocalSearch(filtersStore.selected.search);
-  }, [filtersStore.selected.search]);
-
   // Count applied filters (excluding search)
   const appliedFilters = [
-    // selected.gender && selected.gender !== 'All',
-    selected.sort && selected.sort !== DEFAULT_SORT_BY,
+    // selected.sort && selected.sort !== DEFAULT_SORT_BY,
     selected.brand && Array.isArray(selected.brand) ? selected.brand.some(b => b !== 'All') : selected.brand && selected.brand !== 'All',
     selected.category && Array.isArray(selected.category) ? selected.category.some(c => c !== 'All') : selected.category && selected.category !== 'All',
     selected.color && Array.isArray(selected.color) ? selected.color.some(c => c !== 'All') : selected.color && selected.color !== 'All',
     selected.priceRange && typeof selected.priceRange === 'object' && 'value' in selected.priceRange && selected.priceRange.value === 'Custom',
     selected.source && Array.isArray(selected.source) ? selected.source.some(s => s !== 'All') : selected.source && selected.source !== 'All',
-    // @ts-ignore
-    typeof selected.isOnSale !== 'undefined' && selected.isOnSale !== 'All' && typeof selected.isOnSale !== 'boolean',
+    typeof selected.isOnSale === 'string' && selected.isOnSale !== 'All',
   ].filter(Boolean).length;
 
-  function handleGenderSwitch(gender: string) {
-    setFilter('gender', gender);
-    // If you want to call a prop like onGenderSwitch, add it here if passed
-    // if (props.onGenderSwitch) props.onGenderSwitch(gender);
+  // Helper to build filter chips
+  const filterChips: { label: string; onClear: () => void }[] = [];
+
+  // Brand
+  if (selected.brand && selected.brand !== 'All') {
+    if (Array.isArray(selected.brand)) {
+      selected.brand.forEach((b: string) => {
+        if (b && b !== 'All') filterChips.push({ label: b, onClear: () => Array.isArray(selected.brand) ? setFilter('brand', selected.brand.filter((x: string) => x !== b)) : setFilter('brand', 'All') });
+      });
+    } else {
+      filterChips.push({ label: selected.brand, onClear: () => setFilter('brand', 'All') });
+    }
+  }
+  // Category
+  if (selected.category && selected.category !== 'All') {
+    if (Array.isArray(selected.category)) {
+      selected.category.forEach((c: string) => {
+        if (c && c !== 'All') filterChips.push({ label: c, onClear: () => Array.isArray(selected.category) ? setFilter('category', selected.category.filter((x: string) => x !== c)) : setFilter('category', 'All') });
+      });
+    } else {
+      filterChips.push({ label: selected.category, onClear: () => setFilter('category', 'All') });
+    }
+  }
+  // Color
+  if (selected.color && selected.color !== 'All') {
+    if (Array.isArray(selected.color)) {
+      selected.color.forEach((c: string) => {
+        if (c && c !== 'All') filterChips.push({ label: c, onClear: () => Array.isArray(selected.color) ? setFilter('color', selected.color.filter((x: string) => x !== c)) : setFilter('color', 'All') });
+      });
+    } else {
+      filterChips.push({ label: selected.color, onClear: () => setFilter('color', 'All') });
+    }
+  }
+  // Price Range
+  if (selected.priceRange && typeof selected.priceRange === 'object' && 'value' in selected.priceRange && selected.priceRange.value === 'Custom') {
+    filterChips.push({ label: `Custom: ${selected.priceRange.from} - ${selected.priceRange.to} ILS`, onClear: () => setFilter('priceRange', 'All') });
+  }
+  // Source
+  if (selected.source && selected.source !== 'All') {
+    if (Array.isArray(selected.source)) {
+      selected.source.forEach((s: string) => {
+        if (s && s !== 'All') filterChips.push({ label: s, onClear: () => Array.isArray(selected.source) ? setFilter('source', selected.source.filter((x: string) => x !== s)) : setFilter('source', 'All') });
+      });
+    } else {
+      filterChips.push({ label: selected.source, onClear: () => setFilter('source', 'All') });
+    }
+  }
+  // Is On Sale
+  if (typeof selected.isOnSale === 'string' && selected.isOnSale !== 'All') {
+    filterChips.push({ label: selected.isOnSale, onClear: () => setFilter('isOnSale', 'All') });
   }
 
   // Source options
@@ -89,81 +143,10 @@ const FilterBar = observer(() => {
     { label: 'No', value: 'No' },
   ];
 
-  function renderSearchInput(){
-    const isMobileSearchActive = isMobile && selected.search && selected.search.trim().length > 0;
-    return (
-      <div className={getClasses([styles.filterBarRow, styles.mobileFilters])} style={{ position: 'relative' }}>
-        <div className={styles.filterItem} style={{ width: '100%' }}>
-        <label className={getClasses([styles.label, 'text-caption'])}>Search</label>
-          <input
-            className={getClasses([styles.headerSearchInput, isMobileSearchActive && styles.headerSearchInputActive])}
-            type="text"
-            placeholder="Search for items and brands"
-            aria-label="Search"
-            value={localSearch}
-            onChange={e => {
-              setLocalSearch(e.target.value);
-              setFilter('search', e.target.value)
-            }}
-            style={{ width: '100%' }}
-          />
-          {isMobileSearchActive && (
-            <button
-              type="button"
-              aria-label="Clear search"
-              onClick={() => {
-                setLocalSearch('');
-                setFilter('search', '')
-              }}
-              style={{
-                position: 'absolute',
-                right: 16,
-                top: 42,
-                transform: 'translateY(-50%)',
-                background: 'none',
-                border: 'none',
-                color: 'var(--bs-blue-6)',
-                fontSize: 20,
-                cursor: 'pointer',
-                padding: 0,
-                zIndex: 2
-              }}
-            >
-              ×
-            </button>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  function renderGenderSelect(){
-    return (
-      <div className={getClasses([styles.filterBarRow, styles.mobileFilters])}>
-          <div className={styles.filterItem} style={{ width: '100%' }}>
-            <label className={getClasses([styles.label, 'text-caption'])}>Gender</label>
-            <CustomSelect
-                options={[
-                  { label: 'Women', value: 'women' },
-                  { label: 'Men', value: 'men' },
-                  { label: 'Unisex', value: 'unisex' },
-                ]}
-                selected={[selected.gender || 'women']}
-                onChange={vals => handleGenderSwitch(vals[0])}
-                defaultLabel="Gender"
-                disableAlphabetSorting
-                disableClear
-              />
-          </div>
-        </div>
-    );
-  }
-
-
   function renderSortSelect(){
     return (
-      <div className={styles.filterItem}>
-          <label className={getClasses([styles.label, 'text-caption'])}>Sort</label>
+      <div className={getClasses([styles.filterItem, styles.sortSelect])}>
+          <label className={getClasses([styles.label, styles.sortByLabel])}>Sort by:</label>
           <CustomSelect
             options={sortOptions}
             selected={[selected.sort || DEFAULT_SORT_BY]}
@@ -311,40 +294,103 @@ const FilterBar = observer(() => {
     );
   }
 
-  const showExtended = !isMobile || mobileFiltersOpen;
+  function renderShowFiltersButton(){
+    return (
+      <button
+            className={styles.showFiltersButton}
+            onClick={() => setSideMenuOpen(true)}
+          >
+            <FaSlidersH style={{ marginInlineEnd: isMobile ? 0 : 8 }} />
+            {!isMobile && <>Show filters</>}
+            {appliedFilters > 0 && <span className={styles.filterBadge}>{appliedFilters}</span>}
+          </button>
+    )
+  }
+
+  function renderFilterChips(){
+    if (filterChips.length == 0) return null;
+
+    return (
+      <div className={styles.filterChipsWrapper}>
+        {filterChips.map((chip, idx) => (
+          <span key={chip.label + idx} className={styles.filterChip}>
+            {chip.label}
+            <button
+              onClick={chip.onClear}
+              className={styles.filterChipClose}
+              aria-label={`Clear filter ${chip.label}`}
+            >
+              <FaTimes />
+            </button>
+          </span>
+        ))}
+      </div>
+    );
+  }
 
   // Render full filter bar for desktop or when mobileFiltersOpen is true
   return (
     <div className={getClasses([styles.filterBar])}>
-      <div className={styles.filterBarRow} style={isMobile ? { alignItems: 'center', justifyContent: 'center' } : {}}>
-        {renderSearchInput()}
-        {isMobile && appliedFilters > 0 && (
-            <span style={{ color: 'var(--bs-blue-5)', cursor: 'pointer', fontSize: 13, fontWeight: 500, marginTop: 2 }} onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}>{appliedFilters + 1} filter{appliedFilters > 0 ? 's' : ''} applied</span>
-          )}
-        {showExtended && renderGenderSelect()}
-        {showExtended && renderSortSelect()}
-        {showExtended && renderBrandsSelect()}
-        {showExtended && renderCategoriesSelect()}
-        {showExtended && renderColorsSelect()}
-        {showExtended && renderPriceSelect()}
+      <div className={styles.filterBarTopRow}>
+        {renderShowFiltersButton()}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {!isMobile && renderFilterChips()}
+        </div>
+        <div className={styles.sortByWrapper}>
+          {/* Sort by dropdown */}
+          {renderSortSelect()}
+        </div>
       </div>
-      {/* Second row: Source and Is On Sale, inside the same filterBar */}
-      {showExtended && <div className={styles.filterBarRow}>
-        {renderSourceSelect()}
-        {renderSaleSelect()}
-      </div>}
-      {isMobile && (
-        <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-          <button
-          className={styles.chevronBtn}
-          onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
-          aria-label="Hide filters"
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, width: 32, height: 32,     color: appliedFilters > 0 ? 'var(--bs-blue-5)' : undefined }}
+      {isMobile && <div className={styles.filterChipsMobile}>{renderFilterChips()}</div>}
+      {/* Side menu for filters */}
+      {
+        <div
+          ref={sideMenuRef}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: sideMenuOpen ? 0 : -500,
+            width: 340,
+            height: '100vh',
+            background: '#fff',
+            boxShadow: '-2px 0 16px rgba(0,0,0,0.10)',
+            zIndex: 3000,
+            padding: 24,
+            overflowY: 'auto',
+            transition: 'left 0.5s ease-in-out',
+          }}
         >
-          {mobileFiltersOpen ? <FaChevronUp /> : <FaChevronDown />}
-        </button>
-      </div>
-      )}
+          <button
+            style={{
+              position: 'absolute',
+              top: 16,
+              right: 16,
+              background: 'none',
+              border: 'none',
+              fontSize: 24,
+              cursor: 'pointer',
+              zIndex: 3100,
+              pointerEvents: 'auto',
+            }}
+            onClick={() => setSideMenuOpen(false)}
+            aria-label="Close filters"
+          >
+            ×
+          </button>
+          {/* Saved Filters and Save as filter at the top of the side menu */}
+          <div style={{ marginBottom: 24 }}>
+            <SavedFilters />
+          </div>
+          <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {renderBrandsSelect()}
+            {renderCategoriesSelect()}
+            {renderColorsSelect()}
+            {renderPriceSelect()}
+            {renderSourceSelect()}
+            {renderSaleSelect()}
+          </div>
+        </div>
+      }
     </div>
   );
 });

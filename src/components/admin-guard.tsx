@@ -16,8 +16,15 @@ interface DecodedToken {
 
 export function isAdmin(){
   const token = Cookies.get("accessToken");
-  const decoded = jwtDecode<DecodedToken>(token);
-  return decoded.username === "test";
+  if (!token) {
+    return false;
+  }
+  try {
+    const decoded = jwtDecode<DecodedToken>(token);
+    return decoded.username === "test";
+  } catch {
+    return false;
+  }
 }
 
 export default function AdminGuard({ children }: Props) {

@@ -73,3 +73,7 @@ html, body {
 .min-width-max-content {
   min-width: max-content;
 }
+
+.width-100-percents {
+  width: 100%;
+}

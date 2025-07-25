@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { observer } from 'mobx-react-lite';
 import { useSavedFilters } from '../../api/saved-filters/queries';
 import { useCreateSavedFilter, useDeleteSavedFilter, useUpdateSavedFilter, useUpdateSavedFilterLastUsed } from '../../api/saved-filters/mutations';
@@ -9,7 +8,9 @@ import filtersStore from '../../stores/filters-store';
 import { isLoggedIn } from '../../utils/auth';
 import styles from './saved-filters.module.css';
 import getClasses from '../../utils/get-classes';
-import { FaDownload, FaPen, FaSlidersH, FaTrash, FaPlus, FaCheck, FaTimes } from 'react-icons/fa';
+import { FaPen, FaSlidersH, FaPlus, FaCheck, FaTimes } from 'react-icons/fa';
+import { IoReloadSharp } from "react-icons/io5";
+
 import { DEFAULT_GENDER, DEFAULT_SORT_BY } from '../../utils/consts';
 import { Loader } from '../loader/loader';
 
@@ -32,6 +33,10 @@ const SavedFilters = observer(() => {
   const iconBtnRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
   const [lastLoadedFilterId, setLastLoadedFilterId] = useState<number | null>(null);
+  const [isListOpen, setIsListOpen] = useState(false);
+
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 600;
+
 
   useEffect(() => {
     if (isPopoverOpen && iconBtnRef.current) {
@@ -46,13 +51,13 @@ const SavedFilters = observer(() => {
   // Close popover on outside click or escape
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      console.log('handleClickOutside', event.target);
       // If the click is inside the popover, do nothing
       if ((event.target as HTMLElement)?.closest && (event.target as HTMLElement).closest('#saved-filters-popover')) {
         return;
       }
       if (popoverRef.current && !popoverRef.current.contains(event.target as Node) && iconBtnRef.current && !iconBtnRef.current.contains(event.target as Node)) {
         setIsPopoverOpen(false);
+        setIsListOpen(false);
         // setEditId(null);
         // setEditFiltersId(null);
       }
@@ -61,6 +66,7 @@ const SavedFilters = observer(() => {
       if (event.key === 'Escape') {
         setIsPopoverOpen(false);
         setIsModalOpen(false);
+        setIsListOpen(false);
         // setEditId(null);
         // setEditFiltersId(null);
       }
@@ -134,6 +140,12 @@ const SavedFilters = observer(() => {
     filtersStore.setFilter('isOnSale', filters.isOnSale);
     setLastLoadedFilterId(savedFilter.id);
     updateSavedFilterLastUsed.mutate(savedFilter.id);
+
+    if (isMobile){
+      setIsListOpen(false);
+      setIsPopoverOpen(false);
+      setIsModalOpen(false);
+    }
   };
 
   const handleDeleteFilter = async (id: number) => {
@@ -167,6 +179,7 @@ const SavedFilters = observer(() => {
     setEditId(null);
     setEditName(filter.name);
     setIsPopoverOpen(false);
+    setIsListOpen(false);
   };
 
   const handleSaveEditedFilters = async (filter: any) => {
@@ -219,110 +232,6 @@ const SavedFilters = observer(() => {
   })();
   const hasExactFilterset = savedFilters.some(f => areFiltersEqual(f.filters, currentFilters));
 
-  // Popover content
-  const popoverContent = (
-    <div
-      className={getClasses([styles.popover, 'flex-column', 'gap-4'])}
-      ref={popoverRef}
-      style={popoverPos ? { top: popoverPos.top, left: popoverPos.left, position: 'absolute', zIndex: 9999 } : {}}
-      id="saved-filters-popover"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <div className={getClasses([styles.popoverHeader, 'flex', 'items-center', 'gap-4'])}>
-        <span className={getClasses([styles.popoverTitle, 'flex-1'])}>Saved Filters</span>
-        {hasActiveFilters() && !hasExactFilterset && (
-          <button
-            onClick={(e) => { setIsModalOpen(true); setEditName(''); }}
-            disabled={createSavedFilter.isPending}
-            className={getClasses([styles.saveButton, styles.saveButtonCircle, styles.saveButtonWhite, 'bg-red-6'])}
-            title="Save current filters"
-          >
-            <FaPlus />
-          </button>
-        )}
-      </div>
-      {isLoading ? (<Loader/>
-        // <div className={getClasses([styles.loading])}>Loading...</div>
-      ) : savedFilters.length === 0 ? (
-        <div className={getClasses([styles.empty])}>No saved filters yet.</div>
-      ) : (
-        <div className={getClasses([styles.filterList])}>
-          {savedFilters.map((filter) => {
-            const isEditing = editId === filter.id;
-            const isEditingFilters = editFiltersId === filter.id;
-            return (
-              <div key={filter.id} className={getClasses([styles.filterItem, 'flex', 'items-center', styles.filterRowBg])}>
-                <div className={getClasses(['flex', 'flex-column', 'items-start', 'flex-1'])}>
-                  <span className={getClasses([styles.filterName])} title={filter.name}>{filter.name}</span>
-                  <span className={getClasses([styles.filterDate])}>{
-                    (() => {
-                      const d = new Date(filter.createdAt);
-                      const day = String(d.getDate()).padStart(2, '0');
-                      const month = String(d.getMonth() + 1).padStart(2, '0');
-                      const year = d.getFullYear();
-                      return `${day}/${month}/${year}`;
-                    })()
-                  }</span>
-                </div>
-                <div className={getClasses(['flex', 'gap-4', 'justify-center', styles.actionButtons])}>
-                  {isEditing ? (
-                    <>
-                      <input
-                        className={styles.editInput}
-                        value={editName}
-                        onChange={e => setEditName(e.target.value)}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter') handleEditSave(filter);
-                          if (e.key === 'Escape') { setEditId(null); setEditName(''); }
-                        }}
-                        autoFocus
-                      />
-                      <button className={getClasses([styles.saveButton])} onClick={() => handleEditSave(filter)} disabled={updateSavedFilter.isPending} title="Save">
-                        <FaCheck />
-                      </button>
-                      <button className={getClasses([styles.cancelButton])} onClick={() => { setEditId(null); setEditName(''); }} title="Cancel">
-                        <FaTimes />
-                      </button>
-                    </>
-                  ) : isEditingFilters ? (
-                    <>
-                      <input
-                        className={styles.editInput}
-                        value={editName}
-                        onChange={e => setEditName(e.target.value)}
-                      />
-                      <button className={getClasses([styles.saveButton])} onClick={() => handleSaveEditedFilters(filter)} disabled={updateSavedFilter.isPending} title="Save">
-                        <FaCheck />
-                      </button>
-                      <button className={getClasses([styles.cancelButton])} onClick={() => { setEditFiltersId(null); setEditName(''); }} title="Cancel">
-                        <FaTimes />
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button className={getClasses([styles.loadButton])} onClick={() => handleLoadFilter(filter)} title="Load">
-                        <FaDownload />
-                      </button>
-                      <button className={getClasses([styles.editButton])} onClick={() => handleEditFilter(filter)} title="Rename">
-                        <FaPen />
-                      </button>
-                      <button className={getClasses([styles.editButton])} onClick={() => handleEditFilters(filter)} title="Edit Filters">
-                        <FaSlidersH />
-                      </button>
-                      <button className={getClasses([styles.deleteButton])} onClick={() => handleDeleteFilter(filter.id)} disabled={deleteSavedFilter.isPending} title="Delete">
-                        <FaTrash />
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-
   // Add Save as filterset button next to Saved Filtersets button if filters are active, not already saved, and not just loaded
   const showSaveAsFilterset = hasActiveFilters() && !hasExactFilterset && lastLoadedFilterId === null;
 
@@ -335,8 +244,7 @@ const SavedFilters = observer(() => {
     return (
       <button
         className={styles.showFiltersButton}
-        onClick={() => setIsPopoverOpen((v) => !v)}
-        ref={iconBtnRef}
+        onClick={() => setIsListOpen((v) => !v)}
       >
         <FaSlidersH style={{ marginInlineEnd: 8, cursor: 'pointer' }} />
         {<>Saved Filtersets</>}
@@ -349,8 +257,9 @@ const SavedFilters = observer(() => {
     return (
       <div className={getClasses(['flex-row', 'align-items-center', 'gap-8', styles.editingBanner])}>
             <span>Editing filterset: <b>{savedFilters.find(f => f.id === editFiltersId)?.name}</b></span>
+            <div className="flex-row gap-8">
             <button
-              className={getClasses([styles.saveButton, styles.smallButton, 'bg-blue-5', 'color-white'])}
+              className={getClasses([styles.saveButton, styles.smallButton, styles.saveButtonBlack])}
               onClick={() => handleSaveEditedFilters(savedFilters.find(f => f.id === editFiltersId))}
               title="Save"
             >
@@ -363,6 +272,7 @@ const SavedFilters = observer(() => {
             >
               <FaTimes />
             </button>
+            </div>
           </div>
     );
   }
@@ -389,12 +299,98 @@ const SavedFilters = observer(() => {
 
   return (
     <>
-      <div className={getClasses([styles.popoverWrapper, 'flex-column', 'gap-8'])}>
+      <div className={getClasses([styles.popoverWrapper, 'flex', 'items-center', 'gap-2'])}>
         {renderSavedFiltersetsButton()}
-        {editFiltersId && renderEditingActions()}
-        {showSaveAsFilterset && !editFiltersId && renderSaveAsFiltersetButton()}
-        {isPopoverOpen && popoverPos && createPortal(popoverContent, document.body)}
       </div>
+      {editFiltersId && renderEditingActions()}
+      {showSaveAsFilterset && !editFiltersId && !isListOpen &&renderSaveAsFiltersetButton()}
+      {isListOpen && (
+        <div style={{ background: 'var(--bs-gray-1)', border: '1px solid var(--bs-gray-4)', borderRadius: 8, marginTop: 12, padding: 16 }}>
+          <div className={getClasses([styles.popoverHeader, 'flex', 'items-center', 'gap-4'])}>
+            <span className={getClasses([styles.popoverTitle, 'flex-1'])}>Saved Filters</span>
+          </div>
+          {/* List of saved filters and actions (same as before) */}
+          {isLoading ? (<Loader/>
+            // <div className={getClasses([styles.loading])}>Loading...</div>
+          ) : savedFilters.length === 0 ? (
+            <div className={getClasses([styles.empty])}>No saved filters yet.</div>
+          ) : (
+            <div className={getClasses([styles.filterList])}>
+              {savedFilters.map((filter) => {
+                const isEditing = editId === filter.id;
+                const isEditingFilters = editFiltersId === filter.id;
+                return (
+                  <div key={filter.id} className={getClasses([styles.filterItem, 'flex', 'items-center', styles.filterRowBg])}>
+                    {!isEditing && <div className={getClasses(['flex', 'flex-column', 'items-start', 'flex-1'])}>
+                      <span className={getClasses([styles.filterName])} title={filter.name}>{filter.name}</span>
+                      <span className={getClasses([styles.filterDate])}>{
+                        (() => {
+                          const d = new Date(filter.createdAt);
+                          const day = String(d.getDate()).padStart(2, '0');
+                          const month = String(d.getMonth() + 1).padStart(2, '0');
+                          const year = d.getFullYear();
+                          return `${day}/${month}/${year}`;
+                        })()
+                      }</span>
+                    </div>}
+                    <div className={getClasses(['flex', 'gap-4', 'width-100-percents', 'justify-space-between', styles.actionButtons])}>
+                      {isEditing ? (
+                        <>
+                          <input
+                            className={styles.editInput}
+                            value={editName}
+                            onChange={e => setEditName(e.target.value)}
+                            onKeyDown={e => {
+                              if (e.key === 'Enter') handleEditSave(filter);
+                              if (e.key === 'Escape') { setEditId(null); setEditName(''); }
+                            }}
+                            autoFocus
+                          />
+                          <button className={getClasses([styles.saveButton, styles.smallButton, styles.saveButtonBlack])} onClick={() => handleEditSave(filter)} disabled={updateSavedFilter.isPending} title="Save">
+                            <FaCheck />
+                          </button>
+                          <button className={getClasses([styles.cancelButton, styles.smallButton])} onClick={() => { setEditId(null); setEditName(''); }} title="Cancel">
+                            <FaTimes />
+                          </button>
+                        </>
+                      ) : isEditingFilters ? (
+                        <>
+                          <input
+                            className={styles.editInput}
+                            value={editName}
+                            onChange={e => setEditName(e.target.value)}
+                          />
+                          <button className={getClasses([styles.saveButton, styles.smallButton, styles.saveButtonBlack])} onClick={() => handleSaveEditedFilters(filter)} disabled={updateSavedFilter.isPending} title="Save">
+                            <FaCheck />
+                          </button>
+                          <button className={getClasses([styles.cancelButton, styles.smallButton])} onClick={() => { setEditFiltersId(null); setEditName(''); }} title="Cancel">
+                            <FaTimes />
+                          </button>
+                        </>
+                      ) : (
+                        <div className="flex-row gap-2">
+                          <button className={getClasses([styles.loadButton, styles.smallButton])} onClick={() => handleLoadFilter(filter)} title="Load">
+                            <IoReloadSharp />
+                          </button>
+                          <button className={getClasses([styles.editButton, styles.smallButton])} onClick={() => handleEditFilter(filter)} title="Rename">
+                            <FaPen />
+                          </button>
+                          <button className={getClasses([styles.editButton, styles.smallButton])} onClick={() => handleEditFilters(filter)} title="Edit Filters">
+                            <FaSlidersH />
+                          </button>
+                          <button className={getClasses([styles.deleteButton, styles.smallButton])} onClick={() => handleDeleteFilter(filter.id)} disabled={deleteSavedFilter.isPending} title="Delete">
+                            <FaTimes />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
       {/* Modal for saving new filter */}
       {isModalOpen && (
         <div className={styles.modalOverlay}>

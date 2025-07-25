@@ -120,6 +120,8 @@
   background: var(--bs-gray-1);
   border-radius: 8px;
   padding: 10px;
+  padding-bottom: 0;
+  padding-inline-start: 0;
 }
 
 .filterInfo {
@@ -156,14 +158,14 @@
   color: var(--bs-white);
   border: none;
   border-radius: 6px;
-  padding-inline: 1rem;
-  padding-block: 0.5rem;
+  /* padding-inline: 1rem; */
+  /* padding-block: 0.5rem; */
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
   margin-inline-end: 0.5rem;
   width: max-content;
-  min-width: 80px;
+  /* min-width: 80px; */
 }
 
 .loadButton:hover {
@@ -171,7 +173,7 @@
 }
 
 .deleteButton {
-  background: var(--bs-red-6);
+  background: var(--bs-black);
   color: var(--bs-white);
   border: none;
   border-radius: 6px;
@@ -183,7 +185,7 @@
 }
 
 .deleteButton:hover:not(:disabled) {
-  background: var(--bs-red-6);
+  background: var(--bs-black-4);
 }
 
 .deleteButton:disabled {
@@ -278,10 +280,10 @@
   min-width: 320px;
   width: max-content;
   background: #fff;
-  border-radius: 12px;
+  border-radius: 0;
   box-shadow: 0 4px 24px rgba(0,0,0,0.12);
   padding: 16px;
-  border: 1px solid #eee;
+  border: 1px solid var(--bs-gray-4);
   position: absolute;
   z-index: 9999;
 }
@@ -294,12 +296,25 @@
 
 .popoverTitle {
   font-weight: 600;
-  font-size: 16px;
+  font-size: 14px;
   margin-right: 8px;
 }
 
 .editingBanner {
-  margin-inline-start: 8px;
+  font-size: 14px;
+  background: var(--bs-gray-1);
+  border: 1px solid var(--bs-gray-4);
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.smallButton {
+  max-width: max-content;
+  padding-inline: 8px;
+  padding-block: 6px;
+  line-height: 1;
 }
 
 .saveButtonCircle {
@@ -367,7 +382,8 @@
   border: 1px solid var(--bs-gray-4);
   background: var(--bs-white);
   color: var(--bs-purple-6);
-  padding-inline: 0.75rem;
+  /* padding-inline: 0.75rem; */
+  cursor: pointer;
   padding-block: 0.5rem;
   border-radius: 6px;
   margin-inline-end: 0.5rem;
@@ -401,17 +417,17 @@
 
 
 @media (max-width: 600px) {
-  .filterItem {
+  /* .filterItem {
     flex-direction: column;
     align-items: start;
     gap: 8px;
-  }
+  } */
 
   .filterDate {
     display: none;
   }
 
-  .popoverWrapper {
+  /* .popoverWrapper {
     justify-content: space-between;
-  }
+  } */
 }

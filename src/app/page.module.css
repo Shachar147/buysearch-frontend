@@ -31,6 +31,7 @@
   max-width: 400px;
   margin: 0 auto 32px auto;
   text-align: center;
+  margin-top: 16px;
 }
 
 .loadMoreWrapper {

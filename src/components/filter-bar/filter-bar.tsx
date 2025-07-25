@@ -383,7 +383,7 @@ const FilterBar = observer(() => {
           <div style={{ marginBottom: 24 }}>
             <SavedFilters />
           </div>
-          <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
             {renderBrandsSelect()}
             {renderCategoriesSelect()}
             {renderColorsSelect()}

@@ -196,6 +196,7 @@
   cursor: pointer;
   position: relative;
   transition: opacity 0.18s ease-in-out;
+  flex-shrink: 0;
 }
 
 .showFiltersButton:hover {

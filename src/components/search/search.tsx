@@ -1,7 +1,10 @@
+'use client';
+
 import React, { useState, useRef, useEffect } from 'react';
 import styles from './search.module.css';
 import { useParsedSearchQuery } from '../../api/search/queries';
 import filtersStore from '../../stores/filters-store';
+import getClasses from '../../utils/get-classes';
 
 interface SearchProps {
   value: string;
@@ -38,12 +41,13 @@ const Search: React.FC<SearchProps> = ({ value, onChange, placeholder = 'Search 
     if (parsedFilters) {
       filtersStore.applyParsedFilters(parsedFilters);
     }
+    filtersStore.setSearchFilter(localValue);
   }, [parsedFilters]);
 
   const hasValue = !!localValue;
 
   return (
-    <div className={styles.heroSearchBar}>
+    <div className={getClasses([styles.heroSearchBar, !!debouncedValue && styles.active])}>
       <span className={styles.heroSearchIcon}>
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
           <circle cx="10" cy="10" r="7" stroke="#888" strokeWidth="2"/>

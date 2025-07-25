@@ -67,6 +67,16 @@
   transition: background 0.2s, border 0.2s;
 }
 
+.active {
+  background: var(--bs-blue-1) !important;
+  border: 1px solid var(--bs-blue-6);
+  transition: background 0.2s, border 0.2s;
+
+  .heroClearIcon {
+    color: var(--bs-blue-6);
+  }
+}
+
 @media (max-width: 600px) {
     .heroSearchIcon {
     position: absolute;

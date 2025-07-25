@@ -21,6 +21,9 @@ function HomePage() {
   const [showPriceChangeOnly, setShowPriceChangeOnly] = useState(false);
   const [localSearch, setLocalSearch] = useState(filtersStore.selected.search);
 
+  // Helper to detect mobile
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 600;
+
   useEffect(() => {
     setLocalSearch(filtersStore.selected.search);
   }, [filtersStore.selected.search]);
@@ -318,9 +321,9 @@ function HomePage() {
         )}
       </main>
       {/* Source slider at the bottom */}
-      <div style={isLoading ? { position: 'fixed', bottom: 0, width: '100%' } : {}}>
+      {!isMobile && <div style={isLoading ? { position: 'fixed', bottom: 0, width: '100%' } : {}}>
         <SourceSlider />
-      </div>
+      </div>}
     </div>
   );
 }

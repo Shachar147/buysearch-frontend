@@ -14,7 +14,7 @@ import { useAllBrands } from '../../api/brand/queries';
 import { useAllColors } from '../../api/color/queries';
 import { useAllCategories } from '../../api/category/queries';
 import { useAllSources } from '../../api/source/queries';
-import { FaSlidersH } from 'react-icons/fa';
+import { FaSlidersH, FaTimes } from 'react-icons/fa';
 import { DEFAULT_SORT_BY } from '../../utils/consts';
 import SavedFilters from '../saved-filters/saved-filters';
 
@@ -43,7 +43,6 @@ function ucfirstFirstOnly(str: string) {
 
 const FilterBar = observer(() => {
   const { selected, setFilter } = filtersStore;
-  const [localSearch, setLocalSearch] = useState(filtersStore.selected.search);
   const { data: brands = [] } = useAllBrands();
   const { data: colors = [] } = useAllColors();
   const { data: sources = [] } = useAllSources();
@@ -72,10 +71,6 @@ const FilterBar = observer(() => {
   // Helper to detect mobile
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 600;
 
-  useEffect(() => {
-    setLocalSearch(filtersStore.selected.search);
-  }, [filtersStore.selected.search]);
-
   // Count applied filters (excluding search)
   const appliedFilters = [
     // selected.sort && selected.sort !== DEFAULT_SORT_BY,
@@ -87,10 +82,56 @@ const FilterBar = observer(() => {
     typeof selected.isOnSale === 'string' && selected.isOnSale !== 'All',
   ].filter(Boolean).length;
 
-  function handleGenderSwitch(gender: string) {
-    setFilter('gender', gender);
-    // If you want to call a prop like onGenderSwitch, add it here if passed
-    // if (props.onGenderSwitch) props.onGenderSwitch(gender);
+  // Helper to build filter chips
+  const filterChips: { label: string; onClear: () => void }[] = [];
+
+  // Brand
+  if (selected.brand && selected.brand !== 'All') {
+    if (Array.isArray(selected.brand)) {
+      selected.brand.forEach((b: string) => {
+        if (b && b !== 'All') filterChips.push({ label: b, onClear: () => Array.isArray(selected.brand) ? setFilter('brand', selected.brand.filter((x: string) => x !== b)) : setFilter('brand', 'All') });
+      });
+    } else {
+      filterChips.push({ label: selected.brand, onClear: () => setFilter('brand', 'All') });
+    }
+  }
+  // Category
+  if (selected.category && selected.category !== 'All') {
+    if (Array.isArray(selected.category)) {
+      selected.category.forEach((c: string) => {
+        if (c && c !== 'All') filterChips.push({ label: c, onClear: () => Array.isArray(selected.category) ? setFilter('category', selected.category.filter((x: string) => x !== c)) : setFilter('category', 'All') });
+      });
+    } else {
+      filterChips.push({ label: selected.category, onClear: () => setFilter('category', 'All') });
+    }
+  }
+  // Color
+  if (selected.color && selected.color !== 'All') {
+    if (Array.isArray(selected.color)) {
+      selected.color.forEach((c: string) => {
+        if (c && c !== 'All') filterChips.push({ label: c, onClear: () => Array.isArray(selected.color) ? setFilter('color', selected.color.filter((x: string) => x !== c)) : setFilter('color', 'All') });
+      });
+    } else {
+      filterChips.push({ label: selected.color, onClear: () => setFilter('color', 'All') });
+    }
+  }
+  // Price Range
+  if (selected.priceRange && typeof selected.priceRange === 'object' && 'value' in selected.priceRange && selected.priceRange.value === 'Custom') {
+    filterChips.push({ label: `Custom: ${selected.priceRange.from} - ${selected.priceRange.to} ILS`, onClear: () => setFilter('priceRange', 'All') });
+  }
+  // Source
+  if (selected.source && selected.source !== 'All') {
+    if (Array.isArray(selected.source)) {
+      selected.source.forEach((s: string) => {
+        if (s && s !== 'All') filterChips.push({ label: s, onClear: () => Array.isArray(selected.source) ? setFilter('source', selected.source.filter((x: string) => x !== s)) : setFilter('source', 'All') });
+      });
+    } else {
+      filterChips.push({ label: selected.source, onClear: () => setFilter('source', 'All') });
+    }
+  }
+  // Is On Sale
+  if (typeof selected.isOnSale === 'string' && selected.isOnSale !== 'All') {
+    filterChips.push({ label: selected.isOnSale, onClear: () => setFilter('isOnSale', 'All') });
   }
 
   // Source options
@@ -101,77 +142,6 @@ const FilterBar = observer(() => {
     { label: 'Yes', value: 'Yes' },
     { label: 'No', value: 'No' },
   ];
-
-  function renderSearchInput(){
-    const isMobileSearchActive = isMobile && selected.search && selected.search.trim().length > 0;
-    return (
-      <div className={getClasses([styles.filterBarRow, styles.mobileFilters])} style={{ position: 'relative' }}>
-        <div className={styles.filterItem} style={{ width: '100%' }}>
-        <label className={getClasses([styles.label, 'text-caption'])}>Search</label>
-          <input
-            className={getClasses([styles.headerSearchInput, isMobileSearchActive && styles.headerSearchInputActive])}
-            type="text"
-            placeholder="Search for items and brands"
-            aria-label="Search"
-            value={localSearch}
-            onChange={e => {
-              setLocalSearch(e.target.value);
-              setFilter('search', e.target.value)
-            }}
-            style={{ width: '100%' }}
-          />
-          {isMobileSearchActive && (
-            <button
-              type="button"
-              aria-label="Clear search"
-              onClick={() => {
-                setLocalSearch('');
-                setFilter('search', '')
-              }}
-              style={{
-                position: 'absolute',
-                right: 16,
-                top: 42,
-                transform: 'translateY(-50%)',
-                background: 'none',
-                border: 'none',
-                color: 'var(--bs-blue-6)',
-                fontSize: 20,
-                cursor: 'pointer',
-                padding: 0,
-                zIndex: 2
-              }}
-            >
-              ×
-            </button>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  function renderGenderSelect(){
-    return (
-      <div className={getClasses([styles.filterBarRow, styles.mobileFilters])}>
-          <div className={styles.filterItem} style={{ width: '100%' }}>
-            <label className={getClasses([styles.label, 'text-caption'])}>Gender</label>
-            <CustomSelect
-                options={[
-                  { label: 'Women', value: 'women' },
-                  { label: 'Men', value: 'men' },
-                  { label: 'Unisex', value: 'unisex' },
-                ]}
-                selected={[selected.gender || 'women']}
-                onChange={vals => handleGenderSwitch(vals[0])}
-                defaultLabel="Gender"
-                disableAlphabetSorting
-                disableClear
-              />
-          </div>
-        </div>
-    );
-  }
-
 
   function renderSortSelect(){
     return (
@@ -324,28 +294,54 @@ const FilterBar = observer(() => {
     );
   }
 
+  function renderShowFiltersButton(){
+    return (
+      <button
+            className={styles.showFiltersButton}
+            onClick={() => setSideMenuOpen(true)}
+          >
+            <FaSlidersH style={{ marginInlineEnd: isMobile ? 0 : 8 }} />
+            {!isMobile && <>Show filters</>}
+            {appliedFilters > 0 && <span className={styles.filterBadge}>{appliedFilters}</span>}
+          </button>
+    )
+  }
+
+  function renderFilterChips(){
+    if (filterChips.length == 0) return null;
+
+    return (
+      <div className={styles.filterChipsWrapper}>
+        {filterChips.map((chip, idx) => (
+          <span key={chip.label + idx} className={styles.filterChip}>
+            {chip.label}
+            <button
+              onClick={chip.onClear}
+              className={styles.filterChipClose}
+              aria-label={`Clear filter ${chip.label}`}
+            >
+              <FaTimes />
+            </button>
+          </span>
+        ))}
+      </div>
+    );
+  }
+
   // Render full filter bar for desktop or when mobileFiltersOpen is true
   return (
     <div className={getClasses([styles.filterBar])}>
       <div className={styles.filterBarTopRow}>
-
-        <button
-            className={styles.showFiltersButton}
-            onClick={() => setSideMenuOpen(true)}
-          >
-          <FaSlidersH style={{ marginInlineEnd: isMobile ? 0 : 8 }} />
-          <div className="flex-row align-items-center">
-            {!isMobile && <>Show filters</>}
-            {appliedFilters > 0 && <span className={styles.filterBadge}>{appliedFilters}</span>}
-          </div>
-        </button>
-
+        {renderShowFiltersButton()}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {!isMobile && renderFilterChips()}
+        </div>
         <div className={styles.sortByWrapper}>
           {/* Sort by dropdown */}
           {renderSortSelect()}
         </div>
-        
       </div>
+      {isMobile && <div className={styles.filterChipsMobile}>{renderFilterChips()}</div>}
       {/* Side menu for filters */}
       {
         <div

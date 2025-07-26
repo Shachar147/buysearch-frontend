@@ -14,24 +14,40 @@ export default function SourceSlider() {
   const SOURCES = sources?.map((source) => source.name) || [];
 
   // Duplicate logos for seamless infinite scroll
-  const logos = [...SOURCES, ...SOURCES];
+  const logos = [...SOURCES, ...SOURCES, ...SOURCES, ...SOURCES, ...SOURCES];
 
   useEffect(() => {
     let start: number | null = null;
     let left = 0;
+    let direction = 1; // 1 for left, -1 for right
     const track = trackRef.current;
     if (!track) return;
-    const totalWidth = track.scrollWidth / 2;
+    const totalWidth = track.scrollWidth / 5; // Since we have 5 copies
 
     function animate(ts: number) {
       if (start === null) start = ts;
       const elapsed = ts - start;
-      left = -(elapsed / 1000) * SLIDE_SPEED;
-      // Reset to 0 when scrolled past half (since we duplicate)
-      if (-left >= totalWidth) {
-        start = ts;
-        left = 0;
+      
+      // Calculate position based on direction
+      if (direction === 1) {
+        left = -(elapsed / 1000) * SLIDE_SPEED;
+      } else {
+        left = -totalWidth * 5 + (elapsed / 1000) * SLIDE_SPEED;
       }
+
+      // Change direction when reaching boundaries
+      if (direction === 1 && -left >= totalWidth * 5) {
+        // Reached the end, change to right direction
+        direction = -1;
+        start = ts;
+        left = -totalWidth * 2;
+      } else if (direction === -1 && left >= -totalWidth) {
+        // Reached the beginning, change to left direction
+        direction = 1;
+        start = ts;
+        left = -totalWidth;
+      }
+
       track.style.transform = `translateX(${left}px)`;
       animationRef.current = requestAnimationFrame(animate);
     }

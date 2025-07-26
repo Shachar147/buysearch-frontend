@@ -70,6 +70,8 @@ export default function getSourceLogo(source?: string): string | undefined {
       return `${S3_URL}/new-era.png`;
     case 'razili':
       return `${S3_URL}/razili.avif`;
+    case 'hamashbir':
+      return `${S3_URL}/mashbir.avif`;
     // Add more sources here as needed
     default:
       return undefined;

@@ -146,7 +146,7 @@ const FilterBar = observer(({ numOfResults }: { numOfResults: number }) => {
 
   // Search
   if (selected.search && selected.search !== '') {
-    filterChips.push({ label: selected.search, onClear: () => setFilter('search', ''), prefix: 'Keywords: ' , red: numOfResults === 0 });
+    filterChips.push({ label: selected.search, onClear: () => setFilter('search', ''), prefix: 'Keywords: ' , red: numOfResults < 100 });
   }
 
   function renderSortSelect(){

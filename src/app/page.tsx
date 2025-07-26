@@ -254,12 +254,23 @@ function HomePage() {
         </div>
       </div>
       <main className={styles.main} style={{ marginTop: 24 }}>
-        <FilterBar numOfResults={isLoading ? 1 : allProducts.length} />
+        <FilterBar numOfResults={isLoading ? 1000 : allProducts.length} />
         {total > 0 && <div className={styles.totalResultsWrapper}>
           <div className={getClasses([styles.productCount, 'text-headline-6', 'color-black-4'])}>
             {`Total results: ${total.toLocaleString()}`}
           </div>
+
+          {total > 0 &&total < 100 && filtersStore.selected.search && <div className={styles.SmallResultsMessage}>
+            <span>{`Seeing a small number of results? Try `}</span>
+            <a
+            style={{ color: '#2d2d2d', textDecoration: 'underline', cursor: 'pointer' }}
+            onClick={() => filtersStore.setFilter('search', '')}
+          >
+            clearing the search keywords
+          </a>
+          </div>}
         </div>}
+       
         <ProductGrid
           products={allProducts.map((p) => ({
             id: p.id,
@@ -282,12 +293,12 @@ function HomePage() {
         />
         {!isLoading && (!allProducts || allProducts.length === 0) && 
             (
-              <div className={getClasses([styles.empty, 'text-headline-6', 'color-gray-7', 'flex-column', 'gap-8'])}>
+              <div className={getClasses([styles.empty, 'text-headline-6', 'color-gray-7', 'flex-column', 'gap-8', 'align-items-center'])}>
                 No items found
                 {filtersStore.selected.search ? (
                   <>
-                  {` for: ${filtersStore.selected.search}`}
-                  <span>
+                  {` for: "${filtersStore.selected.search}"`}
+                  <span style={{ fontWeight: 300 }}>
                     Try{' '}
                     <span
                       style={{ color: '#e91e63', textDecoration: 'underline', cursor: 'pointer' }}

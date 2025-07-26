@@ -28,10 +28,14 @@
 }
 
 .totalResultsWrapper {
-  max-width: 400px;
+  max-width: 600px;
   margin: 0 auto 32px auto;
   text-align: center;
   margin-top: 16px;
+
+  align-items: center;
+  display: flex;
+  flex-direction: column;
 }
 
 .loadMoreWrapper {
@@ -232,6 +236,27 @@
   color: var(--bs-blue-5);
 }
 
+.SmallResultsMessage {
+  width: 100%;
+  text-align: center;
+  color: var(--bs-gray-6);
+  /* text-transform: uppercase; */
+  font-size: 12px;
+  background-color: var(--bs-gray-1);
+  border-radius: 4px;
+  border: 1px solid var(--bs-gray-4);
+  padding:4px;
+  max-width: max-content;
+  padding-inline: 20px;
+
+  a {
+    transition: opacity 0.1s ease-in-out;
+    opacity: 1;
+    &:hover {
+      opacity: 0.6;
+    }
+  }
+}
 
 @media (max-width: 600px) {
   .empty {

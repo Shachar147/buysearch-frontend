@@ -6,6 +6,7 @@ import styles from './product-card.module.css';
 import getClasses from '../../utils/get-classes';
 import getSourceLogo from '../../utils/source-logo';
 import { getTimeAgo, formatDateTime } from '../../utils/utils';
+import { getProxiedImageUrl } from '../../utils/image-proxy';
 import { useFavourites } from '../../api/favourites/queries';
 import { useAddToFavourite, useRemoveFromFavourite } from '../../api/favourites/mutations';
 import ProductPriceTrend from '../product-price-trend';
@@ -38,8 +39,12 @@ const ProductCard = observer(({
   id, image, title, brand, price, oldPrice, currency, colors, url, images = [], source, isSellingFast = false, hasMoreColours = false, updatedAt, createdAt, productId, isFavourite, priceHistory: externalPriceHistory,
   categories = [],
 }: ProductCardProps) => {
-  const firstImage = images[0] || image;
-  let secondImage = images[1] || images[0] || image;
+  // Apply proxy to images if needed (for sources like New Balance)
+  const proxiedImages = images.map(img => getProxiedImageUrl(img, source));
+  const proxiedImage = getProxiedImageUrl(image, source);
+  
+  const firstImage = proxiedImages[0] || proxiedImage;
+  let secondImage = proxiedImages[1] || proxiedImages[0] || proxiedImage;
   if (secondImage.length < 10) {
     secondImage = firstImage;
   }

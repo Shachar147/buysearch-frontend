@@ -60,6 +60,10 @@ export default function getSourceLogo(source?: string): string | undefined {
       return `${S3_URL}/fox-home-2.png`;
     case 'zarahome':
       return `${S3_URL}/zara-home.png`;
+    case 'legaloutfit':
+      return `${S3_URL}/legaloutfit.png`;
+    case 'new balance':
+      return `${S3_URL}/new-balance.png`;
     // Add more sources here as needed
     default:
       return undefined;

@@ -84,7 +84,7 @@ const FilterBar = observer(({ numOfResults }: { numOfResults: number }) => {
   ].filter(Boolean).length;
 
   // Helper to build filter chips
-  const filterChips: { label: string; onClear: () => void; prefix: string }[] = [];
+  const filterChips: { label: string; onClear: () => void; prefix: string, red?: boolean }[] = [];
 
   // Brand
   if (selected.brand && selected.brand !== 'All') {

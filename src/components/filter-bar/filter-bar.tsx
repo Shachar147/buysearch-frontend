@@ -74,6 +74,7 @@ const FilterBar = observer(() => {
   // Count applied filters (excluding search)
   const appliedFilters = [
     // selected.sort && selected.sort !== DEFAULT_SORT_BY,
+    // selected.search && selected.search !== '', // search?
     selected.brand && Array.isArray(selected.brand) ? selected.brand.some(b => b !== 'All') : selected.brand && selected.brand !== 'All',
     selected.category && Array.isArray(selected.category) ? selected.category.some(c => c !== 'All') : selected.category && selected.category !== 'All',
     selected.color && Array.isArray(selected.color) ? selected.color.some(c => c !== 'All') : selected.color && selected.color !== 'All',
@@ -142,6 +143,15 @@ const FilterBar = observer(() => {
     { label: 'Yes', value: 'Yes' },
     { label: 'No', value: 'No' },
   ];
+
+  // Search
+  const searchOptions = [
+    { label: 'All', value: '' },
+    { label: 'Search', value: 'Search' },
+  ];
+  if (selected.search && selected.search !== '') {
+    filterChips.push({ label: selected.search, onClear: () => setFilter('search', ''), prefix: 'Keywords: ' });
+  }
 
   function renderSortSelect(){
     return (

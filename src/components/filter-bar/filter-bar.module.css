@@ -258,6 +258,15 @@
   margin-left: 8px;
 }
 
+.red {
+  background-color: #e91e63;
+  color: #fff;
+
+  .filterChipClose {
+    color: #fff;
+  }
+}
+
 @media (max-width: 600px) {
   .mobileFilters {
     display: flex !important;

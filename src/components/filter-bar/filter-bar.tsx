@@ -41,7 +41,7 @@ function ucfirstFirstOnly(str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-const FilterBar = observer(() => {
+const FilterBar = observer(({ numOfResults }: { numOfResults: number }) => {
   const { selected, setFilter } = filtersStore;
   const { data: brands = [] } = useAllBrands();
   const { data: colors = [] } = useAllColors();
@@ -145,12 +145,8 @@ const FilterBar = observer(() => {
   ];
 
   // Search
-  const searchOptions = [
-    { label: 'All', value: '' },
-    { label: 'Search', value: 'Search' },
-  ];
   if (selected.search && selected.search !== '') {
-    filterChips.push({ label: selected.search, onClear: () => setFilter('search', ''), prefix: 'Keywords: ' });
+    filterChips.push({ label: selected.search, onClear: () => setFilter('search', ''), prefix: 'Keywords: ' , red: numOfResults === 0 });
   }
 
   function renderSortSelect(){
@@ -323,7 +319,7 @@ const FilterBar = observer(() => {
     return (
       <div className={styles.filterChipsWrapper}>
         {filterChips.map((chip, idx) => (
-          <span key={chip.label + idx} className={styles.filterChip}>
+          <span key={chip.label + idx} className={getClasses([styles.filterChip, !!chip.red && styles.red])}>
             {/* <span style={{marginRight: 6, fontWeight: 400, fontSize: 15}}>{chip.prefix}</span> */}
             {ucfirst(chip.prefix)}
             {chip.label}

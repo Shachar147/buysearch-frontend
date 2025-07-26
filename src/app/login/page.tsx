@@ -260,7 +260,7 @@ export default function AuthPage() {
         {/* Card with tabs */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginTop: -282, zIndex: 3 }}>
           <div style={{ background: '#fff', borderRadius: 18, boxShadow: '0 4px 32px rgba(0,0,0,0.05)', padding: '24px 32px', minWidth: 320, maxWidth: 340, width: '100%', margin: '0 8px' }}>
-            {tab === 'login' ? <LoginForm /> : <RegisterForm onSuccess={() => setTab('login')} />}
+            {tab === 'login' ? <LoginForm onSuccess={() => setTab('signup')} /> : <RegisterForm onSuccess={() => setTab('login')} />}
           </div>
         </div>
         <SourceSlider />

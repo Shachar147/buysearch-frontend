@@ -41,7 +41,7 @@ function ucfirstFirstOnly(str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-const FilterBar = observer(() => {
+const FilterBar = observer(({ numOfResults }: { numOfResults: number }) => {
   const { selected, setFilter } = filtersStore;
   const { data: brands = [] } = useAllBrands();
   const { data: colors = [] } = useAllColors();
@@ -74,6 +74,7 @@ const FilterBar = observer(() => {
   // Count applied filters (excluding search)
   const appliedFilters = [
     // selected.sort && selected.sort !== DEFAULT_SORT_BY,
+    // selected.search && selected.search !== '', // search?
     selected.brand && Array.isArray(selected.brand) ? selected.brand.some(b => b !== 'All') : selected.brand && selected.brand !== 'All',
     selected.category && Array.isArray(selected.category) ? selected.category.some(c => c !== 'All') : selected.category && selected.category !== 'All',
     selected.color && Array.isArray(selected.color) ? selected.color.some(c => c !== 'All') : selected.color && selected.color !== 'All',
@@ -142,6 +143,11 @@ const FilterBar = observer(() => {
     { label: 'Yes', value: 'Yes' },
     { label: 'No', value: 'No' },
   ];
+
+  // Search
+  if (selected.search && selected.search !== '') {
+    filterChips.push({ label: selected.search, onClear: () => setFilter('search', ''), prefix: 'Keywords: ' , red: numOfResults === 0 });
+  }
 
   function renderSortSelect(){
     return (
@@ -313,7 +319,7 @@ const FilterBar = observer(() => {
     return (
       <div className={styles.filterChipsWrapper}>
         {filterChips.map((chip, idx) => (
-          <span key={chip.label + idx} className={styles.filterChip}>
+          <span key={chip.label + idx} className={getClasses([styles.filterChip, !!chip.red && styles.red])}>
             {/* <span style={{marginRight: 6, fontWeight: 400, fontSize: 15}}>{chip.prefix}</span> */}
             {ucfirst(chip.prefix)}
             {chip.label}

@@ -64,6 +64,12 @@ export default function getSourceLogo(source?: string): string | undefined {
       return `${S3_URL}/legaloutfit.png`;
     case 'new balance':
       return `${S3_URL}/new-balance.png`;
+    case 'foot locker':
+      return `${S3_URL}/footlocker.png`;
+    case 'new era':
+      return `${S3_URL}/new-era.png`;
+    case 'razili':
+      return `${S3_URL}/razili.avif`;
     // Add more sources here as needed
     default:
       return undefined;

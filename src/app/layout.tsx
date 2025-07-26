@@ -16,7 +16,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       {/* <!-- Open Graph Meta Tags --> */}
       <meta property="og:title" content="Buysearch" />
       <meta property="og:description" content="Search once, buy anywhere!" />
-      <meta property="og:image" content="https://buysearch.s3.eu-north-1.amazonaws.com/buysearch-preview.png" />
+      <meta property="og:image" content="https://buysearch.s3.eu-north-1.amazonaws.com/buysearch-preview.jpg" />
       <meta property="og:url" content="https://buysearch.co" />
       <meta property="og:type" content="website" />
       <body>

@@ -76,6 +76,8 @@ export default function getSourceLogo(source?: string): string | undefined {
       return `${S3_URL}/carolina.png`;
     case 'ioptic':
       return `${S3_URL}/ioptic.png`;
+    case 'hollister':
+      return `${S3_URL}/hollister.png`;
     // Add more sources here as needed
     default:
       return undefined;

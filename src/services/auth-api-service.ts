@@ -19,6 +19,15 @@ export async function login(username: string, password: string) {
   return res.data;
 }
 
+export function getGoogleAuthUrl() {
+  return `${API_BASE_URL}/auth/google`;
+}
+
+export async function getProfile() {
+  const res = await api.get(`${API_BASE_URL}/auth/profile`);
+  return res.data;
+}
+
 export async function getAllUsers() {
   const res = await api.get(`${API_BASE_URL}/auth/users`, { withCredentials: true });
   return res.data;

@@ -7,6 +7,9 @@ import AdminGuard from "../../components/admin-guard";
 import { Loader } from "../../components/loader/loader";
 import styles from "./page.module.css";
 import { ucfirst } from "../../utils/utils";
+import { GiProgression } from "react-icons/gi";
+import { TbProgressCheck } from "react-icons/tb";
+import { TbProgress } from "react-icons/tb";
 
 interface ScrapingHistory {
   id: number;
@@ -64,11 +67,13 @@ const StatusPage = () => {
   const [categorySort, setCategorySort] = useState<{ key: string, direction: SortDirection }>({ key: 'total', direction: 'desc' });
   const [brandSort, setBrandSort] = useState<{ key: string, direction: SortDirection }>({ key: 'total', direction: 'desc' });
   // Collapsible state for each section
-  const [showSources, setShowSources] = useState(true);
-  const [showCategories, setShowCategories] = useState(true);
-  const [showBrands, setShowBrands] = useState(true);
+  const [showSources, setShowSources] = useState(false);
+  const [showCategories, setShowCategories] = useState(false);
+  const [showBrands, setShowBrands] = useState(false);
   const [showScrapers, setShowScrapers] = useState(true);
   const [showUsers, setShowUsers] = useState(true);
+  const [showInProgress, setShowInProgress] = useState(true);
+  const [showOthers, setShowOthers] = useState(false);
 
   const handleUserSort = (key: string) => {
     setUserSort((prev) => {
@@ -465,7 +470,7 @@ const StatusPage = () => {
 
     return (
         <>
-        <h2 style={{ marginTop }}>{title}</h2>
+        {title && <h2 style={{ marginTop }}>{title}</h2>}
         {search}
         {table}
         </>
@@ -597,7 +602,7 @@ const StatusPage = () => {
     );
     const rows = sortRows(filteredBrandStats, brandSort).slice(0, 50);
     return (
-      <>
+      <div className={styles.sectionContainer}>
         <h2 className={`${styles.sectionTitle} ${!showBrands ? styles.collapsed : ''}`} onClick={() => setShowBrands(s => !s)}>
           Brands ({brandStats?.length || 0})
         </h2>
@@ -645,7 +650,7 @@ const StatusPage = () => {
             </div>
           </div>
         )}
-      </>
+      </div>
     );
   }
 
@@ -730,8 +735,26 @@ const StatusPage = () => {
         </h2>
         {showScrapers && (
           <div className={styles.sectionContent}>
-            {renderTable(applySort(inProgressSummaries), `🟠 In Progress (${inProgressSummaries.length})`, 'Current Status', 'Current Scan Rate', 'Type', 12)}
-            {renderTable(applySort(otherSummaries), `✅ Others (${otherSummaries.length})`, 'Last Status', 'Last Scan Rate', 'Last Scan Type')}
+            <div className={styles.subSectionContainer}>
+              <h3 className={`${styles.subSectionTitle} ${!showInProgress ? styles.collapsed : ''}`} onClick={() => setShowInProgress(s => !s)}>
+                <div className="flex-row align-items-center gap-4"><TbProgress style={{ fontSize: 20, color: 'var(--bs-orange-5)' }} /> <span>In Progress ({inProgressSummaries.length})</span></div>
+              </h3>
+              {showInProgress && (
+                <div className={styles.subSectionContent}>
+                  {renderTable(applySort(inProgressSummaries), '', 'Current Status', 'Current Scan Rate', 'Type', 12)}
+                </div>
+              )}
+            </div>
+            <div className={styles.subSectionContainer}>
+              <h3 className={`${styles.subSectionTitle} ${!showOthers ? styles.collapsed : ''}`} onClick={() => setShowOthers(s => !s)}>
+                <div className="flex-row align-items-center gap-4"><TbProgressCheck style={{ fontSize: 20, color: 'var(--bs-green-5)' }} /> <span>Others ({otherSummaries.length})</span></div>
+              </h3>
+              {showOthers && (
+                <div className={styles.subSectionContent}>
+                  {renderTable(applySort(otherSummaries), '', 'Last Status', 'Last Scan Rate', 'Last Scan Type')}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -752,7 +775,8 @@ const StatusPage = () => {
                 <div className={styles.summaryBar}>
                   <div className={styles.summaryBarContent}>
                     <div className={styles.summaryBarTitle}>
-                      Dashboard Overview
+                    <GiProgression style={{ fontSize: 20, color: 'var(--bs-blue-5)' }} />
+                      <span>Dashboard Overview</span>
                     </div>
                     <div className={styles.summaryStats}>
                       <div className={styles.summaryStat}>

@@ -223,6 +223,7 @@ const FilterBar = observer(({ numOfResults }: { numOfResults: number }) => {
           <CustomSelect
             options={priceRangeOptions.map(opt => typeof opt === 'object' ? {
               ...opt,
+              value: opt.value || opt.label,
               label: opt.label === 'Custom' && typeof selected.priceRange === 'object' && 'from' in selected.priceRange && 'to' in selected.priceRange && typeof selected.priceRange.from === 'number' && typeof selected.priceRange.to === 'number'
                 ? `Custom: ${selected.priceRange.from} - ${selected.priceRange.to} ILS`
                 : opt.label

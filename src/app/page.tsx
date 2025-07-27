@@ -13,7 +13,6 @@ import { toJS, reaction } from 'mobx';
 import { useInfiniteProducts } from '../api/product/queries';
 import { fetchBulkPriceHistory, ProductFilters } from '../services/product-api-service';
 import { Loader } from '../components/loader/loader';
-import SourceSlider from '../components/source-slider';
 import Search from '../components/search/search';
 
 function HomePage() {
@@ -57,12 +56,30 @@ function HomePage() {
     isLoading,
   } = useInfiniteProducts(selectedFilters as ProductFilters, limit);
 
+  useEffect(() => {
+    if (filtersStore.selected.search != filtersStore.originalSearch && filtersStore.selected.search != '') {
+      filtersStore.setIsShowingFallbackResults(false);
+    }
+  }, [selectedFilters]);
+
   // @ts-ignore
   const allProducts = data?.pages.flatMap((page) => page.data) ?? [];
   // @ts-ignore
   const total = data?.pages[0]?.total ?? 0;
   const [priceHistoryMap, setPriceHistoryMap] = useState<Record<number, { price: number; date: string }[]>>({});
   const [lastProductIds, setLastProductIds] = useState<number[]>([]);
+
+  // Check for fallback search opportunity when results are 0
+  useEffect(() => {
+    if (!isLoading && total === 0 && filtersStore.selected.search && filtersStore.hasOtherFilters() && !filtersStore.isShowingFallbackResults) {
+      // Wait a bit to ensure the search is complete
+      const timeoutId = setTimeout(() => {
+        filtersStore.triggerFallbackSearch();
+      }, 1000);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [total, isLoading, filtersStore.selected.search]);
 
   useEffect(() => {
     const productIds = allProducts.map((p) => p.id).filter(Boolean);
@@ -163,6 +180,56 @@ function HomePage() {
     }
   };
 
+
+  const renderNoItemsPlaceholder = () => {
+    if (isLoading) return null;
+    if (allProducts && allProducts.length > 0) return null;
+    // if (filtersStore.isShowingFallbackResults) return null;
+    if (filtersStore.eligibleForFallbackSearch()) {
+      return (
+        <Loader />
+      )
+    }
+
+    return (
+        <div className={getClasses([styles.empty, 'text-headline-6', 'color-gray-7', 'flex-column', 'gap-8', 'align-items-center'])}>
+          No items found
+          {filtersStore.selected.search && !filtersStore.isShowingFallbackResults ? (
+            <>
+            {` for: "${filtersStore.selected.search}"`}
+            <span style={{ fontWeight: 300 }}>
+              Try{' '}
+              <span
+                style={{ color: '#e91e63', textDecoration: 'underline', cursor: 'pointer' }}
+                onClick={() => filtersStore.setFilter('search', '')}
+              >
+                clearing the search keywords
+              </span>
+              {' '} to see more results.
+            </span>
+          </>
+          ) : filtersStore.isShowingFallbackResults ? (
+            <>
+            {` with your current filters.`}
+            <span style={{ fontWeight: 300 }}>
+              Try{' '}
+              <span
+                style={{ color: '#e91e63', textDecoration: 'underline', cursor: 'pointer' }}
+                onClick={() => {
+                  filtersStore.clearFallbackState();
+                  filtersStore.setSearchFilter(filtersStore.originalSearch);
+                }}
+              >
+                searching for "{filtersStore.originalSearch}" again
+              </span>
+              {' '} or adjust your filters.
+            </span>
+          </>
+          ) : '.'}
+        </div>
+      )
+  }
+
   // Handler for toggling price change filter (trend icon)
   const handleTogglePriceChange = (val: boolean) => {
     setShowPriceChangeOnly(val);
@@ -255,20 +322,32 @@ function HomePage() {
       </div>
       <main className={styles.main} style={{ marginTop: 24 }}>
         <FilterBar numOfResults={isLoading ? 1000 : allProducts.length} />
+        
+        {/* Fallback search message */}
+        {filtersStore.isShowingFallbackResults && filtersStore.fallbackMessage && (
+          <div className={styles.fallbackMessageWrapper}>
+            <div className={getClasses([styles.fallbackMessage, 'text-headline-6', 'color-black-4'])}>
+              {filtersStore.fallbackMessage}
+            </div>
+          </div>
+        )}
+        
         {total > 0 && <div className={styles.totalResultsWrapper}>
+          {total > 0 && total <= 100 && filtersStore.selected.search && !filtersStore.isShowingFallbackResults && (
+              <div className={styles.SmallResultsMessage}>
+                <span>{`Seeing a small number of results? Try `}</span>
+                <a
+                  style={{ color: '#2d2d2d', textDecoration: 'underline', cursor: 'pointer' }}
+                  onClick={() => filtersStore.setFilter('search', '')}
+                >
+                  clearing the search keywords
+                </a>
+              </div>
+            )}
+
           <div className={getClasses([styles.productCount, 'text-headline-6', 'color-black-4'])}>
             {`Total results: ${total.toLocaleString()}`}
           </div>
-
-          {total > 0 &&total < 100 && filtersStore.selected.search && <div className={styles.SmallResultsMessage}>
-            <span>{`Seeing a small number of results? Try `}</span>
-            <a
-            style={{ color: '#2d2d2d', textDecoration: 'underline', cursor: 'pointer' }}
-            onClick={() => filtersStore.setFilter('search', '')}
-          >
-            clearing the search keywords
-          </a>
-          </div>}
         </div>}
        
         <ProductGrid
@@ -291,28 +370,7 @@ function HomePage() {
           }))}
           priceHistoryMap={priceHistoryMap}
         />
-        {!isLoading && (!allProducts || allProducts.length === 0) && 
-            (
-              <div className={getClasses([styles.empty, 'text-headline-6', 'color-gray-7', 'flex-column', 'gap-8', 'align-items-center'])}>
-                No items found
-                {filtersStore.selected.search ? (
-                  <>
-                  {` for: "${filtersStore.selected.search}"`}
-                  <span style={{ fontWeight: 300 }}>
-                    Try{' '}
-                    <span
-                      style={{ color: '#e91e63', textDecoration: 'underline', cursor: 'pointer' }}
-                      onClick={() => filtersStore.setFilter('search', '')}
-                    >
-                      clearing the search keywords
-                    </span>
-                    {' '} to see more results.
-                  </span>
-                </>
-                ) : '.'}
-              </div>
-            )
-        }
+        {renderNoItemsPlaceholder()}
         {(total > 0) && <div className={styles.loadMoreWrapper}>
           <div className={getClasses([styles.productCount, 'text-headline-6', 'color-black-4'])}>
             {/* {`You've viewed ${viewed.toLocaleString()} of ${total.toLocaleString()} products`} */}

@@ -74,6 +74,8 @@ export default function getSourceLogo(source?: string): string | undefined {
       return `${S3_URL}/mashbir.avif`;
     case 'carolina lemke':
       return `${S3_URL}/carolina.png`;
+    case 'ioptic':
+      return `${S3_URL}/ioptic.png`;
     // Add more sources here as needed
     default:
       return undefined;

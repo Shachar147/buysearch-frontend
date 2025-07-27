@@ -196,7 +196,7 @@ const Header = (props: HeaderProps) => {
           >
             <FaRocket style={{ fontSize: 20, color: props.isStatusPage ? 'var(--bs-red-5)' : scrolled ? 'var(--bs-black-6)' : '#fff' }} />
           </span>
-          </AdminGuard>
+      </AdminGuard>
     )
   }
 

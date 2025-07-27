@@ -21,9 +21,9 @@ export function isAdmin(){
   }
   try {
     const decoded = jwtDecode<DecodedToken>(token);
-    return decoded.username === "test";
+    return decoded.username === "Shachar";
   } catch {
-    return false;
+    return false
   }
 }
 
@@ -43,7 +43,7 @@ export default function AdminGuard({ children }: Props) {
     try {
       const decoded = jwtDecode<DecodedToken>(token);
 
-      if (decoded.username === "test") {
+      if (decoded.username === "Shachar") {
         setIsAdmin(true);
       } else {
         // router.replace("/not-authorized"); // or home page

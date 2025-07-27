@@ -60,6 +60,11 @@ function HomePage() {
     if (filtersStore.selected.search != filtersStore.originalSearch && filtersStore.selected.search != '') {
       filtersStore.setIsShowingFallbackResults(false);
     }
+    if (filtersStore.selected.search == '' && !filtersStore.hasOtherFilters()) {
+      filtersStore.setIsShowingFallbackResults(false);
+      filtersStore.setFallbackMessage('');
+      filtersStore.setOriginalSearch('');
+    }
   }, [selectedFilters]);
 
   // @ts-ignore

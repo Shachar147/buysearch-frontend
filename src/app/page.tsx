@@ -326,7 +326,7 @@ function HomePage() {
         </div>
       </div>
       <main className={styles.main} style={{ marginTop: 24 }}>
-        <FilterBar numOfResults={isLoading ? 1000 : allProducts.length} />
+        <FilterBar numOfResults={isLoading ? 1000 : total} />
         
         {/* Fallback search message */}
         {filtersStore.isShowingFallbackResults && filtersStore.fallbackMessage && (

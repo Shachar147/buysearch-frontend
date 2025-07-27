@@ -51,4 +51,9 @@ export async function getBrandStats() {
 export async function getTotalProducts() {
   const res = await api.get(`${API_BASE_URL}/auth/stats/total-products`, { withCredentials: true });
   return res.data;
+}
+
+export async function getDailyStats() {
+  const res = await api.get(`${API_BASE_URL}/auth/stats/daily-stats`, { withCredentials: true });
+  return res.data;
 } 

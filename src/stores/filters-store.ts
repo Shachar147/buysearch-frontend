@@ -6,7 +6,7 @@ import { DEFAULT_GENDER, DEFAULT_SORT_BY } from '../utils/consts';
 // Add a type for price range options
 export interface PriceRangeOption {
   label: string;
-  value?: string;
+  value: string;
   from?: number;
   to?: number;
 }
@@ -98,7 +98,7 @@ export interface Filters {
   brand: string | string[];
   category: string | string[];
   color: string | string[];
-  priceRange: PriceRangeOption;
+  priceRange: { label: string; from?: number; to?: number };
   gender: string;
   isFavourite: boolean;
   withPriceChange?: boolean;
@@ -107,7 +107,8 @@ export interface Filters {
 }
 
 export class FiltersStore {
-  // Data
+  // No server data, only selected filters and derived state
+  // Optionally, you can keep these for UI state if you want to sync from components:
   brands: any[] = [];
   menCategories: any[] = [];
   womenCategories: any[] = [];
@@ -115,14 +116,10 @@ export class FiltersStore {
   colors: any[] = [];
 
   get categories() {
-    switch (this.selected.gender?.toLowerCase()) {
-      case 'men': return this.menCategories;
-      case 'women': return this.womenCategories;
-      case 'unisex': return this.unisexCategories;
-      default: return this.menCategories;
-    }
+    return this.selected.gender?.toLowerCase() === 'men' ? this.menCategories : this.selected.gender?.toLowerCase() === 'women' ? this.womenCategories : this.unisexCategories;
   }
 
+  // No loading state needed for server data
 
   // todo: move these to a const file and re-use whenever needed
   selected: Filters = {
@@ -131,7 +128,7 @@ export class FiltersStore {
     brand: ['All'],
     category: ['All'],
     color: ['All'],
-    priceRange: { label: 'All', value: 'All' },
+    priceRange: { label: 'All' },
     gender: DEFAULT_GENDER,
     isFavourite: false,
     withPriceChange: false,
@@ -139,109 +136,81 @@ export class FiltersStore {
     isOnSale: undefined,
   };
 
-  // New properties for fallback search functionality
-  originalSearch: string = '';
-  isShowingFallbackResults: boolean = false;
-  fallbackMessage: string = '';
-
   constructor() {
     makeObservable(this, {
       brands: observable,
       menCategories: observable,
       womenCategories: observable,
       unisexCategories: observable,
+      categories: computed,
       colors: observable,
       selected: observable,
-      originalSearch: observable,
-      isShowingFallbackResults: observable,
-      fallbackMessage: observable,
       setBrands: action,
       setMenCategories: action,
       setWomenCategories: action,
       setUnisexCategories: action,
       setColors: action,
       setFilter: action,
-      setSearchFilter: action,
-      setGender: action,
-      applyParsedFilters: action,
-      setOriginalSearch: action,
-      setIsShowingFallbackResults: action,
-      setFallbackMessage: action,
-      clearFallbackState: action,
     });
 
-    // Sync with URL hash
     reaction(
-      () => toJS(this.selected),
-      (selected) => {
-        if (typeof window !== 'undefined') {
-          const queryString = filtersToQueryString(selected);
-          const newHash = queryString ? `#?${queryString}` : '';
-          if (window.location.hash !== newHash) {
-            window.location.hash = newHash;
-          }
-        }
-      },
-      { delay: 300 }
-    );
+      () => [toJS(this.selected.priceRange)],
+      () => {
+        this.setSearchFilter(this.selected.search);
+      }
+    )
   }
 
   setBrands = (brands: any[]) => {
     this.brands = brands;
   }
-
   setMenCategories = (categories: any[]) => {
     this.menCategories = categories;
   }
-
   setWomenCategories = (categories: any[]) => {
     this.womenCategories = categories;
   }
-
   setUnisexCategories = (categories: any[]) => {
     this.unisexCategories = categories;
   }
-
   setColors = (colors: any[]) => {
     this.colors = colors;
   }
 
   buildFilters() {
+    const selected = this.selected;
     const filters: any = {
-      search: this.selected.search,
-      sort: this.selected.sort,
-      gender: this.selected.gender,
-      isFavourite: this.selected.isFavourite,
-      withPriceChange: this.selected.withPriceChange,
-      isOnSale: this.selected.isOnSale,
+      search: selected.search,
+      sort: selected.sort,
+      gender: selected.gender,
     };
     // Handle brand
-    if (Array.isArray(this.selected.brand)) {
-      const brands = this.selected.brand.filter((b: string) => b !== 'All');
+    if (Array.isArray(selected.brand)) {
+      const brands = selected.brand.filter((b: string) => b !== 'All');
       if (brands.length > 0) filters.brand = brands.join(',');
     }
     // Handle category
-    if (Array.isArray(this.selected.category)) {
-      const categories = this.selected.category.filter((c: string) => c !== 'All');
+    if (Array.isArray(selected.category)) {
+      const categories = selected.category.filter((c: string) => c !== 'All');
       if (categories.length > 0) filters.category = categories.join(',');
     }
     // Handle color
-    if (Array.isArray(this.selected.color)) {
-      const colors = this.selected.color.filter((c: string) => c !== 'All');
+    if (Array.isArray(selected.color)) {
+      const colors = selected.color.filter((c: string) => c !== 'All');
       if (colors.length > 0) filters.color = colors.join(',');
     }
     // Handle source
-    if (Array.isArray(this.selected.source)) {
-      const sources = this.selected.source.filter((s: string) => s !== 'All');
+    if (Array.isArray(selected.source)) {
+      const sources = selected.source.filter((s: string) => s !== 'All');
       if (sources.length > 0) filters.source = sources.join(',');
     }
     // Handle priceRange
-    filters.priceFrom = typeof this.selected.priceRange === 'object' && 'from' in this.selected.priceRange ? this.selected.priceRange.from : undefined;
-    filters.priceTo = typeof this.selected.priceRange === 'object' && 'to' in this.selected.priceRange ? this.selected.priceRange.to : undefined;
+    filters.priceFrom = typeof selected.priceRange === 'object' && 'from' in selected.priceRange ? selected.priceRange.from : undefined;
+    filters.priceTo = typeof selected.priceRange === 'object' && 'to' in selected.priceRange ? selected.priceRange.to : undefined;
     // Handle isFavourite
-    if (this.selected.isFavourite) filters.isFavourite = true;
+    if (selected.isFavourite) filters.isFavourite = true;
     // Handle withPriceChange
-    if (this.selected.withPriceChange) filters.withPriceChange = true;
+    if (selected.withPriceChange) filters.withPriceChange = true;
     return filters;
   }
 
@@ -288,63 +257,12 @@ export class FiltersStore {
     this.setSearchFilter(this.selected.search);
   }
 
-  // New methods for fallback search functionality
-  setOriginalSearch = (search: string) => {
-    this.originalSearch = search;
-  }
-
-  setIsShowingFallbackResults = (isShowing: boolean) => {
-    this.isShowingFallbackResults = isShowing;
-  }
-
-  setFallbackMessage = (message: string) => {
-    this.fallbackMessage = message;
-  }
-
-  clearFallbackState = () => {
-    this.originalSearch = '';
-    this.isShowingFallbackResults = false;
-    this.fallbackMessage = '';
-  }
-
-  // Method to check if we have other filters besides search
-  hasOtherFilters = () => {
-    return (
-      (Array.isArray(this.selected.brand) && this.selected.brand.some(b => b !== 'All')) ||
-      (Array.isArray(this.selected.category) && this.selected.category.some(c => c !== 'All')) ||
-      (Array.isArray(this.selected.color) && this.selected.color.some(c => c !== 'All')) ||
-      (Array.isArray(this.selected.source) && this.selected.source.some(s => s !== 'All')) ||
-      (this.selected.priceRange && this.selected.priceRange.label !== 'All') ||
-      this.selected.isFavourite ||
-      this.selected.withPriceChange ||
-      this.selected.isOnSale
-    );
-  }
-
-  eligibleForFallbackSearch = () => {
-    return this.selected.search && this.hasOtherFilters();
-  }
-
-  // Method to trigger fallback search (remove search keywords)
-  triggerFallbackSearch = () => {
-    if (this.eligibleForFallbackSearch()) {
-      this.setOriginalSearch(this.selected.search);
-      this.setSearchFilter('');
-      this.setIsShowingFallbackResults(true);
-      this.setFallbackMessage(`We couldn't find exact results for "${this.originalSearch}". showing items that match your filters instead.`);
-    }
-  }
-
   debouncedSearch = _.debounce((value) => {
     void this.setSearchFilter(value)
   }, 300);
 
   setFilter = (key: keyof Filters, value: any) => {
     if (key === 'search') {
-      // Clear fallback state when user starts a new search
-      this.clearFallbackState();
-      // Update originalSearch to the new search value
-      this.setOriginalSearch(value);
       // this.selected.search = value;
       this.debouncedSearch(value);
     } else {

@@ -1,10 +1,12 @@
 "use client";
 import React, { useState } from "react";
 import { useScrapingHistorySummaryQuery } from "../../api/scraping-history/queries";
-import { useAllUsersQuery, useSourceStatsQuery, useCategoryStatsQuery, useBrandStatsQuery, useTotalProductsQuery } from '../../api/auth/queries';
+import { useAllUsersQuery, useSourceStatsQuery, useCategoryStatsQuery, useBrandStatsQuery, useTotalProductsQuery, useDailyStatsQuery } from '../../api/auth/queries';
 import Header from "../../components/header/header";
 import AdminGuard from "../../components/admin-guard";
 import { Loader } from "../../components/loader/loader";
+import styles from "./page.module.css";
+import { ucfirst } from "../../utils/utils";
 
 interface ScrapingHistory {
   id: number;
@@ -37,6 +39,7 @@ const StatusPage = () => {
   const { data: categoryStats = [], isLoading: categoriesLoading } = useCategoryStatsQuery();
   const { data: brandStats = [], isLoading: brandsLoading } = useBrandStatsQuery();
   const { data: totalProductsData, isLoading: totalProductsLoading } = useTotalProductsQuery();
+  const { data: dailyStatsData, isLoading: dailyStatsLoading } = useDailyStatsQuery();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   
   // Search state for different tables
@@ -305,177 +308,165 @@ const StatusPage = () => {
     });
   }
 
-  const renderTable = (items: ScraperSummary[], title: string, statusHeader: string, scanRateHeader: string, typeHeader: string) => {
+  const renderTable = (items: ScraperSummary[], title: string, statusHeader: string, scanRateHeader: string, typeHeader: string, marginTop = 32) => {
+    const search = (
+      <div style={{ marginBottom: 12 }}>
+        <input
+          type="text"
+          placeholder="Search scrapers..."
+          value={scraperSearch}
+          onChange={(e) => setScraperSearch(e.target.value)}
+          className={styles.searchInput}
+        />
+      </div>
+    );
     const table = items.length == 0 ? <span>None</span> : (
         <>
-          <div style={{ marginBottom: 12 }}>
-            <input
-              type="text"
-              placeholder="Search scrapers..."
-              value={scraperSearch}
-              onChange={(e) => setScraperSearch(e.target.value)}
-              style={{
-                padding: '8px 12px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px',
-                width: '250px'
-              }}
-            />
-          </div>
-          <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 12 }}>
-        <thead>
-          <tr style={{ background: "#f5f5f5" }}>
-            <th style={{ textAlign: "left", padding: 8 }}>#</th>
-            <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("scraper")}>Scraper {sortState.key === 'scraper' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
-            <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("status")}>{statusHeader} {sortState.key === 'status' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
-            <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("startTime")}>Run Time {sortState.key === 'startTime' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
-            {statusHeader.includes("Current") && <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("eta")}>ETA {sortState.key === 'eta' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>}
-            <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("updatedAt")}>Last Update {sortState.key === 'updatedAt' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
-            <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("scannedItems")}>Scanned Items {sortState.key === 'scannedItems' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
-            <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("ratePerMinute")}>{scanRateHeader} (items/min) {sortState.key === 'ratePerMinute' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
-            <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("type")}>{typeHeader} {sortState.key === 'type' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
-            <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("createdItems")}>Created Items {sortState.key === 'createdItems' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
-            <th style={{ padding: 8 }}></th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((s, index) => {
-            const last = s.history[0];
-            const scannedItems = (last?.createdItems ?? 0) + (last?.updatedItems ?? 0);
-            return (
-              <React.Fragment key={s.scraper}>
-                <tr style={{ borderBottom: "1px solid #eee" }}>
-                  <td style={{ padding: 8 }}>{index + 1}</td>
-                  <td style={{ padding: 8 }}>
-                    <span
-                      style={{
-                        cursor: "pointer",
-                        color: "#1976d2",
-                        textDecoration: "underline",
-                      }}
-                      onClick={() => handleExpand(s.scraper)}
-                    >
-                      {s.scraper}
-                    </span>
-                  </td>
-                  <td style={{ padding: 8, color: getStatusColor(last?.status) }}>
-                    {last?.status === 'in_progress' ? `${last?.status?.replace('_', ' ')} (${last.progress}%)` : last?.status || "-"}
-                  </td>
-                  <td style={{ padding: 8 }}>
-                    {last?.status === 'in_progress' ? formatRunTime(last.startTime, null) : last?.startTime ? formatRunTime(last.startTime, last.endTime) : '-'}
-                  </td>
-                  {statusHeader.includes("Current") && <td>
-                    {formatSeconds(Number(getEta(last)))}
-                  </td>}
-                  <td style={{ padding: 8 }}>
-                    {last?.updatedAt ? `${formatTime(last.updatedAt)} (${formatTimeAgo(last.updatedAt)})` : "-"}
-                  </td>
-                  <td style={{ padding: 8 }}>{scannedItems.toLocaleString()}</td>
-                  <td style={{ padding: 8 }}>
-                    {last.ratePerMinute ? last.ratePerMinute.toFixed(2) : "-"}
-                  </td>
-                  <td style={{ padding: 8 }}>
-                    {last.type === 'auto' ? 'Auto' : 'Manual'}
-                  </td>
-                  <td style={{ padding: 8 }}>
-                    {last.createdItems ? last.createdItems.toLocaleString() : '0'}
-                  </td>
-                  <td style={{ padding: 8 }}>
-                    <button
-                      onClick={() => handleExpand(s.scraper)}
-                    >
-                      {expanded[s.scraper] ? "Hide" : "Show"} History
-                    </button>
-                  </td>
-                </tr>
-                {expanded[s.scraper] && (
+          <div className={styles.tableContainer}>
+            <div className={styles.tableWrapper}>
+              <table className={styles.table}>
+                <thead className={styles.tableHeader}>
                   <tr>
-                    <td colSpan={10} style={{ background: "#fafbfc", padding: 0 }}>
-                      <table style={{ width: "100%", borderCollapse: "collapse", margin: 0 }}>
-                        <thead>
-                          <tr style={{ background: "#f0f0f0" }}>
-                            <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "startTime")}>Start {subSortState[s.scraper]?.key === 'startTime' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
-                            <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "endTime")}>End {subSortState[s.scraper]?.key === 'endTime' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
-                            <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "runTime")}>Run Time {subSortState[s.scraper]?.key === 'runTime' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
-                            <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "updatedAt")}>Last Update {subSortState[s.scraper]?.key === 'updatedAt' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
-                            <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "status")}>Status {subSortState[s.scraper]?.key === 'status' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
-                            <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "createdItems")}>Created {subSortState[s.scraper]?.key === 'createdItems' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
-                            <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "updatedItems")}>Updated {subSortState[s.scraper]?.key === 'updatedItems' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
-                            <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "totalItems")}>Total {subSortState[s.scraper]?.key === 'totalItems' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
-                            <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "progress")}>Progress {subSortState[s.scraper]?.key === 'progress' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
-                            <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "scanRate")}>Scan Rate (items/min) {subSortState[s.scraper]?.key === 'scanRate' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
-                            <th style={{ textAlign: "left", padding: 6, cursor: "pointer" }} onClick={() => handleSubSort(s.scraper, "type")}>Type {subSortState[s.scraper]?.key === 'type' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {(() => {
-                            // Compute augmented rows for sorting and rendering
-                            const augmentedHistory = s.history.map((h) => {
-                              let scanRate = '-';
-                              let runTime = '-';
-                              let runTimeMs = null;
-                              let scanRateNum = null;
-                              if (h.startTime && (h.endTime || h.status === 'finished')) {
-                                const start = new Date(h.startTime).getTime();
-                                const end = h.endTime ? new Date(h.endTime).getTime() : Date.now();
-                                runTimeMs = end - start;
-                                const elapsedMinutes = runTimeMs / 60000;
-                                const elapsedSeconds = Math.floor(runTimeMs / 1000);
-                                const items = (h.createdItems || 0) + (h.updatedItems || 0);
-                                if (elapsedMinutes > 0) {
-                                  scanRateNum = items / elapsedMinutes;
-                                  scanRate = scanRateNum.toFixed(2);
-                                }
-                                // Format run time as Xm Ys
-                                const mins = Math.floor(elapsedSeconds / 60);
-                                const secs = elapsedSeconds % 60;
-                                runTime = `${mins > 0 ? mins + 'm ' : ''}${secs}s`;
-                              }
-                              return { ...h, _runTimeMs: runTimeMs, _scanRateNum: scanRateNum, _runTimeStr: runTime, _scanRateStr: scanRate };
-                            });
-                            // Use augmentedHistory for sorting and rendering
-                            return applySubSort(s.scraper, augmentedHistory).map((h) => (
-                              <tr key={h.id} style={{ borderBottom: "1px solid #eee" }}>
-                                <td style={{ padding: 6 }}>
-                                  {h.startTime ? formatTime(h.startTime) : "-"}
-                                </td>
-                                <td style={{ padding: 6 }}>
-                                  {h.endTime ? formatTime(h.endTime) : "-"}
-                                </td>
-                                <td style={{ padding: 6 }}>{h._runTimeStr}</td>
-                                <td style={{ padding: 6 }}>
-                                  {h.updatedAt ? formatTime(h.updatedAt) : "-"}
-                                </td>
-                                <td style={{ padding: 6, color: getStatusColor(h.status) }}>
-                                  {h.status}
-                                </td>
-                                <td style={{ padding: 6 }}>{h.createdItems.toLocaleString()}</td>
-                                <td style={{ padding: 6 }}>{h.updatedItems.toLocaleString()}</td>
-                                <td style={{ padding: 6 }}>{h.totalItems.toLocaleString()}</td>
-                                <td style={{ padding: 6 }}>{h.progress}%</td>
-                                <td style={{ padding: 6 }}>{h._scanRateStr}</td>
-                                <td style={{ padding: 6 }}>{h.type === 'auto' ? 'Auto' : 'Manual'}</td>
-                              </tr>
-                            ));
-                          })()}
-                        </tbody>
-                      </table>
-                    </td>
+                    <th>#</th>
+                    <th onClick={() => handleSort("scraper")}>Scraper {sortState.key === 'scraper' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
+                    <th onClick={() => handleSort("status")}>{statusHeader} {sortState.key === 'status' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
+                    <th onClick={() => handleSort("startTime")}>Run Time {sortState.key === 'startTime' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
+                    {statusHeader.includes("Current") && <th onClick={() => handleSort("eta")}>ETA {sortState.key === 'eta' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>}
+                    <th onClick={() => handleSort("updatedAt")}>Last Update {sortState.key === 'updatedAt' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
+                    <th onClick={() => handleSort("scannedItems")}>Scanned Items {sortState.key === 'scannedItems' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
+                    <th onClick={() => handleSort("createdItems")}>Created Items {sortState.key === 'createdItems' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
+                    <th onClick={() => handleSort("ratePerMinute")}>{scanRateHeader} (items/min) {sortState.key === 'ratePerMinute' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
+                    <th onClick={() => handleSort("type")}>{typeHeader} {sortState.key === 'type' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
                   </tr>
-                )}
-              </React.Fragment>
-            );
-          })}
-        </tbody>
-      </table>
+                </thead>
+              <tbody className={styles.tableBody}>
+                {items.map((s, index) => {
+                  const last = s.history[0];
+                  const scannedItems = (last?.createdItems ?? 0) + (last?.updatedItems ?? 0);
+                  return (
+                    <React.Fragment key={s.scraper}>
+                      <tr>
+                        <td>{index + 1}</td>
+                        <td>
+                          <span
+                            className={styles.scraperLink}
+                            onClick={() => handleExpand(s.scraper)}
+                          >
+                            {s.scraper}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={last?.status === 'in_progress' ? styles.statusInProgress : last?.status === 'finished' ? styles.statusFinished : styles.statusFailed}>{last?.status === 'in_progress' ? `${last?.status?.replace('_', ' ')} (${ucfirst(last.progress.toString())}%)` : ucfirst(last?.status) || "-"}</span>
+                        </td>
+                        <td>
+                          {last?.status === 'in_progress' ? formatRunTime(last.startTime, null) : last?.startTime ? formatRunTime(last.startTime, last.endTime) : '-'}
+                        </td>
+                        {statusHeader.includes("Current") && <td>
+                          {formatSeconds(Number(getEta(last)))}
+                        </td>}
+                        <td>
+                          {last?.updatedAt ? `${formatTime(last.updatedAt)} (${formatTimeAgo(last.updatedAt)})` : "-"}
+                        </td>
+                        <td>{scannedItems.toLocaleString()}</td>
+                        <td>
+                          {last.createdItems ? last.createdItems.toLocaleString() : '0'}
+                        </td>
+                        <td>
+                          {last.ratePerMinute ? last.ratePerMinute.toFixed(2) : "-"}
+                        </td>
+                        <td>
+                          {last.type === 'auto' ? 'Auto' : 'Manual'}
+                        </td>
+                      </tr>
+                      {expanded[s.scraper] && (
+                        <tr className={styles.expandedRow}>
+                          <td colSpan={10}>
+                            <table className={styles.expandedTable}>
+                              <thead className={styles.expandedTableHeader}>
+                                <tr>
+                                  <th onClick={() => handleSubSort(s.scraper, "startTime")}>Start {subSortState[s.scraper]?.key === 'startTime' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
+                                  <th onClick={() => handleSubSort(s.scraper, "endTime")}>End {subSortState[s.scraper]?.key === 'endTime' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
+                                  <th onClick={() => handleSubSort(s.scraper, "runTime")}>Run Time {subSortState[s.scraper]?.key === 'runTime' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
+                                  <th onClick={() => handleSubSort(s.scraper, "updatedAt")}>Last Update {subSortState[s.scraper]?.key === 'updatedAt' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
+                                  <th onClick={() => handleSubSort(s.scraper, "status")}>Status {subSortState[s.scraper]?.key === 'status' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
+                                  <th onClick={() => handleSubSort(s.scraper, "createdItems")}>Created {subSortState[s.scraper]?.key === 'createdItems' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
+                                  <th onClick={() => handleSubSort(s.scraper, "updatedItems")}>Updated {subSortState[s.scraper]?.key === 'updatedItems' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
+                                  <th onClick={() => handleSubSort(s.scraper, "totalItems")}>Total {subSortState[s.scraper]?.key === 'totalItems' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
+                                  <th onClick={() => handleSubSort(s.scraper, "progress")}>Progress {subSortState[s.scraper]?.key === 'progress' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
+                                  <th onClick={() => handleSubSort(s.scraper, "scanRate")}>Scan Rate (items/min) {subSortState[s.scraper]?.key === 'scanRate' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
+                                  <th onClick={() => handleSubSort(s.scraper, "type")}>Type {subSortState[s.scraper]?.key === 'type' && (subSortState[s.scraper]?.direction === 'asc' ? '↑' : '↓')}</th>
+                                </tr>
+                              </thead>
+                              <tbody className={styles.expandedTableBody}>
+                                {(() => {
+                                  // Compute augmented rows for sorting and rendering
+                                  const augmentedHistory = s.history.map((h) => {
+                                    let scanRate = '-';
+                                    let runTime = '-';
+                                    let runTimeMs = null;
+                                    let scanRateNum = null;
+                                    if (h.startTime && (h.endTime || h.status === 'finished')) {
+                                      const start = new Date(h.startTime).getTime();
+                                      const end = h.endTime ? new Date(h.endTime).getTime() : Date.now();
+                                      runTimeMs = end - start;
+                                      const elapsedMinutes = runTimeMs / 60000;
+                                      const elapsedSeconds = Math.floor(runTimeMs / 1000);
+                                      const items = (h.createdItems || 0) + (h.updatedItems || 0);
+                                      if (elapsedMinutes > 0) {
+                                        scanRateNum = items / elapsedMinutes;
+                                        scanRate = scanRateNum.toFixed(2);
+                                      }
+                                      // Format run time as Xm Ys
+                                      const mins = Math.floor(elapsedSeconds / 60);
+                                      const secs = elapsedSeconds % 60;
+                                      runTime = `${mins > 0 ? mins + 'm ' : ''}${secs}s`;
+                                    }
+                                    return { ...h, _runTimeMs: runTimeMs, _scanRateNum: scanRateNum, _runTimeStr: runTime, _scanRateStr: scanRate };
+                                  });
+                                  // Use augmentedHistory for sorting and rendering
+                                  return applySubSort(s.scraper, augmentedHistory).map((h) => (
+                                    <tr key={h.id}>
+                                      <td>
+                                        {h.startTime ? formatTime(h.startTime) : "-"}
+                                      </td>
+                                      <td>
+                                        {h.endTime ? formatTime(h.endTime) : "-"}
+                                      </td>
+                                      <td>{h._runTimeStr}</td>
+                                      <td>
+                                        {h.updatedAt ? formatTime(h.updatedAt) : "-"}
+                                      </td>
+                                      <td className={h.status === 'in_progress' ? styles.statusInProgress : h.status === 'finished' ? styles.statusFinished : styles.statusFailed}>
+                                        {h.status}
+                                      </td>
+                                      <td>{h.createdItems.toLocaleString()}</td>
+                                      <td>{h.updatedItems.toLocaleString()}</td>
+                                      <td>{h.totalItems.toLocaleString()}</td>
+                                      <td>{h.progress}%</td>
+                                      <td>{h._scanRateStr}</td>
+                                      <td>{h.type === 'auto' ? 'Auto' : 'Manual'}</td>
+                                    </tr>
+                                  ));
+                                })()}
+                              </tbody>
+                            </table>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
+            </div>
+          </div>
         </>
-    );
+      );
 
     return (
         <>
-        <h2 style={{ marginTop: 32 }}>{title}</h2>
-        
+        <h2 style={{ marginTop }}>{title}</h2>
+        {search}
         {table}
         </>
     );
@@ -488,120 +479,114 @@ const StatusPage = () => {
     );
     const rows = sortRows(filteredSourceStats, sourceSort).slice(0, 50);
     return (
-      <>
-        <h2 style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => setShowSources(s => !s)}>
-          Sources {showSources ? '▼' : '▶'}
+      <div className={styles.sectionContainer}>
+        <h2 className={`${styles.sectionTitle} ${!showSources ? styles.collapsed : ''}`} onClick={() => setShowSources(s => !s)}>
+          Sources ({sourceStats?.length || 0})
         </h2>
         {showSources && (
-          <>
+          <div className={styles.sectionContent}>
             <div style={{ marginBottom: 12 }}>
               <input
                 type="text"
                 placeholder="Search sources..."
                 value={sourceSearch}
                 onChange={(e) => setSourceSearch(e.target.value)}
-                style={{
-                  padding: '8px 12px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '14px',
-                  width: '250px'
-                }}
+                className={styles.searchInput}
               />
             </div>
-            <div style={{ maxHeight: 400, overflowY: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
-              <thead>
-                <tr style={{ background: '#f5f5f5' }}>
-                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(sourceSort, setSourceSort, 'id')}>ID {sourceSort.key === 'id' && (sourceSort.direction === 'asc' ? '↑' : '↓')}</th>
-                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(sourceSort, setSourceSort, 'name')}>Name {sourceSort.key === 'name' && (sourceSort.direction === 'asc' ? '↑' : '↓')}</th>
-                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(sourceSort, setSourceSort, 'total')}>Total {sourceSort.key === 'total' && (sourceSort.direction === 'asc' ? '↑' : '↓')}</th>
-                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(sourceSort, setSourceSort, 'men')}>Men {sourceSort.key === 'men' && (sourceSort.direction === 'asc' ? '↑' : '↓')}</th>
-                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(sourceSort, setSourceSort, 'women')}>Women {sourceSort.key === 'women' && (sourceSort.direction === 'asc' ? '↑' : '↓')}</th>
-                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(sourceSort, setSourceSort, 'unisex')}>Unisex {sourceSort.key === 'unisex' && (sourceSort.direction === 'asc' ? '↑' : '↓')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row: any) => {
-                  const total = Number(row.men) + Number(row.women) + Number(row.unisex);
-                  return (
-                    <tr key={row.id} style={{ borderBottom: '1px solid #eee' }}>
-                      <td style={{ padding: 8 }}>{row.id}</td>
-                      <td style={{ padding: 8 }}>{row.name}</td>
-                      <td style={{ padding: 8 }}>{total.toLocaleString()}</td>
-                      <td style={{ padding: 8 }}>{Number(row.men).toLocaleString()}</td>
-                      <td style={{ padding: 8 }}>{Number(row.women).toLocaleString()}</td>
-                      <td style={{ padding: 8 }}>{Number(row.unisex).toLocaleString()}</td>
+            <div className={styles.tableContainer}>
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead className={styles.tableHeader}>
+                    <tr>
+                      <th onClick={() => handleTableSort(sourceSort, setSourceSort, 'id')}>ID {sourceSort.key === 'id' && (sourceSort.direction === 'asc' ? '↑' : '↓')}</th>
+                      <th onClick={() => handleTableSort(sourceSort, setSourceSort, 'name')}>Name {sourceSort.key === 'name' && (sourceSort.direction === 'asc' ? '↑' : '↓')}</th>
+                      <th onClick={() => handleTableSort(sourceSort, setSourceSort, 'total')}>Total {sourceSort.key === 'total' && (sourceSort.direction === 'asc' ? '↑' : '↓')}</th>
+                      <th onClick={() => handleTableSort(sourceSort, setSourceSort, 'men')}>Men {sourceSort.key === 'men' && (sourceSort.direction === 'asc' ? '↑' : '↓')}</th>
+                      <th onClick={() => handleTableSort(sourceSort, setSourceSort, 'women')}>Women {sourceSort.key === 'women' && (sourceSort.direction === 'asc' ? '↑' : '↓')}</th>
+                      <th onClick={() => handleTableSort(sourceSort, setSourceSort, 'unisex')}>Unisex {sourceSort.key === 'unisex' && (sourceSort.direction === 'asc' ? '↑' : '↓')}</th>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody className={styles.tableBody}>
+                    {rows.map((row: any) => {
+                      const total = Number(row.men) + Number(row.women) + Number(row.unisex);
+                      return (
+                        <tr key={row.id}>
+                          <td>{row.id}</td>
+                          <td>{row.name}</td>
+                          <td>{total.toLocaleString()}</td>
+                          <td>{Number(row.men).toLocaleString()}</td>
+                          <td>{Number(row.women).toLocaleString()}</td>
+                          <td>{Number(row.unisex).toLocaleString()}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-            </>
         )}
-      </>
+      </div>
     );
   }
 
-  function renderCategoryStatsTable() {
+    function renderCategoryStatsTable() {
     if (categoriesLoading) return <div>Loading categories...</div>;
     const filteredCategoryStats = categoryStats.filter((row: any) => 
       !categorySearch || row.name.toLowerCase().includes(categorySearch.toLowerCase())
     );
     const rows = sortRows(filteredCategoryStats, categorySort).slice(0, 50);
     return (
-      <>
-        <h2 style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => setShowCategories(s => !s)}>
-          Categories {showCategories ? '▼' : '▶'}
+      <div className={styles.sectionContainer}>
+        <h2 className={`${styles.sectionTitle} ${!showCategories ? styles.collapsed : ''}`} onClick={() => setShowCategories(s => !s)}>
+          Categories ({categoryStats?.length || 0})
         </h2>
         {showCategories && (
-          <>
+          <div className={styles.sectionContent}>
             <div style={{ marginBottom: 12 }}>
               <input
                 type="text"
                 placeholder="Search categories..."
                 value={categorySearch}
                 onChange={(e) => setCategorySearch(e.target.value)}
-                style={{
-                  padding: '8px 12px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '14px',
-                  width: '250px'
-                }}
+                className={styles.searchInput}
               />
             </div>
-            <div style={{ maxHeight: 400, overflowY: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
-              <thead>
-                <tr style={{ background: '#f5f5f5' }}>
-                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(categorySort, setCategorySort, 'name')}>Name {categorySort.key === 'name' && (categorySort.direction === 'asc' ? '↑' : '↓')}</th>
-                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(categorySort, setCategorySort, 'total')}>Total {categorySort.key === 'total' && (categorySort.direction === 'asc' ? '↑' : '↓')}</th>
-                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(categorySort, setCategorySort, 'men')}>Men {categorySort.key === 'men' && (categorySort.direction === 'asc' ? '↑' : '↓')}</th>
-                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(categorySort, setCategorySort, 'women')}>Women {categorySort.key === 'women' && (categorySort.direction === 'asc' ? '↑' : '↓')}</th>
-                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(categorySort, setCategorySort, 'unisex')}>Unisex {categorySort.key === 'unisex' && (categorySort.direction === 'asc' ? '↑' : '↓')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row: any) => {
-                  const total = Number(row.men) + Number(row.women) + Number(row.unisex);
-                  return (
-                    <tr key={row.name} style={{ borderBottom: '1px solid #eee' }}>
-                      <td style={{ padding: 8 }}>{row.name}</td>
-                      <td style={{ padding: 8 }}>{total}</td>
-                      <td style={{ padding: 8 }}>{row.men}</td>
-                      <td style={{ padding: 8 }}>{row.women}</td>
-                      <td style={{ padding: 8 }}>{row.unisex}</td>
+            <div className={styles.tableContainer}>
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead className={styles.tableHeader}>
+                    <tr>
+                      <th onClick={() => handleTableSort(categorySort, setCategorySort, 'id')}>ID {categorySort.key === 'id' && (categorySort.direction === 'asc' ? '↑' : '↓')}</th>
+                      <th onClick={() => handleTableSort(categorySort, setCategorySort, 'name')}>Name {categorySort.key === 'name' && (categorySort.direction === 'asc' ? '↑' : '↓')}</th>
+                      <th onClick={() => handleTableSort(categorySort, setCategorySort, 'total')}>Total {categorySort.key === 'total' && (categorySort.direction === 'asc' ? '↑' : '↓')}</th>
+                      <th onClick={() => handleTableSort(categorySort, setCategorySort, 'men')}>Men {categorySort.key === 'men' && (categorySort.direction === 'asc' ? '↑' : '↓')}</th>
+                      <th onClick={() => handleTableSort(categorySort, setCategorySort, 'women')}>Women {categorySort.key === 'women' && (categorySort.direction === 'asc' ? '↑' : '↓')}</th>
+                      <th onClick={() => handleTableSort(categorySort, setCategorySort, 'unisex')}>Unisex {categorySort.key === 'unisex' && (categorySort.direction === 'asc' ? '↑' : '↓')}</th>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody className={styles.tableBody}>
+                    {rows.map((row: any) => {
+                      const total = Number(row.men) + Number(row.women) + Number(row.unisex);
+                      return (
+                        <tr key={row.name}>
+                          <td>{row.id}</td>
+                          <td>{row.name}</td>
+                          <td>{total}</td>
+                          <td>{row.men}</td>
+                          <td>{row.women}</td>
+                          <td>{row.unisex}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-            </>
         )}
-      </>
+      </div>
     );
   }
 
@@ -613,54 +598,52 @@ const StatusPage = () => {
     const rows = sortRows(filteredBrandStats, brandSort).slice(0, 50);
     return (
       <>
-        <h2 style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => setShowBrands(s => !s)}>
-          Brands {showBrands ? '▼' : '▶'}
+        <h2 className={`${styles.sectionTitle} ${!showBrands ? styles.collapsed : ''}`} onClick={() => setShowBrands(s => !s)}>
+          Brands ({brandStats?.length || 0})
         </h2>
         {showBrands && (
-          <>
+          <div className={styles.sectionContent}>
             <div style={{ marginBottom: 12 }}>
               <input
                 type="text"
                 placeholder="Search brands..."
                 value={brandSearch}
                 onChange={(e) => setBrandSearch(e.target.value)}
-                style={{
-                  padding: '8px 12px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '14px',
-                  width: '250px'
-                }}
+                className={styles.searchInput}
               />
             </div>
-            <div style={{ maxHeight: 400, overflowY: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
-              <thead>
-                <tr style={{ background: '#f5f5f5' }}>
-                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(brandSort, setBrandSort, 'name')}>Name {brandSort.key === 'name' && (brandSort.direction === 'asc' ? '↑' : '↓')}</th>
-                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(brandSort, setBrandSort, 'total')}>Total {brandSort.key === 'total' && (brandSort.direction === 'asc' ? '↑' : '↓')}</th>
-                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(brandSort, setBrandSort, 'men')}>Men {brandSort.key === 'men' && (brandSort.direction === 'asc' ? '↑' : '↓')}</th>
-                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(brandSort, setBrandSort, 'women')}>Women {brandSort.key === 'women' && (brandSort.direction === 'asc' ? '↑' : '↓')}</th>
-                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleTableSort(brandSort, setBrandSort, 'unisex')}>Unisex {brandSort.key === 'unisex' && (brandSort.direction === 'asc' ? '↑' : '↓')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row: any) => {
-                  const total = Number(row.men) + Number(row.women) + Number(row.unisex);
-                  return (
-                    <tr key={row.name} style={{ borderBottom: '1px solid #eee' }}>
-                      <td style={{ padding: 8 }}>{row.name}</td>
-                      <td style={{ padding: 8 }}>{total}</td>
-                      <td style={{ padding: 8 }}>{row.men}</td>
-                      <td style={{ padding: 8 }}>{row.women}</td>
-                      <td style={{ padding: 8 }}>{row.unisex}</td>
+            <div className={styles.tableContainer}>
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead className={styles.tableHeader}>
+                    <tr>
+                      <th onClick={() => handleTableSort(brandSort, setBrandSort, 'id')}>ID {brandSort.key === 'id' && (brandSort.direction === 'asc' ? '↑' : '↓')}</th>
+                      <th onClick={() => handleTableSort(brandSort, setBrandSort, 'name')}>Name {brandSort.key === 'name' && (brandSort.direction === 'asc' ? '↑' : '↓')}</th>
+                      <th onClick={() => handleTableSort(brandSort, setBrandSort, 'total')}>Total {brandSort.key === 'total' && (brandSort.direction === 'asc' ? '↑' : '↓')}</th>
+                      <th onClick={() => handleTableSort(brandSort, setBrandSort, 'men')}>Men {brandSort.key === 'men' && (brandSort.direction === 'asc' ? '↑' : '↓')}</th>
+                      <th onClick={() => handleTableSort(brandSort, setBrandSort, 'women')}>Women {brandSort.key === 'women' && (brandSort.direction === 'asc' ? '↑' : '↓')}</th>
+                      <th onClick={() => handleTableSort(brandSort, setBrandSort, 'unisex')}>Unisex {brandSort.key === 'unisex' && (brandSort.direction === 'asc' ? '↑' : '↓')}</th>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  </thead>
+                  <tbody className={styles.tableBody}>
+                    {rows.map((row: any) => {
+                      const total = Number(row.men) + Number(row.women) + Number(row.unisex);
+                      return (
+                        <tr key={row.name}>
+                          <td>{row.id}</td>
+                          <td>{row.name}</td>
+                          <td>{total}</td>
+                          <td>{row.men}</td>
+                          <td>{row.women}</td>
+                          <td>{row.unisex}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-            </>
         )}
       </>
     );
@@ -686,82 +669,118 @@ const StatusPage = () => {
       return 0;
     });
     return (
-      <>
-        <h2 style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => setShowUsers(s => !s)}>
-          Users {showUsers ? '▼' : '▶'}
+      <div className={styles.sectionContainer}>
+        <h2 className={`${styles.sectionTitle} ${!showUsers ? styles.collapsed : ''}`} onClick={() => setShowUsers(s => !s)}>
+          Users ({users?.length || 0})
         </h2>
         {showUsers && (
-          <>
+          <div className={styles.sectionContent}>
             <div style={{ marginBottom: 12 }}>
               <input
                 type="text"
                 placeholder="Search users..."
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
-                style={{
-                  padding: '8px 12px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '14px',
-                  width: '250px'
-                }}
+                className={styles.searchInput}
               />
             </div>
-            <div>
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
-              <thead>
-                <tr style={{ background: '#f5f5f5' }}>
-                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('username')}>Username {userSort.key === 'username' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
-                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('createdAt')}>Joined {userSort.key === 'createdAt' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
-                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('lastLoginAt')}>Last Login {userSort.key === 'lastLoginAt' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
-                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('totalSearches')}>Total Searches {userSort.key === 'totalSearches' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
-                  <th style={{ textAlign: 'left', padding: 8, cursor: 'pointer' }} onClick={() => handleUserSort('favouritesCount')}>Favourites {userSort.key === 'favouritesCount' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedFilteredUsers.map((u: any) => (
-                  <tr key={u.id} style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: 8 }}>{u.username}</td>
-                    <td style={{ padding: 8 }}>{u.createdAt ? formatTime(u.createdAt) : '-'}</td>
-                    <td style={{ padding: 8 }}>{u.lastLoginAt ? formatTime(u.lastLoginAt) : '-'}</td>
-                    <td style={{ padding: 8 }}>{u.totalSearches}</td>
-                    <td style={{ padding: 8 }}>{u.favouritesCount}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className={styles.tableContainer}>
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead className={styles.tableHeader}>
+                    <tr>
+                      <th onClick={() => handleUserSort('id')}>ID {userSort.key === 'id' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
+                      <th onClick={() => handleUserSort('username')}>Username {userSort.key === 'username' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
+                      <th onClick={() => handleUserSort('createdAt')}>Joined {userSort.key === 'createdAt' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
+                      <th onClick={() => handleUserSort('lastLoginAt')}>Last Login {userSort.key === 'lastLoginAt' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
+                      <th onClick={() => handleUserSort('totalSearches')}>Total Searches {userSort.key === 'totalSearches' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
+                      <th onClick={() => handleUserSort('favouritesCount')}>Favourites {userSort.key === 'favouritesCount' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
+                      <th onClick={() => handleUserSort('filterSetsCount')}>Filter Sets {userSort.key === 'filterSetsCount' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
+                      <th onClick={() => handleUserSort('userType')}>Type {userSort.key === 'userType' && (userSort.direction === 'asc' ? '↑' : '↓')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className={styles.tableBody}>
+                    {sortedFilteredUsers.map((u: any) => (
+                      <tr key={u.id}>
+                        <td>{u.id}</td>
+                        <td>{u.username}</td>
+                        <td>{u.createdAt ? formatTime(u.createdAt) : '-'}</td>
+                        <td>{u.lastLoginAt ? formatTime(u.lastLoginAt) : '-'}</td>
+                        <td>{u.totalSearches}</td>
+                        <td>{u.favouritesCount}</td>
+                        <td>{u.filterSetsCount || 0}</td>
+                        <td>{u.userType === 'google' ? 'Google' : 'Regular'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-            </>
         )}
-      </>
+      </div>
     );
   }
 
   function renderScrapersSection() {
     return (
-      <>
-        <h2 style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => setShowScrapers(s => !s)}>
-          Status of Scrapers {showScrapers ? '▼' : '▶'}
+      <div className={styles.sectionContainer}>
+        <h2 className={`${styles.sectionTitle} ${!showScrapers ? styles.collapsed : ''}`} onClick={() => setShowScrapers(s => !s)}>
+          Status of Scrapers ({summaries?.length || 0})
         </h2>
         {showScrapers && (
-          <>
-            {renderTable(applySort(inProgressSummaries), "🟠 In Progress", 'Current Status', 'Current Scan Rate', 'Type')}
-            {renderTable(applySort(otherSummaries), "✅ Others", 'Last Status', 'Last Scan Rate', 'Last Scan Type')}
-          </>
+          <div className={styles.sectionContent}>
+            {renderTable(applySort(inProgressSummaries), `🟠 In Progress (${inProgressSummaries.length})`, 'Current Status', 'Current Scan Rate', 'Type', 12)}
+            {renderTable(applySort(otherSummaries), `✅ Others (${otherSummaries.length})`, 'Last Status', 'Last Scan Rate', 'Last Scan Type')}
+          </div>
         )}
-      </>
+      </div>
     );
   }
 
   function renderContent(){
-    if (isLoading) return <Loader isGray />
+    if (isLoading) return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <Loader isGray />
+        </div>
+      );
     if (error) return <div style={{ padding: 32, color: "red" }}>Error loading status</div>;
 
     return (
         <AdminGuard>
-            <div style={{ padding: 32, paddingBottom: 80 }}>
-                <div style={{ fontSize: 16, fontWeight: 500, marginBottom: 24 }}>
-                  {totalProductsLoading ? 'Loading product count...' : `Total products: ${Number(totalProductsData?.total).toLocaleString() ?? 0}`}
+            <div className={styles.container}>
+                <div className={styles.summaryBar}>
+                  <div className={styles.summaryBarContent}>
+                    <div className={styles.summaryBarTitle}>
+                      Dashboard Overview
+                    </div>
+                    <div className={styles.summaryStats}>
+                      <div className={styles.summaryStat}>
+                        <div className={styles.summaryStatLabel}>Total Products</div>
+                        <div className={`${styles.summaryStatValue} ${totalProductsLoading ? styles.loading : ''}`}>
+                          {totalProductsLoading ? 'Loading...' : Number(totalProductsData?.total).toLocaleString() ?? 0}
+                        </div>
+                      </div>
+                      <div className={styles.summaryStat}>
+                        <div className={styles.summaryStatLabel}>Added Today</div>
+                        <div className={`${styles.summaryStatValue} ${dailyStatsLoading ? styles.loading : ''}`}>
+                          {dailyStatsLoading ? 'Loading...' : Number(dailyStatsData?.total_added_today || 0).toLocaleString()}
+                        </div>
+                      </div>
+                      <div className={styles.summaryStat}>
+                        <div className={styles.summaryStatLabel}>Updated Today</div>
+                        <div className={`${styles.summaryStatValue} ${dailyStatsLoading ? styles.loading : ''}`}>
+                          {dailyStatsLoading ? 'Loading...' : Number(dailyStatsData?.total_updated_today || 0).toLocaleString()}
+                        </div>
+                      </div>
+                      <div className={styles.summaryStat}>
+                        <div className={styles.summaryStatLabel}>Price Changes Today</div>
+                        <div className={`${styles.summaryStatValue} ${dailyStatsLoading ? styles.loading : ''}`}>
+                          {dailyStatsLoading ? 'Loading...' : Number(dailyStatsData?.total_price_changes_today || 0).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 {renderScrapersSection()}
                 {renderUsersTable()}

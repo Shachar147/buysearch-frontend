@@ -28,7 +28,7 @@ interface ScraperSummary {
 }
 
 type SortDirection = 'asc' | 'desc' | null;
-type SortKey = 'scraper' | 'status' | 'updatedAt' | 'ratePerMinute' | 'scannedItems' | 'startTime' | 'eta' | 'type';
+type SortKey = 'scraper' | 'status' | 'updatedAt' | 'ratePerMinute' | 'scannedItems' | 'startTime' | 'eta' | 'type' | 'createdItems';
 
 const StatusPage = () => {
   const { data: summaries = [], isLoading, error } = useScrapingHistorySummaryQuery();
@@ -38,6 +38,15 @@ const StatusPage = () => {
   const { data: brandStats = [], isLoading: brandsLoading } = useBrandStatsQuery();
   const { data: totalProductsData, isLoading: totalProductsLoading } = useTotalProductsQuery();
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  
+  // Search state for different tables
+  const [scraperSearch, setScraperSearch] = useState('');
+  const [subTableSearch, setSubTableSearch] = useState<Record<string, string>>({});
+  const [sourceSearch, setSourceSearch] = useState('');
+  const [categorySearch, setCategorySearch] = useState('');
+  const [brandSearch, setBrandSearch] = useState('');
+  const [userSearch, setUserSearch] = useState('');
+  
   // Default main sort: updatedAt desc
   const [sortState, setSortState] = useState<{ key: SortKey | null; direction: SortDirection }>({
     key: 'updatedAt',
@@ -174,6 +183,7 @@ const StatusPage = () => {
         }
         if (sortState.key === 'scannedItems') return (item.history[0]?.createdItems ?? 0) + (item.history[0]?.updatedItems ?? 0);
         if (sortState.key === 'type') return item.history[0]?.type || '';
+        if (sortState.key === 'createdItems') return item.history[0]?.createdItems ?? 0;
         return '';
       };
 
@@ -247,8 +257,13 @@ const StatusPage = () => {
     });
   };
 
-  const inProgressSummaries = summaries.filter((s) => s.history[0]?.status === "in_progress");
-  const otherSummaries = summaries.filter((s) => s.history[0]?.status !== "in_progress");
+  // Filter summaries by search term
+  const filteredSummaries = summaries.filter((s) => 
+    !scraperSearch || s.scraper.toLowerCase().includes(scraperSearch.toLowerCase())
+  );
+  
+  const inProgressSummaries = filteredSummaries.filter((s) => s.history[0]?.status === "in_progress");
+  const otherSummaries = filteredSummaries.filter((s) => s.history[0]?.status !== "in_progress");
 
   function getEta(item: ScrapingHistory) {
     if (!item.progress || item.progress === 0) {
@@ -292,7 +307,23 @@ const StatusPage = () => {
 
   const renderTable = (items: ScraperSummary[], title: string, statusHeader: string, scanRateHeader: string, typeHeader: string) => {
     const table = items.length == 0 ? <span>None</span> : (
-        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 12 }}>
+        <>
+          <div style={{ marginBottom: 12 }}>
+            <input
+              type="text"
+              placeholder="Search scrapers..."
+              value={scraperSearch}
+              onChange={(e) => setScraperSearch(e.target.value)}
+              style={{
+                padding: '8px 12px',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                fontSize: '14px',
+                width: '250px'
+              }}
+            />
+          </div>
+          <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 12 }}>
         <thead>
           <tr style={{ background: "#f5f5f5" }}>
             <th style={{ textAlign: "left", padding: 8 }}>#</th>
@@ -304,6 +335,7 @@ const StatusPage = () => {
             <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("scannedItems")}>Scanned Items {sortState.key === 'scannedItems' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
             <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("ratePerMinute")}>{scanRateHeader} (items/min) {sortState.key === 'ratePerMinute' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
             <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("type")}>{typeHeader} {sortState.key === 'type' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
+            <th style={{ textAlign: "left", padding: 8, cursor: "pointer" }} onClick={() => handleSort("createdItems")}>Created Items {sortState.key === 'createdItems' && (sortState.direction === 'asc' ? '↑' : '↓')}</th>
             <th style={{ padding: 8 }}></th>
           </tr>
         </thead>
@@ -345,6 +377,9 @@ const StatusPage = () => {
                   </td>
                   <td style={{ padding: 8 }}>
                     {last.type === 'auto' ? 'Auto' : 'Manual'}
+                  </td>
+                  <td style={{ padding: 8 }}>
+                    {last.createdItems ? last.createdItems.toLocaleString() : '0'}
                   </td>
                   <td style={{ padding: 8 }}>
                     <button
@@ -434,6 +469,7 @@ const StatusPage = () => {
           })}
         </tbody>
       </table>
+        </>
     );
 
     return (
@@ -447,14 +483,33 @@ const StatusPage = () => {
 
   function renderSourceStatsTable() {
     if (sourcesLoading) return <div>Loading sources...</div>;
-    const rows = sortRows(sourceStats, sourceSort).slice(0, 50);
+    const filteredSourceStats = sourceStats.filter((row: any) => 
+      !sourceSearch || row.name.toLowerCase().includes(sourceSearch.toLowerCase())
+    );
+    const rows = sortRows(filteredSourceStats, sourceSort).slice(0, 50);
     return (
       <>
         <h2 style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => setShowSources(s => !s)}>
           Sources {showSources ? '▼' : '▶'}
         </h2>
         {showSources && (
-          <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+          <>
+            <div style={{ marginBottom: 12 }}>
+              <input
+                type="text"
+                placeholder="Search sources..."
+                value={sourceSearch}
+                onChange={(e) => setSourceSearch(e.target.value)}
+                style={{
+                  padding: '8px 12px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  width: '250px'
+                }}
+              />
+            </div>
+            <div style={{ maxHeight: 400, overflowY: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
               <thead>
                 <tr style={{ background: '#f5f5f5' }}>
@@ -483,6 +538,7 @@ const StatusPage = () => {
               </tbody>
             </table>
           </div>
+            </>
         )}
       </>
     );
@@ -490,14 +546,33 @@ const StatusPage = () => {
 
   function renderCategoryStatsTable() {
     if (categoriesLoading) return <div>Loading categories...</div>;
-    const rows = sortRows(categoryStats, categorySort).slice(0, 50);
+    const filteredCategoryStats = categoryStats.filter((row: any) => 
+      !categorySearch || row.name.toLowerCase().includes(categorySearch.toLowerCase())
+    );
+    const rows = sortRows(filteredCategoryStats, categorySort).slice(0, 50);
     return (
       <>
         <h2 style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => setShowCategories(s => !s)}>
           Categories {showCategories ? '▼' : '▶'}
         </h2>
         {showCategories && (
-          <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+          <>
+            <div style={{ marginBottom: 12 }}>
+              <input
+                type="text"
+                placeholder="Search categories..."
+                value={categorySearch}
+                onChange={(e) => setCategorySearch(e.target.value)}
+                style={{
+                  padding: '8px 12px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  width: '250px'
+                }}
+              />
+            </div>
+            <div style={{ maxHeight: 400, overflowY: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
               <thead>
                 <tr style={{ background: '#f5f5f5' }}>
@@ -524,6 +599,7 @@ const StatusPage = () => {
               </tbody>
             </table>
           </div>
+            </>
         )}
       </>
     );
@@ -531,14 +607,33 @@ const StatusPage = () => {
 
   function renderBrandStatsTable() {
     if (brandsLoading) return <div>Loading brands...</div>;
-    const rows = sortRows(brandStats, brandSort).slice(0, 50);
+    const filteredBrandStats = brandStats.filter((row: any) => 
+      !brandSearch || row.name.toLowerCase().includes(brandSearch.toLowerCase())
+    );
+    const rows = sortRows(filteredBrandStats, brandSort).slice(0, 50);
     return (
       <>
         <h2 style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => setShowBrands(s => !s)}>
           Brands {showBrands ? '▼' : '▶'}
         </h2>
         {showBrands && (
-          <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+          <>
+            <div style={{ marginBottom: 12 }}>
+              <input
+                type="text"
+                placeholder="Search brands..."
+                value={brandSearch}
+                onChange={(e) => setBrandSearch(e.target.value)}
+                style={{
+                  padding: '8px 12px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  width: '250px'
+                }}
+              />
+            </div>
+            <div style={{ maxHeight: 400, overflowY: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
               <thead>
                 <tr style={{ background: '#f5f5f5' }}>
@@ -565,6 +660,7 @@ const StatusPage = () => {
               </tbody>
             </table>
           </div>
+            </>
         )}
       </>
     );
@@ -573,13 +669,45 @@ const StatusPage = () => {
   function renderUsersTable() {
     if (usersLoading) return <div style={{ padding: 32 }}>Loading users...</div>;
     if (usersError) return <div style={{ padding: 32, color: 'red' }}>Error loading users</div>;
+    const filteredUsers = users.filter((user: any) => 
+      !userSearch || user.username.toLowerCase().includes(userSearch.toLowerCase())
+    );
+    const sortedFilteredUsers = [...filteredUsers].sort((a, b) => {
+      let aVal = a[userSort.key];
+      let bVal = b[userSort.key];
+      if (userSort.key.includes('At')) {
+        aVal = aVal ? new Date(aVal).getTime() : 0;
+        bVal = bVal ? new Date(bVal).getTime() : 0;
+      }
+      if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+      if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+      if (aVal < bVal) return userSort.direction === 'asc' ? -1 : 1;
+      if (aVal > bVal) return userSort.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
     return (
       <>
         <h2 style={{ cursor: 'pointer', userSelect: 'none' }} onClick={() => setShowUsers(s => !s)}>
           Users {showUsers ? '▼' : '▶'}
         </h2>
         {showUsers && (
-          <div>
+          <>
+            <div style={{ marginBottom: 12 }}>
+              <input
+                type="text"
+                placeholder="Search users..."
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                style={{
+                  padding: '8px 12px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  width: '250px'
+                }}
+              />
+            </div>
+            <div>
             <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
               <thead>
                 <tr style={{ background: '#f5f5f5' }}>
@@ -591,7 +719,7 @@ const StatusPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {sortedUsers.map((u: any) => (
+                {sortedFilteredUsers.map((u: any) => (
                   <tr key={u.id} style={{ borderBottom: '1px solid #eee' }}>
                     <td style={{ padding: 8 }}>{u.username}</td>
                     <td style={{ padding: 8 }}>{u.createdAt ? formatTime(u.createdAt) : '-'}</td>
@@ -603,6 +731,7 @@ const StatusPage = () => {
               </tbody>
             </table>
           </div>
+            </>
         )}
       </>
     );

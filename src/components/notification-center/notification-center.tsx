@@ -4,6 +4,7 @@ import { useNotificationsQuery, useUnseenCountQuery, useMarkAsSeenMutation, useM
 import { useRouter } from 'next/navigation';
 import styles from './notification-center.module.css';
 import getClasses from '../../utils/get-classes';
+import { Loader } from '../loader/loader';
 
 interface NotificationCenterProps {
   className?: string;
@@ -13,6 +14,9 @@ interface NotificationCenterProps {
 export const NotificationCenter: React.FC<NotificationCenterProps> = ({ className, scrolled }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [filterTab, setFilterTab] = useState<'all' | 'unread'>('all');
+  const [allNotifications, setAllNotifications] = useState<any[]>([]);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
@@ -25,6 +29,30 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ classNam
   const unseenCount = (unseenCountData as any)?.count || 0;
   const notifications = notificationsData?.notifications || [];
   const hasMore = notificationsData?.hasMore || false;
+
+  // Update allNotifications when new data comes in
+  useEffect(() => {
+    if (notificationsData?.notifications) {
+      if (currentPage === 1) {
+        // First page - replace all
+        setAllNotifications(notificationsData.notifications);
+      } else {
+        // Subsequent pages - append
+        setAllNotifications(prev => [...prev, ...notificationsData.notifications]);
+      }
+    }
+  }, [notificationsData, currentPage]);
+
+  // Reset when filter changes
+  useEffect(() => {
+    setCurrentPage(1);
+    // Don't clear allNotifications - keep them in memory for filtering
+  }, [filterTab]);
+
+  // Filtering logic
+  const filteredNotifications = filterTab === 'all'
+    ? allNotifications
+    : allNotifications.filter((n) => !n.seenAt);
 
   // Close popover when clicking outside
   useEffect(() => {
@@ -49,30 +77,60 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ classNam
   }, [isOpen]);
 
   const handleNotificationClick = async (notification: any) => {
+    // Optimistically update local state
+    setAllNotifications(prev => 
+      prev.map(n => 
+        n.id === notification.id 
+          ? { ...n, seenAt: new Date().toISOString() }
+          : n
+      )
+    );
+    
     // Mark as seen
     await markAsSeenMutation.mutateAsync(notification.id);
     
     // Refetch unseen count to update badge
     refetchUnseenCount();
     
-    // Navigate to product page
+    // Navigate to product page and close popover
     if (notification.product?.url) {
-      router.push(notification.product.url);
+      window.open(notification.product.url, '_blank');
+    //   router.push(notification.product.url);
     }
     
-    // Close popover
-    setIsOpen(false);
+    // Do NOT close popover for other actions
   };
 
-  const handleMarkAllAsSeen = async () => {
+  const handleMarkAllAsSeen = async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation(); // Prevent bubbling to outside click
+    
+    // Optimistically update local state
+    setAllNotifications(prev => 
+      prev.map(notification => ({
+        ...notification,
+        seenAt: new Date().toISOString()
+      }))
+    );
+    
     await markAllAsSeenMutation.mutateAsync();
     // Refetch unseen count to update badge
     refetchUnseenCount();
+    // Do NOT close popover
   };
 
-  const handleLoadMore = () => {
+  const handleLoadMore = async () => {
+    setIsLoadingMore(true);
     setCurrentPage(prev => prev + 1);
+    // The useEffect will handle appending the new notifications
+    // We'll set loading to false when new data arrives
   };
+
+  // Reset loading when new data arrives
+  useEffect(() => {
+    if (notificationsData) {
+      setIsLoadingMore(false);
+    }
+  }, [notificationsData]);
 
   const handleTogglePopover = () => {
     if (!isOpen) {
@@ -141,28 +199,48 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ classNam
             )}
           </div>
 
+          {/* Tabs */}
+          <div className={styles.tabs}>
+            <button
+              className={getClasses([
+                styles.tab,
+                filterTab === 'all' && styles.tabActive,
+              ])}
+              onClick={() => setFilterTab('all')}
+              type="button"
+            >
+              All
+            </button>
+            <button
+              className={getClasses([
+                styles.tab,
+                filterTab === 'unread' && styles.tabActive,
+              ])}
+              onClick={() => setFilterTab('unread')}
+              type="button"
+            >
+              Unread
+            </button>
+          </div>
+
           <div className={styles.content}>
-            {isLoading ? (
+            {isLoading && currentPage === 1 ? (
               <div className={styles.loading}>Loading notifications...</div>
-            ) : notifications.length === 0 ? (
+            ) : filteredNotifications.length === 0 ? (
               <div className={styles.empty}>No notifications yet</div>
             ) : (
               <>
                 <div className={styles.notificationsList}>
-                  {notifications.map((notification) => (
+                  {filteredNotifications.map((notification) => (
                     <div
                       key={notification.id}
-                      className={`${styles.notificationItem} ${
-                        !notification.seenAt ? styles.unseen : ''
-                      }`}
+                      className={getClasses([
+                        styles.notificationItem,
+                        !notification.seenAt && styles.unseen,
+                      ])}
                       onClick={() => handleNotificationClick(notification)}
                     >
-                      <div className={styles.notificationContent}>
-                        <p className={styles.message}>{notification.message}</p>
-                        <span className={styles.time}>
-                          {formatTimeAgo(notification.createdAt.toString())}
-                        </span>
-                      </div>
+                      {/* Product image on the left */}
                       {notification.product?.images?.[0] && (
                         <div className={styles.productImage}>
                           <img
@@ -174,17 +252,34 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ classNam
                           />
                         </div>
                       )}
+                      <div className={styles.notificationContent}>
+                        <p className={styles.message}>{notification.message}</p>
+                        <span className={styles.time}>
+                          {formatTimeAgo(notification.createdAt.toString())}
+                        </span>
+                      </div>
+                      {/* Blue dot on right, always reserve space */}
+                      {!notification.seenAt ? (
+                        <span className={styles.unseenDot} />
+                      ) : (
+                        <span className={styles.unseenDotPlaceholder} />
+                      )}
                     </div>
                   ))}
                 </div>
 
-                {hasMore && (
+                {isLoadingMore && (
+                  <div className={styles.loadingMore}>Loading more notifications...</div>
+                )}
+
+                {hasMore && !isLoadingMore && (
                   <button
-                    className={styles.loadMoreButton}
+                    className={styles.seePreviousBtn}
                     onClick={handleLoadMore}
-                    disabled={isLoading}
+                    disabled={isLoadingMore}
+                    type="button"
                   >
-                    Load More
+                    See previous notifications
                   </button>
                 )}
               </>

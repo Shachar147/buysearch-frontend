@@ -15,7 +15,7 @@ export const useUnseenCountQuery = () => {
     queryFn: getUnseenCount,
     staleTime: 60000, // 1 minute
     refetchInterval: false, // Disable auto-refetch
-    refetchOnWindowFocus: false, // Don't refetch when window gains focus
+    refetchOnWindowFocus: true,
   });
 };
 

@@ -12,6 +12,7 @@ import { FaRocket } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import AdminGuard, { isAdmin } from '../admin-guard';
 import { NotificationCenter } from '../notification-center/notification-center';
+import { MdCurrencyExchange } from "react-icons/md";
 
 interface HeaderProps {
     hideGenderSwitch?: boolean;
@@ -155,13 +156,14 @@ const Header = (props: HeaderProps) => {
             tabIndex={0}
           >
             {/* Trend/graph icon */}
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={props.showPriceChangeOnly ? 'var(--bs-red-5)' : scrolled ? 'var(--bs-black-6)' : '#fff'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <MdCurrencyExchange  style={{ fontSize: 22, color: props.showPriceChangeOnly ? 'var(--bs-red-5)' : scrolled ? 'var(--bs-black-6)' : '#fff' }} />
+            {/* <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={props.showPriceChangeOnly ? 'var(--bs-red-5)' : scrolled ? 'var(--bs-black-6)' : '#fff'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="3 17 9 11 13 15 21 7" />
               <circle cx="3" cy="17" r="1.5" />
               <circle cx="9" cy="11" r="1.5" />
               <circle cx="13" cy="15" r="1.5" />
               <circle cx="21" cy="7" r="1.5" />
-            </svg>
+            </svg> */}
           </span>   
     )
   }

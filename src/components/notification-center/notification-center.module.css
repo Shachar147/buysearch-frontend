@@ -160,6 +160,7 @@
   line-height: 1.4;
   color: var(--bs-black-2);
   word-wrap: break-word;
+  white-space: pre-line;
 }
 
 .time {

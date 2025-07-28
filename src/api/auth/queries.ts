@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getAllUsers, getSourceStats, getCategoryStats, getBrandStats, getTotalProducts } from '../../services/auth-api-service';
+import { getAllUsers, getSourceStats, getCategoryStats, getBrandStats, getTotalProducts, getDailyStats } from '../../services/auth-api-service';
 
 export function useAllUsersQuery() {
   return useQuery({
@@ -33,5 +33,12 @@ export function useTotalProductsQuery() {
   return useQuery({
     queryKey: ['totalProducts'],
     queryFn: getTotalProducts,
+  });
+}
+
+export function useDailyStatsQuery() {
+  return useQuery({
+    queryKey: ['dailyStats'],
+    queryFn: getDailyStats,
   });
 } 

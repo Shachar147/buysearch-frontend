@@ -100,6 +100,7 @@
   --text-caption-weight: 400;
 
   /* Misc */
+  --bs-shadow-0: 0 2px 8px rgba(0,0,0,0.03);
   --bs-shadow-1: 0 2px 8px rgba(0,0,0,0.07);
   --bs-shadow-2: 0 4px 16px rgba(0,0,0,0.10);
   --bs-shadow-3: 0 1px 4px rgba(0,0,0,0.04);

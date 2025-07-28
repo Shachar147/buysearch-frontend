@@ -227,7 +227,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ classNam
             {isLoading && currentPage === 1 ? (
               <div className={styles.loading}>Loading notifications...</div>
             ) : filteredNotifications.length === 0 ? (
-              <div className={styles.empty}>No notifications yet</div>
+              <div className={styles.empty}><b>No notifications yet</b><br/>Add items to your favourites to get notified when prices drop!</div>
             ) : (
               <>
                 <div className={styles.notificationsList}>

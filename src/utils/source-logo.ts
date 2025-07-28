@@ -82,6 +82,8 @@ export default function getSourceLogo(source?: string): string | undefined {
       return `${S3_URL}/derococo.png`;
     case 'mantra':
       return `${S3_URL}/mantra.webp`;
+    case 'addict':
+      return `${S3_URL}/addict.avif`;
     // Add more sources here as needed
     default:
       return undefined;

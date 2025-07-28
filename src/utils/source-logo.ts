@@ -80,6 +80,8 @@ export default function getSourceLogo(source?: string): string | undefined {
       return `${S3_URL}/hollister.png`;
     case 'derococo':
       return `${S3_URL}/derococo.png`;
+    case 'mantra':
+      return `${S3_URL}/mantra.webp`;
     // Add more sources here as needed
     default:
       return undefined;

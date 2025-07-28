@@ -123,6 +123,7 @@ const StatusPage = () => {
   }
 
   function formatSeconds(seconds: number) {
+    if (Number.isNaN(seconds)) return '-';
     const h = Math.floor(seconds / 3600);
     seconds -= h * 3600;
     const m = Math.floor(seconds / 60);

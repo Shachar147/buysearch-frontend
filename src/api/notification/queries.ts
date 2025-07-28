@@ -5,7 +5,9 @@ export const useNotificationsQuery = (page: number = 1, limit: number = 10) => {
   return useQuery({
     queryKey: ['notifications', page, limit],
     queryFn: () => getNotifications(page, limit),
-    staleTime: 30000, // 30 seconds
+    staleTime: 60000, // 1 minute
+    refetchInterval: 60000, // Refetch every 1 minute
+    refetchOnWindowFocus: true, // Refetch when window gains focus
   });
 };
 
@@ -13,8 +15,8 @@ export const useUnseenCountQuery = () => {
   return useQuery({
     queryKey: ['notifications', 'unseen-count'],
     queryFn: getUnseenCount,
-    staleTime: 60000,           // 1 minute (data considered fresh for 1 minute)
-    refetchInterval: 60000,     // Re-fetch every 1 minute
+    staleTime: 120000,           // 2 minute (data considered fresh for 1 minute)
+    refetchInterval: 120000,     // Re-fetch every 2 minute
     refetchOnWindowFocus: true, // Also refetch when window is refocused
   });
 };

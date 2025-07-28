@@ -22,7 +22,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ classNam
   const router = useRouter();
 
   const { data: unseenCountData, refetch: refetchUnseenCount } = useUnseenCountQuery();
-  const { data: notificationsData, isLoading } = useNotificationsQuery(currentPage, 10);
+  const { data: notificationsData, isLoading, refetch: refetchNotifications } = useNotificationsQuery(currentPage, 10);
   const markAsSeenMutation = useMarkAsSeenMutation();
   const markAllAsSeenMutation = useMarkAllAsSeenMutation();
 
@@ -134,8 +134,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ classNam
 
   const handleTogglePopover = () => {
     if (!isOpen) {
-      // Refetch unseen count when opening popover
+      // Refetch both unseen count and notifications when opening popover
       refetchUnseenCount();
+      refetchNotifications();
     }
     setIsOpen(!isOpen);
   };

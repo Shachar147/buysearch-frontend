@@ -13,9 +13,9 @@ export const useUnseenCountQuery = () => {
   return useQuery({
     queryKey: ['notifications', 'unseen-count'],
     queryFn: getUnseenCount,
-    staleTime: 60000, // 1 minute
-    refetchInterval: false, // Disable auto-refetch
-    refetchOnWindowFocus: true,
+    staleTime: 60000,           // 1 minute (data considered fresh for 1 minute)
+    refetchInterval: 60000,     // Re-fetch every 1 minute
+    refetchOnWindowFocus: true, // Also refetch when window is refocused
   });
 };
 

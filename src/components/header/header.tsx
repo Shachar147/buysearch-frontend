@@ -11,6 +11,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { FaRocket } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import AdminGuard, { isAdmin } from '../admin-guard';
+import { NotificationCenter } from '../notification-center/notification-center';
 
 interface HeaderProps {
     hideGenderSwitch?: boolean;
@@ -207,11 +208,13 @@ const Header = (props: HeaderProps) => {
       </div>
       {/* {renderGenderSwitch()} */}
       {loggedIn && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: isUserAdmin && isMobile ? 6 : 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? isUserAdmin ? 0 : 8 : 16 }}>
           {/* Heart (favorites) icon */}
           {renderHeartIcon()}
           {/* Price Change icon */}
           {renderPriceChangeIcon()}
+          {/* Notification center */}
+          {loggedIn && <NotificationCenter scrolled={scrolled} />}
           {/* Status icon */}
           {renderAdminIcon()}
           {/* Logout icon */}

@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import filtersStore from '../../stores/filters-store';
 import getClasses from '../../utils/get-classes';
 import styles from './header.module.css';
 import { isLoggedIn } from '../../utils/auth';
@@ -51,63 +50,9 @@ const Header = (props: HeaderProps) => {
   }, []);
 
   function handleLogout() {
-    Cookies.remove('accessToken');
+    Cookies.remove('token');
     queryClient.invalidateQueries({ queryKey: ['saved-filters'] });
     window.location.reload();
-  }
-
-  function renderGenderSwitch(){
-    if (props.hideGenderSwitch) {
-        return;
-    }
-    return (
-        <div className={styles.genderSwitch}>
-        <span
-          className={getClasses([
-            styles.genderOption,
-            'text-headline-6',
-            'color-white',
-            filtersStore.selected.gender === 'women' && styles.genderOptionActive,
-          ])}
-          onClick={() => {
-            filtersStore.setGender('women');
-            if (props.onGenderSwitch) props.onGenderSwitch('women');
-          }}
-        >
-          WOMEN
-        </span>
-        <span className={styles.genderDivider} />
-        <span
-          className={getClasses([
-            styles.genderOption,
-            'text-headline-6',
-            'color-white',
-            filtersStore.selected.gender === 'men' && styles.genderOptionActive,
-          ])}
-          onClick={() => {
-            filtersStore.setGender('men');
-            if (props.onGenderSwitch) props.onGenderSwitch('men');
-          }}
-        >
-          MEN
-        </span>
-        <span className={styles.genderDivider} />
-        <span
-          className={getClasses([
-            styles.genderOption,
-            'text-headline-6',
-            'color-white',
-            filtersStore.selected.gender === 'unisex' && styles.genderOptionActive,
-          ])}
-          onClick={() => {
-            filtersStore.setGender('unisex');
-            if (props.onGenderSwitch) props.onGenderSwitch('unisex');
-          }}
-        >
-          UNISEX
-        </span>
-      </div>
-    )
   }
 
   function renderHeartIcon(){

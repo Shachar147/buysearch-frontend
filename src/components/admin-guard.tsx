@@ -1,9 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
+import { API_BASE_URL } from "../utils/config";
+
+// Cache for admin validation results
+let adminValidationCache: {
+  token: string | undefined;
+  isAdmin: boolean;
+  timestamp: number;
+} | null = null;
+
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 interface Props {
   children: React.ReactNode;
@@ -14,47 +23,79 @@ interface DecodedToken {
   // Add other properties if needed
 }
 
-export function isAdmin(){
-  const token = Cookies.get("accessToken");
-  if (!token) {
-    return false;
-  }
+export async function isAdmin(): Promise<boolean> {
   try {
-    const decoded = jwtDecode<DecodedToken>(token);
-    return decoded.username === "Shachar";
+    const token = Cookies.get("token");
+    if (!token) {
+      adminValidationCache = null;
+      return false;
+    }
+    
+    // Check if we have a valid cached result
+    if (adminValidationCache && 
+        adminValidationCache.token === token && 
+        Date.now() - adminValidationCache.timestamp < CACHE_DURATION) {
+      return adminValidationCache.isAdmin;
+    }
+    
+    // Validate token with server and get user profile
+    const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+      credentials: 'include',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (response.status !== 200) {
+      adminValidationCache = {
+        token,
+        isAdmin: false,
+        timestamp: Date.now()
+      };
+      return false;
+    }
+    
+    const user = await response.json();
+    const isAdminUser = user.username === "Shachar";
+    
+    // Cache the result
+    adminValidationCache = {
+      token,
+      isAdmin: isAdminUser,
+      timestamp: Date.now()
+    };
+    
+    return isAdminUser;
   } catch {
-    return false
+    adminValidationCache = null;
+    return false;
   }
 }
 
+// Clear admin cache when token changes (call this on logout)
+export function clearAdminCache(): void {
+  adminValidationCache = null;
+}
+
 export default function AdminGuard({ children }: Props) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [isAdminUser, setIsAdminUser] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const token = Cookies.get("accessToken");
+    const checkAdmin = async () => {
+      const adminStatus = await isAdmin();
+      setIsAdminUser(adminStatus);
+    };
+    
+    checkAdmin();
+  }, []);
 
-    if (!token) {
-    //   router.replace("/login");
-      return;
-    }
+  if (isAdminUser === null) {
+    return null; // Loading state
+  }
 
-    try {
-      const decoded = jwtDecode<DecodedToken>(token);
-
-      if (decoded.username === "Shachar") {
-        setIsAdmin(true);
-      } else {
-        // router.replace("/not-authorized"); // or home page
-      }
-    } catch (error) {
-      console.error("Failed to decode token:", error);
-    //   router.replace("/login");
-    }
-  }, [pathname, router]);
-
-  if (isAdmin === null) return null; // or a loading spinner
+  if (!isAdminUser) {
+    return null; // Don't render admin content for non-admin users
+  }
 
   return <>{children}</>;
 }

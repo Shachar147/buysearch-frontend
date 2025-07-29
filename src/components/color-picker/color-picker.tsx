@@ -52,11 +52,13 @@ const matchesSearch = (colorName: string, searchTerm: string, colorConstants?: C
     return true;
   }
   
-  // Check search keywords from backend
+  // Check search keywords from backend for this specific color
   const keywords = colorConstants.searchKeywords[colorName];
   if (keywords) {
     const allKeywords = [...keywords.en, ...keywords.he];
-    return allKeywords.some(keyword => keyword.toLowerCase().includes(searchLower));
+    // Check if any keyword contains the search term
+    const keywordMatch = allKeywords.some(keyword => keyword.toLowerCase().includes(searchLower));
+    return keywordMatch;
   }
   
   return false;
@@ -154,7 +156,36 @@ export default function ColorPicker({ onColorSelect, selectedColors = [], classN
       return Object.values(colorCategories).flat();
     }
     
-    return allColors.filter(color => matchesSearch(color, searchTerm, colorConstants));
+    if (!colorConstants) {
+      // Fallback to simple search if constants not loaded
+      return allColors.filter(color => color.toLowerCase().includes(searchTerm.toLowerCase()));
+    }
+
+    // Search through ALL colors that have matching keywords, not just allColors
+    const matchingColors = new Set<string>();
+    
+    // First, check colors in allColors
+    allColors.forEach(color => {
+      if (matchesSearch(color, searchTerm, colorConstants)) {
+        matchingColors.add(color);
+      }
+    });
+    
+    // Then, check ALL colors in searchKeywords to find matches
+    Object.entries(colorConstants.searchKeywords).forEach(([colorName, keywords]) => {
+      const typedKeywords = keywords as { en: string[]; he: string[] };
+      const allKeywords = [...typedKeywords.en, ...typedKeywords.he];
+      const searchLower = searchTerm.toLowerCase();
+      
+      // Check if any keyword contains the search term
+      if (allKeywords.some(keyword => keyword.toLowerCase().includes(searchLower))) {
+        matchingColors.add(colorName);
+      }
+    });
+    
+    const filtered = Array.from(matchingColors);
+    
+    return filtered;
   }, [searchTerm, allColors, colorCategories, colorConstants]);
 
   const handleColorClick = (color: Color) => {

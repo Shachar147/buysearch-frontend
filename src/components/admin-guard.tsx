@@ -1,8 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
-import { useMemo } from "react";
 
 interface Props {
   children: React.ReactNode;
@@ -14,7 +15,7 @@ interface DecodedToken {
 }
 
 export function isAdmin(){
-  const token = Cookies.get("token");
+  const token = Cookies.get("accessToken");
   if (!token) {
     return false;
   }
@@ -27,11 +28,33 @@ export function isAdmin(){
 }
 
 export default function AdminGuard({ children }: Props) {
-  const isAdminUser = useMemo(() => isAdmin(), []);
+  const pathname = usePathname();
+  const router = useRouter();
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
-  if (!isAdminUser) {
-    return null; // Don't render admin content for non-admin users
-  }
+  useEffect(() => {
+    const token = Cookies.get("accessToken");
+
+    if (!token) {
+    //   router.replace("/login");
+      return;
+    }
+
+    try {
+      const decoded = jwtDecode<DecodedToken>(token);
+
+      if (decoded.username === "Shachar") {
+        setIsAdmin(true);
+      } else {
+        // router.replace("/not-authorized"); // or home page
+      }
+    } catch (error) {
+      console.error("Failed to decode token:", error);
+    //   router.replace("/login");
+    }
+  }, [pathname, router]);
+
+  if (isAdmin === null) return null; // or a loading spinner
 
   return <>{children}</>;
 }

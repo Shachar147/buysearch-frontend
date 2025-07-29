@@ -8,9 +8,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import SourceSlider from '../../components/source-slider';
 import { getGoogleAuthUrl } from '../../services/auth-api-service';
-import { Loader } from '../../components/loader/loader';
+import Cookies from 'js-cookie';
 
-function LoginForm({ onSuccess, redirectSignup }: { onSuccess?: () => void, redirectSignup?: () => void }) {
+function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -123,7 +123,7 @@ function LoginForm({ onSuccess, redirectSignup }: { onSuccess?: () => void, redi
       </button>
 
       <div className={styles.switchText} style={{ textAlign: 'left', marginTop: 8, fontSize: 14 }}>
-        Not a member yet? <a href="#" onClick={e => { e.preventDefault(); if (redirectSignup) redirectSignup(); }}>sign up!</a>
+        Not a member yet? <a href="#" onClick={e => { e.preventDefault(); if (onSuccess) onSuccess(); }}>sign up!</a>
       </div>
     </form>
   );
@@ -230,7 +230,6 @@ export default function AuthPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [loading, setLoading] = useState(false);
 
   // Handle Google OAuth callback
   useEffect(() => {
@@ -238,18 +237,14 @@ export default function AuthPage() {
     const isNewUser = searchParams.get('isNewUser');
     const errorMessage = searchParams.get('message');
     const token = searchParams.get('token');
-    if (token) {
-      setTab('login');
-      setLoading(true);
-    } else {
-      setLoading(false);
-    }
     
     if (googleStatus === 'success') {
       // Google login successful
 
-      // Note: Token is already set as HTTP-only cookie by the server
-      // No need to set client-side cookie
+      // Set the token in client-side cookie (like regular login does)
+      if (token) {
+        Cookies.set('accessToken', token);
+      }
       
       // Redirect to home page
       router.push('/');
@@ -259,14 +254,6 @@ export default function AuthPage() {
       alert(message);
     }
   }, [searchParams, router, queryClient]);
-
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <Loader isGray />
-      </div>
-    );
-  }
 
   return (
     <>
@@ -352,7 +339,7 @@ export default function AuthPage() {
         {/* Card with tabs */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', marginTop: -282, zIndex: 3 }}>
           <div style={{ background: '#fff', borderRadius: 18, boxShadow: '0 4px 32px rgba(0,0,0,0.05)', padding: '24px 32px', minWidth: 320, maxWidth: 340, width: '100%', margin: '0 8px' }}>
-            {tab === 'login' ? <LoginForm redirectSignup={() => setTab('signup')} /> : <RegisterForm onSuccess={() => setTab('login')} />}
+            {tab === 'login' ? <LoginForm onSuccess={() => setTab('signup')} /> : <RegisterForm onSuccess={() => setTab('login')} />}
           </div>
         </div>
         <SourceSlider />

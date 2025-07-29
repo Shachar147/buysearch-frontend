@@ -1,14 +1,14 @@
 import axios from 'axios';
-import Cookies from 'js-cookie';
 import type { InternalAxiosRequestConfig } from 'axios';
 
-const api = axios.create();
+const api = axios.create({
+  withCredentials: true
+});
 
+// Add a request interceptor
+// Note: We're using HTTP-only cookies, so we don't need to manually add Authorization header
+// The server will automatically include the cookie with requests
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = Cookies.get('accessToken');
-  if (token && config.headers) {
-    (config.headers as any)['Authorization'] = `Bearer ${token}`;
-  }
   return config;
 });
 

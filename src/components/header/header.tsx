@@ -6,8 +6,8 @@ import filtersStore from '../../stores/filters-store';
 import getClasses from '../../utils/get-classes';
 import styles from './header.module.css';
 import { isLoggedIn } from '../../utils/auth';
-import Cookies from 'js-cookie';
 import { useQueryClient } from '@tanstack/react-query';
+import { API_BASE_URL } from '../../utils/config';
 import { FaRocket } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import AdminGuard, { isAdmin } from '../admin-guard';
@@ -38,7 +38,11 @@ const Header = (props: HeaderProps) => {
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 600;
 
   useEffect(() => {
-    setLoggedIn(isLoggedIn());
+    const checkLoginStatus = async () => {
+      const loggedInStatus = await isLoggedIn();
+      setLoggedIn(loggedInStatus);
+    };
+    checkLoginStatus();
   }, []);
 
   useEffect(() => {
@@ -50,8 +54,17 @@ const Header = (props: HeaderProps) => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  function handleLogout() {
-    Cookies.remove('accessToken');
+  async function handleLogout() {
+    try {
+      // Call server logout endpoint to clear HTTP-only cookie
+      await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+    
     queryClient.invalidateQueries({ queryKey: ['saved-filters'] });
     window.location.reload();
   }

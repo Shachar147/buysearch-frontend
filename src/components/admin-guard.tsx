@@ -2,28 +2,26 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import Cookies from "js-cookie";
-import { jwtDecode } from "jwt-decode";
 
 interface Props {
   children: React.ReactNode;
 }
 
-interface DecodedToken {
-    username: string;
-  // Add other properties if needed
-}
 
-export function isAdmin(){
-  const token = Cookies.get("accessToken");
-  if (!token) {
-    return false;
-  }
+
+export async function isAdmin(){
   try {
-    const decoded = jwtDecode<DecodedToken>(token);
-    return decoded.username === "Shachar";
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'}/api/auth/profile`, {
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const userData = await response.json();
+      return userData.username === "Shachar";
+    }
+    return false;
   } catch {
-    return false
+    return false;
   }
 }
 
@@ -33,25 +31,29 @@ export default function AdminGuard({ children }: Props) {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const token = Cookies.get("accessToken");
-
-    if (!token) {
-    //   router.replace("/login");
-      return;
-    }
-
-    try {
-      const decoded = jwtDecode<DecodedToken>(token);
-
-      if (decoded.username === "Shachar") {
-        setIsAdmin(true);
-      } else {
-        // router.replace("/not-authorized"); // or home page
+    const checkAdminStatus = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'}/api/auth/profile`, {
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          const userData = await response.json();
+          if (userData.username === "Shachar") {
+            setIsAdmin(true);
+          } else {
+            setIsAdmin(false);
+          }
+        } else {
+          setIsAdmin(false);
+        }
+      } catch (error) {
+        console.error("Failed to check admin status:", error);
+        setIsAdmin(false);
       }
-    } catch (error) {
-      console.error("Failed to decode token:", error);
-    //   router.replace("/login");
-    }
+    };
+
+    checkAdminStatus();
   }, [pathname, router]);
 
   if (isAdmin === null) return null; // or a loading spinner

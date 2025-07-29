@@ -27,10 +27,14 @@ function LoginForm({ onSuccess }: { onSuccess?: () => void }) {
       { username, password },
       {
         onSuccess: (res: any) => {
+          console.log("Login success:", res);
           if (res.status === 'success') {
             queryClient.invalidateQueries({ queryKey: ['saved-filters'] });
             if (onSuccess) onSuccess();
-            router.push('/');
+            // Add a small delay before redirect to ensure cookie is set
+            setTimeout(() => {
+              router.push('/');
+            }, 100);
           } else {
             setError(res.error || 'Login failed');
           }
@@ -241,10 +245,8 @@ export default function AuthPage() {
     if (googleStatus === 'success') {
       // Google login successful
 
-      // Set the token in client-side cookie (like regular login does)
-      if (token) {
-        Cookies.set('accessToken', token);
-      }
+      // Note: Token is already set as HTTP-only cookie by the server
+      // No need to set client-side cookie
       
       // Redirect to home page
       router.push('/');

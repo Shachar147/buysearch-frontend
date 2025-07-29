@@ -11,7 +11,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = Cookies.get("accessToken");
+    const token = Cookies.get("token");
     if (!token && pathname !== "/login" && pathname !== "/register") {
       router.replace("/login");
     }

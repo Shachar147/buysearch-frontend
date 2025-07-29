@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
@@ -15,7 +15,7 @@ interface DecodedToken {
 }
 
 export function isAdmin(){
-  const token = Cookies.get("accessToken");
+  const token = Cookies.get("token");
   if (!token) {
     return false;
   }
@@ -28,31 +28,33 @@ export function isAdmin(){
 }
 
 export default function AdminGuard({ children }: Props) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  // const pathname = usePathname();
+  // const router = useRouter();
+  // const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
-  useEffect(() => {
-    const token = Cookies.get("accessToken");
+  const isAdmin = useMemo(() => isAdmin(), []);
 
-    if (!token) {
-    //   router.replace("/login");
-      return;
-    }
+  // useEffect(() => {
+  //   const token = Cookies.get("accessToken");
 
-    try {
-      const decoded = jwtDecode<DecodedToken>(token);
+  //   if (!token) {
+  //   //   router.replace("/login");
+  //     return;
+  //   }
 
-      if (decoded.username === "Shachar") {
-        setIsAdmin(true);
-      } else {
-        // router.replace("/not-authorized"); // or home page
-      }
-    } catch (error) {
-      console.error("Failed to decode token:", error);
-    //   router.replace("/login");
-    }
-  }, [pathname, router]);
+  //   try {
+  //     const decoded = jwtDecode<DecodedToken>(token);
+
+  //     if (decoded.username === "Shachar") {
+  //       setIsAdmin(true);
+  //     } else {
+  //       // router.replace("/not-authorized"); // or home page
+  //     }
+  //   } catch (error) {
+  //     console.error("Failed to decode token:", error);
+  //   //   router.replace("/login");
+  //   }
+  // }, [pathname, router]);
 
   if (isAdmin === null) return null; // or a loading spinner
 

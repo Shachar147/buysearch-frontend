@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import SourceSlider from '../../components/source-slider';
 import { getGoogleAuthUrl } from '../../services/auth-api-service';
+import Cookies from 'js-cookie';
 import { Loader } from '../../components/loader/loader';
 
 function LoginForm({ onSuccess, redirectSignup }: { onSuccess?: () => void, redirectSignup?: () => void }) {
@@ -248,7 +249,13 @@ export default function AuthPage() {
     
     if (googleStatus === 'success') {
       // Google login successful
-      
+      if (token) {
+        Cookies.set('token', token, {
+          sameSite: 'lax',
+          secure: false,
+          expires: 7 // 7 days
+        });
+      }
       // Redirect to home page
       router.push('/');
     } else if (googleStatus === 'error') {

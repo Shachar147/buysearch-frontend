@@ -5,6 +5,9 @@ export function useAllColors() {
   return useQuery({
     queryKey: ['colors'],
     queryFn: fetchAllColors,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false, // to reload
   });
 }
 

@@ -105,6 +105,7 @@ export async function fetchPriceHistory(productId: number, limit = 5) {
   return res.data;
 }
 
+// todo: move to React Query
 export async function fetchBulkPriceHistory(productIds: number[], limit = 5) {
   const ids = productIds.join(',');
   const res = await api.get(`${API_BASE_URL}/price-history/bulk?ids=${ids}&limit=${limit}`);

@@ -6,6 +6,9 @@ export function useAllCategories(gender: string) {
     queryKey: ['categories', gender],
     queryFn: () => fetchAllCategories(gender),
     enabled: !!gender,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
   });
 }
 

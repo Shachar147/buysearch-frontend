@@ -4,12 +4,12 @@ import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import getClasses from '../../utils/get-classes';
 import styles from './header.module.css';
-import { isLoggedIn } from '../../utils/auth';
+import { clearAuthCache, isLoggedIn } from '../../utils/auth';
 import Cookies from 'js-cookie';
 import { useQueryClient } from '@tanstack/react-query';
 import { FaRocket } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
-import AdminGuard, { isAdmin } from '../admin-guard';
+import AdminGuard, { isAdmin, clearAdminCache } from '../admin-guard';
 import { NotificationCenter } from '../notification-center/notification-center';
 import { MdCurrencyExchange } from "react-icons/md";
 
@@ -32,7 +32,7 @@ const Header = (props: HeaderProps) => {
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 600;
 
   useEffect(() => {
-    setLoggedIn(isLoggedIn());
+    isLoggedIn().then((res) => setLoggedIn(res));
   }, []);
 
   useEffect(() => {
@@ -46,6 +46,8 @@ const Header = (props: HeaderProps) => {
 
   function handleLogout() {
     Cookies.remove('token');
+    clearAuthCache();
+    clearAdminCache();
     queryClient.invalidateQueries({ queryKey: ['saved-filters'] });
     window.location.reload();
   }

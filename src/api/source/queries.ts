@@ -5,6 +5,9 @@ export function useAllSources() {
   return useQuery({
     queryKey: ['sources'],
     queryFn: fetchAllSources,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    refetchOnWindowFocus: false,
   });
 }
 

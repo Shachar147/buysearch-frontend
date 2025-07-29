@@ -47,7 +47,6 @@ const StatusPage = () => {
   
   // Search state for different tables
   const [scraperSearch, setScraperSearch] = useState('');
-  const [subTableSearch, setSubTableSearch] = useState<Record<string, string>>({});
   const [sourceSearch, setSourceSearch] = useState('');
   const [categorySearch, setCategorySearch] = useState('');
   const [brandSearch, setBrandSearch] = useState('');

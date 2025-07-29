@@ -2,25 +2,38 @@
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import Cookies from 'js-cookie';
+import { jwtDecode } from 'jwt-decode';
 
 interface Props {
   children: React.ReactNode;
 }
 
+interface DecodedToken {
+  username: string;
+  exp: number;
+  sub: number;
+}
 
-
-export async function isAdmin(){
+export function isAdmin(): boolean {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'}/api/auth/profile`, {
-      credentials: 'include'
-    });
+    const token = Cookies.get('token');
+    if (!token) return false;
     
-    if (response.ok) {
-      const userData = await response.json();
-      return userData.username === "Shachar";
+    const decoded = jwtDecode<DecodedToken>(token);
+    const currentTime = Date.now() / 1000;
+    
+    // Check if token is expired
+    if (decoded.exp < currentTime) {
+      // Token is expired, remove it
+      Cookies.remove('token');
+      return false;
     }
-    return false;
+    
+    return decoded.username === "Shachar";
   } catch {
+    // If there's any error decoding, remove the invalid token
+    Cookies.remove('token');
     return false;
   }
 }
@@ -28,35 +41,14 @@ export async function isAdmin(){
 export default function AdminGuard({ children }: Props) {
   const pathname = usePathname();
   const router = useRouter();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [isAdminUser, setIsAdminUser] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const checkAdminStatus = async () => {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'}/api/auth/profile`, {
-          credentials: 'include'
-        });
-        
-        if (response.ok) {
-          const userData = await response.json();
-          if (userData.username === "Shachar") {
-            setIsAdmin(true);
-          } else {
-            setIsAdmin(false);
-          }
-        } else {
-          setIsAdmin(false);
-        }
-      } catch (error) {
-        console.error("Failed to check admin status:", error);
-        setIsAdmin(false);
-      }
-    };
-
-    checkAdminStatus();
+    const adminStatus = isAdmin();
+    setIsAdminUser(adminStatus);
   }, [pathname, router]);
 
-  if (isAdmin === null) return null; // or a loading spinner
+  if (isAdminUser === null) return null; // or a loading spinner
 
   return <>{children}</>;
 }

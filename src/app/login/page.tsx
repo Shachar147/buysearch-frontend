@@ -163,7 +163,7 @@ function RegisterForm({ onSuccess }: { onSuccess?: () => void }) {
           } else if (res.error === 'usernameTooShort') {
             setError('Username must be at least 4 characters');
           } else if (res.error === 'passwordTooShort') {
-            setError('Password must be at least 8 characters');
+            setError('Password must be at least 4 characters');
           } else {
             setError(res.error || 'Registration failed');
           }
@@ -174,7 +174,7 @@ function RegisterForm({ onSuccess }: { onSuccess?: () => void }) {
           } else if (err?.response?.data?.error === 'usernameTooShort') {
             setError('Username must be at least 4 characters');
           } else if (err?.response?.data?.error === 'passwordTooShort') {
-            setError('Password must be at least 8 characters');
+            setError('Password must be at least 4 characters');
           } else {
             setError('Registration failed');
           }

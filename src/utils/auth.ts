@@ -1,12 +1,16 @@
-import { API_BASE_URL } from './config';
+import Cookies from 'js-cookie';
 
-export async function isLoggedIn(): Promise<boolean> {
+export function isLoggedIn(): boolean {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/profile`, {
-      credentials: 'include'
-    });
-    return response.ok;
+    const token = Cookies.get('token');
+    if (!token) return false;
+    
+    // Just check if token exists - cookie maxAge handles expiration
+    return true;
   } catch {
+    // If there's any error decoding, remove the invalid token
+    Cookies.remove('token');
+    
     return false;
   }
 } 

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchAllColors, fetchColorById } from '../../services/color-api-service';
+import { fetchAllColors, fetchColorById, fetchColorConstants } from '../../services/color-api-service';
 
 export function useAllColors() {
   return useQuery({
@@ -16,5 +16,15 @@ export function useColorById(id: string) {
     queryKey: ['color', id],
     queryFn: () => fetchColorById(id),
     enabled: !!id,
+  });
+}
+
+export function useColorConstants() {
+  return useQuery({
+    queryKey: ['colorConstants'],
+    queryFn: fetchColorConstants,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
+    refetchOnWindowFocus: false,
   });
 } 

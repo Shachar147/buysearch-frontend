@@ -199,6 +199,9 @@
   transition: all 0.15s ease;
   position: relative;
   flex-shrink: 0;
+  background-size: auto 100% !important;
+  background-position: center;
+  background-repeat: repeat;
 }
 
 .colorSwatch:hover {
@@ -250,6 +253,24 @@
   color: #6b7280;
   font-style: italic;
   padding: 20px;
+}
+
+.loading {
+  text-align: center;
+  color: #6b7280;
+  padding: 20px;
+  font-size: 14px;
+}
+
+.error {
+  text-align: center;
+  color: #ef4444;
+  padding: 20px;
+  font-size: 14px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  margin: 8px 0;
 }
 
 /* Custom scrollbar for the colors grid */

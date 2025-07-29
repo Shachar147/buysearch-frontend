@@ -9,4 +9,9 @@ export async function fetchAllColors() {
 export async function fetchColorById(id: string) {
   const res = await api.get(`${API_BASE_URL}/colors/${id}`);
   return res.data;
+}
+
+export async function fetchColorConstants() {
+  const res = await api.get(`${API_BASE_URL}/colors/constants/all`);
+  return res.data;
 } 

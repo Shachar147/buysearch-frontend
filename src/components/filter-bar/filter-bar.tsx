@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import styles from './filter-bar.module.css';
 import getClasses from '../../utils/get-classes';
 import CustomSelect from '../custom-select/custom-select';
 import filtersStore from '../../stores/filters-store';
-import { priceRangeOptions } from '../../stores/filters-store';
+import { priceRangeOptions, Filters } from '../../stores/filters-store';
 import { ucfirst } from '../../utils/utils';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
@@ -17,6 +17,8 @@ import { useAllSources } from '../../api/source/queries';
 import { FaSlidersH, FaTimes } from 'react-icons/fa';
 import { DEFAULT_SORT_BY } from '../../utils/consts';
 import SavedFilters from '../saved-filters/saved-filters';
+import ColorPicker from '../color-picker/color-picker';
+import { isAdmin } from '../admin-guard';
 
 const sortOptions = [
   { label: 'Relevance', value: 'Relevance' },
@@ -55,6 +57,27 @@ const FilterBar = observer(({ numOfResults }: { numOfResults: number }) => {
   const sliderValue: [number, number] = [from, to];
   const [sideMenuOpen, setSideMenuOpen] = useState(false);
   const sideMenuRef = useRef<HTMLDivElement>(null);
+  
+  // Debounced setFilter for color selection
+  const debouncedSetFilter = useCallback(
+    (() => {
+      let timeoutId: NodeJS.Timeout;
+      return (filterType: keyof Filters, value: any) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          setFilter(filterType, value);
+        }, 300); // 300ms debounce delay
+      };
+    })(),
+    [setFilter]
+  );
+
+  const [isUserAdmin, setIsUserAdmin] = useState(false);
+  useEffect(() => {
+    isAdmin().then((res) => {
+      setIsUserAdmin(res);
+    })
+  })
 
   // Close side menu on click outside
   useEffect(() => {
@@ -204,6 +227,10 @@ const FilterBar = observer(({ numOfResults }: { numOfResults: number }) => {
     return (
       <div className={styles.filterItem}>
           <label className={getClasses([styles.label, 'text-caption'])}>Color</label>
+          {isUserAdmin ? <ColorPicker 
+            onColorSelect={vals => debouncedSetFilter('color', vals)}
+            selectedColors={Array.isArray(selected.color) ? selected.color.filter((c) => c.toLowerCase() !== 'all') : selected.color.toLowerCase() == 'all' ? [] : [selected.color]}
+          /> :
           <CustomSelect
             options={[{ label: 'All', value: 'All' }, ...colors.map(toOption)].map((o) => ({ value: ucfirst(o.value), label: ucfirst(o.label) }))}
             selected={Array.isArray(selected.color) ? selected.color : [selected.color]}
@@ -211,7 +238,7 @@ const FilterBar = observer(({ numOfResults }: { numOfResults: number }) => {
             defaultLabel="All"
             multiselect
             itemType="colors"
-          />
+          />}
         </div>
     );
   }

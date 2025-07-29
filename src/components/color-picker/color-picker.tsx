@@ -74,6 +74,7 @@ interface ColorPickerProps {
 export default function ColorPicker({ onColorSelect, selectedColors = [], className, maxSelections }: ColorPickerProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
+  const [localSelectedColors, setLocalSelectedColors] = useState(selectedColors);
   
   // Fetch colors from backend
   const { data: backendColors = [], isLoading: isLoadingColors, error: colorsError } = useAllColors();
@@ -189,24 +190,26 @@ export default function ColorPicker({ onColorSelect, selectedColors = [], classN
   }, [searchTerm, allColors, colorCategories, colorConstants]);
 
   const handleColorClick = (color: Color) => {
-    const newSelectedColors = selectedColors.includes(color)
-      ? selectedColors.filter(c => c !== color)
-      : [...selectedColors, color];
+    const newSelectedColors = localSelectedColors.includes(color)
+      ? localSelectedColors.filter(c => c !== color)
+      : [...localSelectedColors, color];
     
     // Respect maxSelections limit
     const finalColors = maxSelections 
       ? newSelectedColors.slice(0, maxSelections)
       : newSelectedColors;
     
+    setLocalSelectedColors(finalColors);
     onColorSelect?.(finalColors);
   };
 
   const handleClearSelection = () => {
+    setLocalSelectedColors([]);
     onColorSelect?.([]);
   };
 
   const handleRemoveColor = (colorToRemove: Color) => {
-    const newSelectedColors = selectedColors.filter(c => c !== colorToRemove);
+    const newSelectedColors = localSelectedColors.filter(c => c !== colorToRemove);
     onColorSelect?.(newSelectedColors);
   };
 
@@ -214,7 +217,7 @@ export default function ColorPicker({ onColorSelect, selectedColors = [], classN
     setIsExpanded(!isExpanded);
   };
 
-  const isSelected = (color: Color) => selectedColors.includes(color);
+  const isSelected = (color: Color) => localSelectedColors.includes(color);
 
   const renderColorSection = (title: string, colors: Color[]) => {
     const sectionColors = colors.filter(color => 
@@ -249,14 +252,12 @@ export default function ColorPicker({ onColorSelect, selectedColors = [], classN
       {/* Combined Selected Colors Display and Toggle */}
       <div 
         className={`${styles.selectedColorsContainer} ${styles.clickable}`}
-        onClick={selectedColors.length > 0 ? undefined : toggleExpanded}
+        onClick={toggleExpanded}
       >
         {selectedColors.length === 0 ? (
           <div className={styles.noColorsSelected}>
             <span>All</span>
-            <span className={styles.toggleArrow}>
-              ▼
-            </span>
+            <span className={styles.toggleArrow}/>
           </div>
         ) : selectedColors.length === 1 ? (
           <div className={styles.singleColorSelected}>

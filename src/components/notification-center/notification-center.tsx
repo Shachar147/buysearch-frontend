@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import styles from './notification-center.module.css';
 import getClasses from '../../utils/get-classes';
 import { Loader } from '../loader/loader';
+import { formatDateTime } from '../../utils/utils';
 
 interface NotificationCenterProps {
   className?: string;
@@ -267,7 +268,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({ classNam
                       )}
                       <div className={styles.notificationContent}>
                         <p className={styles.message}>{notification.message}</p>
-                        <span className={styles.time}>
+                        <span className={styles.time} title={formatDateTime(new Date(notification.createdAt))}>
                           {formatTimeAgo(notification.createdAt.toString())}
                         </span>
                       </div>

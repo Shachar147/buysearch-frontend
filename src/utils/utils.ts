@@ -25,7 +25,7 @@ export function getTimeAgo(date: Date | string): string {
 
 export function formatDateTime(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleString(undefined, {
+  return d.toLocaleString('he', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',

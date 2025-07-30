@@ -86,6 +86,10 @@ export default function getSourceLogo(source?: string): string | undefined {
       return `${S3_URL}/addict.avif`;
     case 'green':
       return `${S3_URL}/green.png`;
+    case 'shviro':
+      return `${S3_URL}/shviro.png`;
+    case 'superpharm':
+      return `${S3_URL}/superpharm.png`;
     // Add more sources here as needed
     default:
       return undefined;

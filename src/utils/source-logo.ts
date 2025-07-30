@@ -92,6 +92,8 @@ export default function getSourceLogo(source?: string): string | undefined {
       return `${S3_URL}/superpharm.png`;
     case 'ksp':
       return `${S3_URL}/ksp.png`;
+    case 'brenda':
+      return `${S3_URL}/brenda.png`;
     // Add more sources here as needed
     default:
       return undefined;

@@ -1,92 +1,125 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import getSourceLogo from '../utils/source-logo';
 import { useAllSources } from '../api/source/queries';
 
-const SLIDE_SPEED = 60; // px per second
-
 export default function SourceSlider() {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const animationRef = useRef<number>(0);
-
   const { data: sources } = useAllSources();
   const SOURCES = sources?.map((source) => source.name) || [];
 
-  // Duplicate logos for seamless infinite scroll
-  const logos = [...SOURCES, ...SOURCES, ...SOURCES, ...SOURCES, ...SOURCES];
+  const [repeats, setRepeats] = useState(2);
+  const [duration, setDuration] = useState(60); // seconds
+  const containerRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 600;
+
+  // ✅ Generate logos only when repeats is valid
+  const logos =
+    repeats > 0 && SOURCES.length > 0
+      ? Array(repeats)
+          .fill(null)
+          .flatMap(() => SOURCES)
+      : [];
 
   useEffect(() => {
-    let start: number | null = null;
-    let left = 0;
-    let direction = 1; // 1 for left, -1 for right
-    const track = trackRef.current;
-    if (!track) return;
-    const totalWidth = track.scrollWidth / 5; // Since we have 5 copies
+    const updateMetrics = () => {
+      if (!containerRef.current || !trackRef.current || SOURCES.length === 0) return;
 
-    function animate(ts: number) {
-      if (start === null) start = ts;
-      const elapsed = ts - start;
-      
-      // Calculate position based on direction
-      if (direction === 1) {
-        left = -(elapsed / 1000) * SLIDE_SPEED;
-      } else {
-        left = -totalWidth * 5 + (elapsed / 1000) * SLIDE_SPEED;
+      const containerWidth = containerRef.current.offsetWidth;
+      const totalWidth = trackRef.current.scrollWidth;
+
+      // Approximate single set width by dividing by current repeat count
+      const singleSetWidth = totalWidth / repeats || 1;
+
+      // Ensure at least 2x container width of content
+      const neededRepeats = Math.ceil((containerWidth * 2) / singleSetWidth);
+
+      if (neededRepeats > repeats) {
+        setRepeats(neededRepeats);
+        return; // let layout update, rerun after
       }
 
-      // Change direction when reaching boundaries
-      if (direction === 1 && -left >= totalWidth * 5) {
-        // Reached the end, change to right direction
-        direction = -1;
-        start = ts;
-        left = -totalWidth * 2;
-      } else if (direction === -1 && left >= -totalWidth) {
-        // Reached the beginning, change to left direction
-        direction = 1;
-        start = ts;
-        left = -totalWidth;
-      }
-
-      track.style.transform = `translateX(${left}px)`;
-      animationRef.current = requestAnimationFrame(animate);
-    }
-    animationRef.current = requestAnimationFrame(animate);
-    return () => {
-      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+      // Update scroll duration based on total width
+      const updatedTotalWidth = singleSetWidth * repeats;
+      const speed = isMobile ? 100 : 150; // px/sec
+      const newDuration = updatedTotalWidth / speed;
+      setDuration(newDuration);
     };
-  }, []);
+
+    // Run once layout is rendered
+    setTimeout(updateMetrics, 50);
+    window.addEventListener('resize', updateMetrics);
+    return () => window.removeEventListener('resize', updateMetrics);
+  }, [SOURCES, repeats]);
 
   return (
     <div style={{ width: '100%', margin: 0 }}>
-      <div style={{ width:'100%', display: 'flex', justifyContent: 'center', textAlign: 'center'}}>
-        <h4 style={{ backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16, marginBottom: 0,width: 'max-content' }}>Search once, buy anywhere!</h4>
+      <div style={{ width: '100%', display: 'flex', justifyContent: 'center', textAlign: 'center' }}>
+        <h4 style={{ backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16, marginBottom: 0, width: 'max-content' }}>
+          Search once, buy anywhere!
+        </h4>
       </div>
-      <div style={{ overflow: 'hidden', width: '100%', background: '#f8f9fa', borderRadius: 12, backgroundColor: 'white', paddingBottom: 16, paddingTop: 16 }}>
+
+      <div
+        ref={containerRef}
+        style={{
+          overflow: 'hidden',
+          width: '100%',
+          backgroundColor: 'white',
+          paddingBottom: 16,
+          paddingTop: 16,
+          borderRadius: 12,
+        }}
+      >
         <div
           ref={trackRef}
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            height: 75,
-            willChange: 'transform',
-            backgroundColor: 'white',
+            display: 'inline-flex',
+            whiteSpace: 'nowrap',
+            animation: `scroll-left ${duration}s linear infinite`,
           }}
         >
           {logos.map((source, idx) => {
             const logo = getSourceLogo(source);
             if (!logo) return null;
             return (
-              <div key={source + idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 75, minWidth: 140, padding: '0 32px' }}>
-                <img src={logo} alt={source} style={{ height: 75, maxWidth: 120, objectFit: 'contain', filter: 'grayscale(0.2)',
-                          mixBlendMode: 'multiply', // This is the key line
-                          backgroundColor: 'white',
-                 }} />
+              <div
+                key={`${source}-${idx}`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: 75,
+                  minWidth: 140,
+                  padding: '0 32px',
+                }}
+              >
+                <img
+                  src={logo}
+                  alt={source}
+                  style={{
+                    height: 75,
+                    maxWidth: 120,
+                    objectFit: 'contain',
+                    filter: 'grayscale(0.2)',
+                    mixBlendMode: 'multiply',
+                    backgroundColor: 'white',
+                  }}
+                />
               </div>
             );
           })}
         </div>
       </div>
+
+      <style>{`
+        @keyframes scroll-left {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+      `}</style>
     </div>
   );
-} 
+}
